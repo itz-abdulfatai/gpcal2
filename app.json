@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "gpcal2",
-    "slug": "gpcal2",
+    "name": "GPCal",
+    "slug": "GPCal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gpcal2",
+    "scheme": "GPCal",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
