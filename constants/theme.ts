@@ -1,9 +1,10 @@
-import { scale, verticalScale } from "./utils/styling";
+import { scale, verticalScale } from "../utils/styling";
 export const colors = {
   primary: "#2577B1FF",
   secondary: "#f3f4f6",
   white: "#ffffff",
   black: "#000000",
+  text: "#000000",
   neutral: "#565D6DFF",
   neutral2: "#42799EFF",
   green: "#16a34a",
