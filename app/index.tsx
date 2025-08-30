@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 
-const index = () => {
+const Index = () => {
   return (
     <View style={styles.container}>
       {/* <Image resizeMode="contain" style={styles.logo} source={} /> */}
@@ -9,7 +9,7 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({
   container: {

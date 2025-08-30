@@ -4,22 +4,30 @@ import { useEffect } from "react";
 import { applyCustomFont } from "@/providers/FontProvider";
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    ManropeLight: require("../assets/fonts/Manrope-Light.ttf"),
-    ManropeRegular: require("../assets/fonts/Manrope-Regular.ttf"),
-    ManropeMedium: require("../assets/fonts/Manrope-Medium.ttf"),
-    ManropeSemiBold: require("../assets/fonts/Manrope-SemiBold.ttf"),
-    ManropeBold: require("../assets/fonts/Manrope-Bold.ttf"),
-    ManropeExtraBold: require("../assets/fonts/Manrope-ExtraBold.ttf"),
-    ManropeExtraLight: require("../assets/fonts/Manrope-ExtraLight.ttf"),
+    ManropeLight: require("@/assets/fonts/Manrope-Light.ttf"),
+    ManropeRegular: require("@/assets/fonts/Manrope-Regular.ttf"),
+    ManropeMedium: require("@/assets/fonts/Manrope-Medium.ttf"),
+    ManropeSemiBold: require("@/assets/fonts/Manrope-SemiBold.ttf"),
+    ManropeBold: require("@/assets/fonts/Manrope-Bold.ttf"),
+    ManropeExtraBold: require("@/assets/fonts/Manrope-ExtraBold.ttf"),
+    ManropeExtraLight: require("@/assets/fonts/Manrope-ExtraLight.ttf"),
   });
   SplashScreen.preventAutoHideAsync();
 
+  // const router = useRouter();
   useEffect(() => {
     if (fontsLoaded) {
       applyCustomFont();
+      console.log("✅ Manrope fonts loaded!");
       SplashScreen.hideAsync();
+      // router.push("/(tabs)");
     }
   }, [fontsLoaded]);
   if (!fontsLoaded) return null;
-  return <Stack screenOptions={{ headerShown: false }}></Stack>;
+  return (
+    <Stack
+      screenOptions={{ headerShown: false }}
+      initialRouteName="(tabs)"
+    ></Stack>
+  );
 }

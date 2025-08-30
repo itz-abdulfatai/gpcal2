@@ -304,3 +304,24 @@ export interface SlideUpSheetProps {
   closeIcon?: React.ReactNode;
   renderHeader?: React.ReactNode;
 }
+
+
+
+export type calculationType = {
+  id: string;
+  name: string;
+  gpa: number | null;
+  lastUpdated: Date | null;
+  uid: string;
+};
+
+export type CalculationsListType = {
+  data: calculationType[];
+  title?: string;
+  loading?: boolean;
+  emptyListMessage?: string;
+};
+
+export type CalculationCardProps = {
+  calculation: calculationType;
+};
