@@ -1,0 +1,41 @@
+// PromptDialog.tsx
+import { colors } from "@/constants/theme";
+import { PromptDialogProps } from "@/types";
+import React, { useState } from "react";
+import Dialog from "react-native-dialog";
+
+const PromptDialog: React.FC<PromptDialogProps> = ({
+  visible,
+  question,
+  setResponse,
+  onClose,
+}) => {
+  const [input, setInput] = useState("");
+
+  const handleOk = () => {
+    if (!input) return; // If input is empty, do nothing
+    setResponse(input);
+    onClose(input); // pass the value
+    setInput("");
+  };
+
+  const handleCancel = () => {
+    onClose(); // no value
+    setInput("");
+  };
+
+  return (
+    <Dialog.Container visible={visible}>
+      <Dialog.Title>{question}</Dialog.Title>
+      <Dialog.Input value={input} onChangeText={setInput} />
+      <Dialog.Button label="Cancel" onPress={handleCancel} />
+      <Dialog.Button
+        label="OK"
+        onPress={handleOk}
+        color={!input ? colors.secondary2 : undefined}
+      />
+    </Dialog.Container>
+  );
+};
+
+export default PromptDialog;

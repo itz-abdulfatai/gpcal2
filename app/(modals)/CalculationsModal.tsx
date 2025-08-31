@@ -113,7 +113,7 @@ const CalculationsModal = () => {
         visible={promptVisible}
         question="Enter calculation title"
         setResponse={(val) => {
-          if (val) setCalculationTitle(val);
+          if (val.trim()) setCalculationTitle(val);
         }}
         onClose={(val) => {
           setPromptVisible(false);

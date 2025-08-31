@@ -12,10 +12,10 @@ export default function RootLayout() {
     ManropeExtraBold: require("@/assets/fonts/Manrope-ExtraBold.ttf"),
     ManropeExtraLight: require("@/assets/fonts/Manrope-ExtraLight.ttf"),
   });
-  SplashScreen.preventAutoHideAsync();
 
   // const router = useRouter();
   useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
     if (fontsLoaded) {
       applyCustomFont();
       console.log("✅ Manrope fonts loaded!");

@@ -54,7 +54,7 @@ const CalculationCard = ({ calculation }: CalculationCardProps) => {
         <Typo size={25} fontWeight={"bold"}>
           {calculation.name}
         </Typo>
-        {calculation.gpa && (
+        {calculation.gpa != null && (
           <Typo
             color={colors.primary}
             fontWeight="400"
@@ -72,9 +72,7 @@ const CalculationCard = ({ calculation }: CalculationCardProps) => {
             : "N/A"}
         </Typo>
       </View>
-      <TouchableOpacity>
-        <CaretRightIcon color={colors.neutral} size={15} />
-      </TouchableOpacity>
+      <CaretRightIcon color={colors.neutral} size={15} />
     </TouchableOpacity>
   );
 };

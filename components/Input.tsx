@@ -12,7 +12,7 @@ const Input = (props: InputProps) => {
       {props.icon && props.icon}
       <TextInput
         style={[styles.input, props.inputStyle]}
-        placeholderTextColor={colors.neutral}
+        placeholderTextColor={colors.secondary2}
         ref={props.inputRef && props.inputRef}
         {...props}
       />
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.neutral,
+    borderColor: colors.secondary2,
     borderRadius: radius._12,
     borderCurve: "continuous",
     paddingHorizontal: spacingX._15,

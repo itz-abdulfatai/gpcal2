@@ -1,4 +1,4 @@
-import { calculationType } from "@/types";
+import { calculationType, CourseType } from "@/types";
 
 export const dummyCalculations: calculationType[] = [
   {
@@ -35,5 +35,54 @@ export const dummyCalculations: calculationType[] = [
     gpa: 3.75,
     lastUpdated: new Date("2024-01-10"),
     uid: "user123",
+  },
+  {
+    id: "6",
+    name: "Semester x GPA",
+    gpa: 3.75,
+    lastUpdated: new Date("2024-01-10"),
+    uid: "user123",
+  },
+  {
+    id: "7",
+    name: "Semester y GPA",
+    gpa: 3.05,
+    lastUpdated: new Date("2024-01-10"),
+    uid: "user123",
+  },
+];
+
+export const dummyCourses: CourseType[] = [
+  {
+    id: "1",
+    name: "Mathematics 101",
+    creditUnit: 3,
+    GradePoint: "A",
+    uid: "user123",
+    calculationId: "1",
+  },
+  {
+    id: "2",
+    name: "English Literature 202",
+    creditUnit: 2,
+    uid: "user123",
+    calculationId: "1",
+    GradePoint: "B",
+  },
+  {
+    id: "3",
+    name: "Computer Science 305",
+    calculationId: "1",
+    uid: "user123",
+    creditUnit: 4,
+    GradePoint: "C",
+  },
+  {
+    id: "4",
+    name: "Economics 210",
+    uid: "user123",
+    creditUnit: 3,
+    calculationId: "1",
+    GradePoint: "A",
   },
 ];

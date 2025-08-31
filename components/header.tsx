@@ -14,6 +14,7 @@ const Header = ({ title = "", leftIcon, style }: HeaderProps) => {
           style={{
             textAlign: "center",
             width: leftIcon ? "82%" : "100%",
+            textTransform: "capitalize",
           }}
         >
           {title}

@@ -17,7 +17,7 @@ const BackButton = ({ style, iconSize = 26 }: BackButtonProps) => {
     >
       <CaretLeftIcon
         size={verticalScale(iconSize)}
-        color={colors.white}
+        color={colors.black}
         weight="bold"
       />
     </TouchableOpacity>
@@ -28,10 +28,12 @@ export default BackButton;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: colors.neutral,
+    // backgroundColor: colors.neutral,
     alignSelf: "flex-start",
     borderRadius: radius._12,
     borderCurve: "continuous",
     padding: 5,
+    borderWidth: 1,
+    borderColor: colors.secondary,
   },
 });
