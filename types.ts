@@ -1,3 +1,6 @@
+import { ReactNode } from "react";
+import { Dispatch, SetStateAction } from "react";
+
 import { Icon } from "phosphor-react-native";
 import {
   ImageSourcePropType,
@@ -10,8 +13,17 @@ import {
 } from "react-native";
 
 // import { Timestamp } from "@react-native-firebase/firestore";
-import React, { ReactNode } from "react";
+export type FabProps = {
+  onPress: () => void;
+  style?: object;
+};
 
+export interface PromptDialogProps {
+  visible: boolean;
+  question: string;
+  setResponse: (val: string) => void;
+  onClose: (val?: string) => void; // <-- accept optional value
+}
 export type FloatingActionButtonAction = {
   title: string;
   icon: React.ReactNode;
@@ -150,6 +162,31 @@ export type GoalItemProps = {
   handleClick: Function;
   style?: ViewStyle;
 };
+
+export type GradeType = "A" | "B" | "C" | "D" | "E" | "F" | null;
+
+export type CourseType = {
+  id: string;
+  name: string;
+  creditUnit: number | null;
+  GradePoint: GradeType | null;
+  calculationId: string;
+  uid: string;
+};
+
+export type Semester = {
+  id: string;
+  name: string;
+  calculationId: string;
+  gpa: number | null;
+  uid: string;
+};
+
+export interface TableProps<T> {
+  headings: string[];
+  data: T[];
+  keys: (keyof T)[];
+}
 
 export interface InputProps extends TextInputProps {
   icon?: React.ReactNode;
@@ -304,8 +341,6 @@ export interface SlideUpSheetProps {
   closeIcon?: React.ReactNode;
   renderHeader?: React.ReactNode;
 }
-
-
 
 export type calculationType = {
   id: string;

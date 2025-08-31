@@ -1,26 +1,96 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { CalculationCardProps, CalculationsListType } from "@/types";
+import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import Typo from "./typo";
+import { CaretRightIcon } from "phosphor-react-native";
+import { formatDate } from "@/utils/formatDate";
+import Loading from "./Loading";
 
-const CalculationsList = ({ data: calculations }: CalculationsListType) => {
+const CalculationsList = ({
+  data: calculations,
+  emptyListMessage,
+  loading,
+  title,
+}: CalculationsListType) => {
   return (
-    <View>
-      <Text>CalculationsList</Text>
-      {calculations.map((calc) => (
-        <CalculationCard key={calc.id} calculation={calc} />
-      ))}
+    <View style={styles.calculationsContainer}>
+      <Typo size={25} fontWeight="bold">
+        {title ? title : "Your Calculations"}
+      </Typo>
+      {loading && (
+        <View style={{ alignItems: "center" }}>
+          <Loading />
+        </View>
+      )}
+      {calculations.length > 0 ? (
+        calculations.map((calc) => (
+          <CalculationCard key={calc.id} calculation={calc} />
+        ))
+      ) : (
+        <View style={{ alignItems: "center", paddingTop: spacingY._10 }}>
+          <Typo color={colors.secondary2}>{emptyListMessage}</Typo>
+        </View>
+      )}
     </View>
   );
 };
 
 export default CalculationsList;
 
-const styles = StyleSheet.create({});
-
 const CalculationCard = ({ calculation }: CalculationCardProps) => {
+  const handleOpenCalculation = (id: string) => {
+    // Handle opening the calculation details
+  };
+
   return (
-    <View>
-      <Text>{calculation.name}</Text>
-    </View>
+    <TouchableOpacity
+      style={styles.calculationCard}
+      onPress={() => {
+        handleOpenCalculation(calculation.id);
+      }}
+    >
+      <View>
+        <Typo size={25} fontWeight={"bold"}>
+          {calculation.name}
+        </Typo>
+        {calculation.gpa && (
+          <Typo
+            color={colors.primary}
+            fontWeight="400"
+            size={23}
+            style={{ textTransform: "uppercase" }}
+          >
+            Gpa: {calculation.gpa}
+          </Typo>
+        )}
+
+        <Typo color={colors.neutral}>
+          Last Updated{" "}
+          {calculation.lastUpdated
+            ? formatDate(calculation.lastUpdated)
+            : "N/A"}
+        </Typo>
+      </View>
+      <TouchableOpacity>
+        <CaretRightIcon color={colors.neutral} size={15} />
+      </TouchableOpacity>
+    </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  calculationsContainer: {
+    gap: spacingY._20,
+  },
+  calculationCard: {
+    paddingVertical: spacingY._12,
+    paddingHorizontal: spacingX._20,
+    borderWidth: 2,
+    borderColor: colors.secondary,
+    borderRadius: radius._10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+});
