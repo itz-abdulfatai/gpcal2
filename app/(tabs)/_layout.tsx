@@ -25,6 +25,15 @@ export default function TabLayout() {
           tabBarIcon: () => <Icons.HouseSimpleIcon size={24} color={"black"} />,
         }}
       />
+      <Tabs.Screen
+        name="Analytics"
+        options={{
+          title: "Analytics",
+          tabBarIcon: () => (
+            <Icons.ChartPieSliceIcon size={24} color={"black"} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

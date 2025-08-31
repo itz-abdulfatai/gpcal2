@@ -12,10 +12,9 @@ import { Dropdown } from "react-native-element-dropdown";
 import { CourseType, Semester } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import Button from "@/components/Button";
-import { PlusIcon } from "phosphor-react-native";
 // import { dummyCourses } from "@/constants/data";
 import Table from "@/components/Table";
-import { ChartLineUpIcon } from "phosphor-react-native";
+import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
 
 const CalculationsModal = () => {
   const [calculationTitle, setCalculationTitle] = useState<string>("test cal");
@@ -290,7 +289,7 @@ const CalculationsModal = () => {
                 alignItems: "center",
               }}
             >
-              <ChartLineUpIcon size={18} color={colors.white} weight="bold" />
+              <ChartPieSliceIcon size={18} color={colors.white} weight="bold" />
               <Typo color={colors.white} fontWeight={"bold"}>
                 Analyse
               </Typo>
