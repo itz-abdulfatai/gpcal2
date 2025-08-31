@@ -2,6 +2,7 @@ import { HeaderProps } from "@/types";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import Typo from "./typo";
+import { spacingY } from "@/constants/theme";
 
 const Header = ({ title = "", leftIcon, style }: HeaderProps) => {
   return (
@@ -31,6 +32,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     flexDirection: "row",
+    paddingVertical: spacingY._10,
   },
   leftIcon: {
     alignSelf: "flex-start",

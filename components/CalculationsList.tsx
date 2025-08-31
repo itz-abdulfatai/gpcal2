@@ -15,9 +15,7 @@ const CalculationsList = ({
 }: CalculationsListType) => {
   return (
     <View style={styles.calculationsContainer}>
-      <Typo size={25} fontWeight="bold">
-        {title ? title : "Your Calculations"}
-      </Typo>
+      <Typo style={styles.headings}>{title ? title : "Your Calculations"}</Typo>
       {loading && (
         <View style={{ alignItems: "center" }}>
           <Loading />
@@ -78,6 +76,10 @@ const CalculationCard = ({ calculation }: CalculationCardProps) => {
 };
 
 const styles = StyleSheet.create({
+  headings: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
   calculationsContainer: {
     gap: spacingY._20,
   },
