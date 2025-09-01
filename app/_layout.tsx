@@ -27,7 +27,7 @@ export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }} initialRouteName="(tabs)">
       <Stack.Screen
-        name="(modals)/CalculationsModal"
+        name="(modals)/SemestersModal"
         options={{ presentation: "modal" }}
       ></Stack.Screen>
     </Stack>

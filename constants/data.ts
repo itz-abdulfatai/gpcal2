@@ -1,6 +1,6 @@
-import { calculationType, CourseType } from "@/types";
+import { SemesterType, CourseType } from "@/types";
 
-export const dummyCalculations: calculationType[] = [
+export const dummySemesters: SemesterType[] = [
   {
     id: "1",
     name: "Semester 1 GPA",
@@ -59,20 +59,20 @@ export const dummyCourses: CourseType[] = [
     creditUnit: 3,
     GradePoint: "A",
     uid: "user123",
-    calculationId: "1",
+    semesterId: "1",
   },
   {
     id: "2",
     name: "English Literature 202",
     creditUnit: 2,
     uid: "user123",
-    calculationId: "1",
+    semesterId: "1",
     GradePoint: "B",
   },
   {
     id: "3",
     name: "Computer Science 305",
-    calculationId: "1",
+    semesterId: "1",
     uid: "user123",
     creditUnit: 4,
     GradePoint: "C",
@@ -82,7 +82,7 @@ export const dummyCourses: CourseType[] = [
     name: "Economics 210",
     uid: "user123",
     creditUnit: 3,
-    calculationId: "1",
+    semesterId: "1",
     GradePoint: "A",
   },
 ];

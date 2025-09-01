@@ -1,8 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from "react";
 import * as Icons from "phosphor-react-native";
-import { Platform } from "react-native";
-
+import { Platform, Alert, ToastAndroid } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -32,6 +31,25 @@ export default function TabLayout() {
           tabBarIcon: () => (
             <Icons.ChartPieSliceIcon size={24} color={"black"} />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault(); // stops navigation
+            // optionally show an alert/toast here
+            if (Platform.OS === "android") {
+              ToastAndroid.show(
+                "Please select a semester from the Home page.",
+                ToastAndroid.SHORT
+              );
+            } else if (Platform.OS === "ios") {
+              import("react-native").then(({ Alert }) => {
+                Alert.alert(
+                  "Notice",
+                  "Please select a semester from the Home page."
+                );
+              });
+            }
+          },
         }}
       />
     </Tabs>

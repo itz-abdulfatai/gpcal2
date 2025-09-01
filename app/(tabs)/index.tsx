@@ -1,32 +1,27 @@
-import CalculationsList from "@/components/CalculationsList";
 import Fab from "@/components/Fab";
 import Header from "@/components/header";
 import ScreenWrapper from "@/components/ScreenWrapper";
-import Typo from "@/components/typo";
-import { dummyCalculations } from "@/constants/data";
+import SemestersList from "@/components/SemestersList";
+import { dummySemesters } from "@/constants/data";
 import { spacingX, spacingY } from "@/constants/theme";
-import { calculationType } from "@/types";
+import { SemesterType } from "@/types";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [calculations, setCalculations] =
-    useState<calculationType[]>(dummyCalculations);
+  const [semesters, setSemesters] = useState<SemesterType[]>(dummySemesters);
 
-  const openCalculationsModal = () => {
-    router.push("/(modals)/CalculationsModal");
+  const openSemestersModal = () => {
+    router.push("/(modals)/SemestersModal");
   };
   return (
     <ScreenWrapper>
-      <Fab onPress={openCalculationsModal} />
+      <Fab onPress={openSemestersModal} />
       <Header title="GPCal" />
       <ScrollView style={styles.container}>
-        <CalculationsList
-          data={calculations}
-          emptyListMessage="No Calculations Found"
-        />
+        <SemestersList data={semesters} emptyListMessage="No Semesters Found" />
       </ScrollView>
     </ScreenWrapper>
   );

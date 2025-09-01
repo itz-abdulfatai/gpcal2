@@ -10,7 +10,14 @@ function Table<T>({ headings, data, keys }: TableProps<T>) {
       {/* Header */}
       <View style={styles.row}>
         {headings.map((h, index) => (
-          <Text key={index} style={[styles.cell, styles.headerText]}>
+          <Text
+            key={index}
+            style={[
+              styles.cell,
+              styles.headerText,
+              { textAlign: index === 0 ? "left" : "center" },
+            ]}
+          >
             {h}
           </Text>
         ))}

@@ -16,15 +16,23 @@ import Button from "@/components/Button";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
 
-const CalculationsModal = () => {
-  const [calculationTitle, setCalculationTitle] = useState<string>("test cal");
+const SemestersModal = () => {
+  const grades = [
+    { label: "A", value: "A" },
+    { label: "B", value: "B" },
+    { label: "C", value: "C" },
+    { label: "D", value: "D" },
+    { label: "E", value: "E" },
+    { label: "F", value: "F" },
+  ];
+  const [semesterTitle, setSemesterTitle] = useState<string>("test semester");
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [course, setCourse] = useState<CourseType>({
     id: "",
     uid: "",
-    calculationId: "",
+    semesterId: "",
     name: "",
     creditUnit: null,
     GradePoint: null,
@@ -34,12 +42,12 @@ const CalculationsModal = () => {
     gpa: null,
     name: "",
     uid: "",
-    calculationId: "1",
+    semesterId: "1",
   });
 
   const [semesters, setSemesters] = useState<Semester[]>([]);
 
-  const openChooseCalculationModal = () => {
+  const openChooseSemesterModal = () => {
     setPromptVisible(true);
   };
 
@@ -49,7 +57,7 @@ const CalculationsModal = () => {
     const newCourse: CourseType = {
       id: Date.now().toString(),
       uid: "user123",
-      calculationId: "1",
+      semesterId: "1",
       name: course.name,
       creditUnit: course.creditUnit,
       GradePoint: course.GradePoint,
@@ -62,7 +70,7 @@ const CalculationsModal = () => {
     setCourse({
       id: "",
       uid: "",
-      calculationId: "",
+      semesterId: "",
       name: "",
       creditUnit: null,
       GradePoint: null,
@@ -75,7 +83,7 @@ const CalculationsModal = () => {
     const newSemester: Semester = {
       id: Date.now().toString(),
       uid: "user123",
-      calculationId: "1",
+      semesterId: "1",
       name: semester.name,
       gpa: semester.gpa,
     };
@@ -87,7 +95,7 @@ const CalculationsModal = () => {
     setSemester({
       id: "",
       uid: "",
-      calculationId: "",
+      semesterId: "",
       name: "",
       gpa: null,
     });
@@ -100,19 +108,19 @@ const CalculationsModal = () => {
   };
 
   useEffect(() => {
-    if (!calculationTitle) {
-      openChooseCalculationModal();
+    if (!semesterTitle) {
+      openChooseSemesterModal();
     }
-  }, [calculationTitle]);
+  }, [semesterTitle]);
 
   return (
     <ModalWrapper>
       {/* PromptDialog */}
       <PromptDialog
         visible={promptVisible}
-        question="Enter calculation title"
+        question="Enter semester name"
         setResponse={(val) => {
-          if (val.trim()) setCalculationTitle(val);
+          if (val.trim()) setSemesterTitle(val);
         }}
         onClose={(val) => {
           setPromptVisible(false);
@@ -120,11 +128,11 @@ const CalculationsModal = () => {
         }}
       />
 
-      {calculationTitle && (
+      {semesterTitle && (
         <View style={styles.container}>
           <Header
             leftIcon={<BackButton />}
-            title={calculationTitle ? calculationTitle : ""}
+            title={semesterTitle ? semesterTitle : ""}
           />
 
           <ScrollView
@@ -134,7 +142,7 @@ const CalculationsModal = () => {
           >
             <View style={{ gap: spacingX._20 }}>
               <View style={styles.sectionContainer}>
-                <Typo style={styles.headings}>Add New Calculation</Typo>
+                <Typo style={styles.headings}>Add New Course</Typo>
 
                 {/* 🔑 Input saves value directly into ref */}
                 <Input
@@ -159,14 +167,7 @@ const CalculationsModal = () => {
                 />
 
                 <Dropdown
-                  data={[
-                    { label: "A", value: "A" },
-                    { label: "B", value: "B" },
-                    { label: "C", value: "C" },
-                    { label: "D", value: "D" },
-                    { label: "E", value: "E" },
-                    { label: "F", value: "F" },
-                  ]}
+                  data={grades}
                   value={course.GradePoint}
                   placeholder="Grade Point"
                   maxHeight={300}
@@ -301,7 +302,7 @@ const CalculationsModal = () => {
   );
 };
 
-export default CalculationsModal;
+export default SemestersModal;
 
 const styles = StyleSheet.create({
   footerContainer: {},

@@ -170,14 +170,14 @@ export type CourseType = {
   name: string;
   creditUnit: number | null;
   GradePoint: GradeType | null;
-  calculationId: string;
+  semesterId: string;
   uid: string;
 };
 
 export type Semester = {
   id: string;
   name: string;
-  calculationId: string;
+  semesterId: string;
   gpa: number | null;
   uid: string;
 };
@@ -342,7 +342,7 @@ export interface SlideUpSheetProps {
   renderHeader?: React.ReactNode;
 }
 
-export type calculationType = {
+export type SemesterType = {
   id: string;
   name: string;
   gpa: number | null;
@@ -350,13 +350,13 @@ export type calculationType = {
   uid: string;
 };
 
-export type CalculationsListType = {
-  data: calculationType[];
+export type semestersListType = {
+  data: SemesterType[];
   title?: string;
   loading?: boolean;
   emptyListMessage?: string;
 };
 
-export type CalculationCardProps = {
-  calculation: calculationType;
+export type semesterCardProps = {
+  semester: SemesterType;
 };

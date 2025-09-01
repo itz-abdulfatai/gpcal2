@@ -1,47 +1,219 @@
-import { ScrollView, StyleSheet } from "react-native";
-import React, { useEffect } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import React, { JSX, useEffect, useState, useMemo } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Header from "@/components/header";
-import { calculationType, CourseType } from "@/types";
-import { dummyCalculations, dummyCourses } from "@/constants/data";
+import { SemesterType, CourseType } from "@/types";
+import { dummyCourses, dummySemesters } from "@/constants/data";
 import Typo from "@/components/typo";
-import { View } from "react-native";
-import { spacingX } from "@/constants/theme";
+import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import Table from "@/components/Table";
+import { scale, verticalScale } from "@/utils/styling";
+import { Dropdown } from "react-native-element-dropdown";
+import { ChartPieSliceIcon, ChartBarIcon } from "phosphor-react-native";
+import { PieChart } from "react-native-gifted-charts";
+import { formatCoursesForDonut } from "@/utils";
+import { BarChart } from "react-native-gifted-charts";
 
 const Analytics = () => {
-  const [calculation, setCalculation] = React.useState<calculationType | null>(
-    null
+  const [semester, setSemester] = React.useState<SemesterType | null>(null);
+  const chartOptions: { value: "piechart" | "barchart"; icon: JSX.Element }[] =
+    [
+      {
+        value: "piechart",
+        icon: <ChartPieSliceIcon size={20} />,
+      },
+      {
+        value: "barchart",
+        icon: <ChartBarIcon size={20} />,
+      },
+    ];
+  const [mode, setMode] = useState<"piechart" | "barchart">(
+    chartOptions[0].value
   );
 
   const [courses, setCourses] = React.useState<CourseType[]>([]);
 
   useEffect(() => {
-    // Fetch or calculate analytics data here based on calculation
-    setCalculation(dummyCalculations[0]);
+    // Fetch or calculate analytics data here based on semester
+    setSemester(dummySemesters[0]);
 
     // Dummy courses data
-    const calculationCourses = dummyCourses.filter(
-      (course) => course.calculationId === calculation?.id
+    const semesterCourses = dummyCourses.filter(
+      (course) => course.semesterId === semester?.id
     );
-    if (calculationCourses) {
-      setCourses(calculationCourses);
+    if (semesterCourses) {
+      setCourses(semesterCourses);
     }
-  }, [calculation?.id]);
-
-  console.log(calculation);
-  console.log(courses.length);
+  }, [semester?.id]);
+  const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
 
   return (
     <ScreenWrapper>
-      <Header title={calculation?.name} />
-      <ScrollView style={styles.container}>
-        <Typo style={styles.headings}>Results Summary</Typo>
-        <View>
-          <View>
-            <Typo>Semester GPA</Typo>
-            <Typo>{calculation?.gpa}</Typo>
+      <Header title={semester?.name} />
+      <ScrollView>
+        <View style={styles.container}>
+          <Typo style={styles.headings}>Results Summary</Typo>
+          <View style={styles.cardscontainer}>
+            <View style={[styles.card, { backgroundColor: "#f0f9ff" }]}>
+              <Typo style={styles.cardTitle}>Semester GPA</Typo>
+              <Typo style={styles.cardValue}>{semester?.gpa}</Typo>
+            </View>
+            <View style={[styles.card, { backgroundColor: "#dcefe1" }]}>
+              <Typo style={styles.cardTitle}>Cumulative GPA</Typo>
+              <Typo style={styles.cardValue}>3.65</Typo>
+            </View>
           </View>
-          <View>Cumulative CGPA</View>
+
+          <View style={styles.sectionContainer}>
+            <Typo style={styles.headings}>Courses & Grades</Typo>
+            <Table
+              data={courses}
+              headings={["Course", "Credits", "Grade"]}
+              keys={["name", "creditUnit", "GradePoint"]}
+            />
+          </View>
+          <Typo style={styles.headings}>Performance Charts</Typo>
+
+          <View style={styles.sectionContainer}>
+            <View style={[styles.row, styles.btw]}>
+              <Typo style={[styles.headings, { fontSize: 18 }]}>
+                Course Impact
+              </Typo>
+
+              <View style={{ width: scale(60) }}>
+                <Dropdown
+                  data={chartOptions}
+                  renderItem={(item) => (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        padding: 8,
+                      }}
+                    >
+                      {item.icon}
+                      <Typo style={{ marginLeft: 8 }}>{item.label}</Typo>
+                    </View>
+                  )}
+                  value={mode}
+                  renderLeftIcon={() => {
+                    const selected = chartOptions.find(
+                      (opt) => opt.value === mode
+                    );
+                    return selected ? selected.icon : null;
+                  }}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Mode"
+                  onChange={(item) => setMode(item.value)}
+                  style={styles.dropdownContainer}
+                  placeholderStyle={styles.dropdownPlaceholder}
+                  selectedTextStyle={styles.dropdownSelectedText}
+                  iconStyle={styles.dropdownIcon}
+                  itemTextStyle={styles.dropdownItemText}
+                  itemContainerStyle={styles.dropdownItemContainer}
+                  containerStyle={styles.dropdownListContainer}
+                  activeColor={colors.primary}
+                />
+              </View>
+            </View>
+
+            {courses.length > 0 && (
+              <View style={{ alignItems: "center" }}>
+                {mode === "piechart" ? (
+                  <>
+                    <PieChart
+                      data={chartData}
+                      donut
+                      radius={scale(100)}
+                      innerRadius={scale(80)}
+                      // showText
+                      textColor={colors.black}
+                      textSize={13}
+                      // isAnimated={true}
+                      // animationDuration={1000}
+                      // animationType="easeInOut"
+                    />
+                    {/* colors for identifying chart segments */}
+                    <View style={[styles.row, styles.keysContainer]}>
+                      {chartData.map((item, index) => (
+                        <View key={index} style={[styles.row, { gap: 5 }]}>
+                          <View
+                            style={{
+                              backgroundColor: item.color,
+                              height: 10,
+                              width: 10,
+                              borderRadius: 99,
+                            }}
+                          />
+                          <Typo>{item.text}</Typo>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <BarChart
+                      data={chartData.map((item) => ({
+                        value: item.value,
+                        //                        label: item.text,  show course name on x-axis
+                        frontColor: item.color, // set bar color
+                      }))}
+                      // width={300}
+                      height={verticalScale(200)}
+                      barWidth={scale(15)}
+                      spacing={10}
+                      initialSpacing={0}
+                      roundedTop
+                      roundedBottom
+                      yAxisThickness={0}
+                      xAxisThickness={0}
+                      noOfSections={5}
+                      barBorderRadius={4}
+                      hideRules
+                      hideYAxisText
+                      minHeight={5}
+                      // isAnimated
+                      // animationDuration={1000}
+                      // animationType="easeInOut"
+                    />
+
+                    {/* colors for identifying chart segments */}
+                    <View style={[styles.row, styles.keysContainer]}>
+                      {chartData.map((item, index) => (
+                        <View key={index} style={[styles.row, { gap: 5 }]}>
+                          <View
+                            style={{
+                              backgroundColor: item.color,
+                              height: 10,
+                              width: 10,
+                              borderRadius: 99,
+                            }}
+                          />
+                          <Typo>{item.text}</Typo>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+              </View>
+            )}
+          </View>
+
+          <Typo style={styles.headings}>Ai Analysis & Insights</Typo>
+
+          <View style={styles.sectionContainer}>
+            <Typo style={[styles.headings, { fontSize: 18 }]}>
+              Actionable Recommendations
+            </Typo>
+            <Typo>
+              This section will contain AI-generated insights based on your
+              academic performance, study habits, and course selections. Stay
+              tuned for personalized recommendations to help you excel in your
+              studies!
+            </Typo>
+          </View>
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -51,13 +223,96 @@ const Analytics = () => {
 export default Analytics;
 
 const styles = StyleSheet.create({
-  container: {
+  keysContainer: {
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: spacingX._10,
+    marginTop: spacingY._10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  btw: {
+    justifyContent: "space-between",
+  },
+  sectionContainer: {
+    padding: spacingX._10,
+    gap: spacingX._20,
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: radius._10,
+  },
+  cardTitle: {
+    fontSize: 20,
+    color: colors.neutral,
+    textAlign: "center",
+  },
+  cardValue: {
+    fontSize: 50,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardscontainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacingX._15,
+    // marginTop: spacingX._20,
+  },
+  card: {
     flex: 1,
     padding: spacingX._20,
-    gap: spacingX._20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacingX._10,
+    borderRadius: radius._10,
+    // elevation: 2,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: spacingX._20,
+    paddingTop: spacingY._10,
+    paddingBottom: spacingY._20,
+    gap: spacingY._20,
   },
   headings: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: colors.secondary2,
+    paddingHorizontal: spacingX._5,
+    height: verticalScale(35),
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+  },
+  dropdownPlaceholder: {
+    color: colors.secondary2,
+  },
+  dropdownSelectedText: {
+    color: colors.black,
+  },
+  dropdownIcon: {
+    height: verticalScale(25),
+    tintColor: colors.secondary2,
+  },
+  dropdownItemText: { color: colors.black },
+  dropdownItemContainer: {
+    borderRadius: radius._10,
+    marginHorizontal: spacingX._7,
+  },
+  dropdownListContainer: {
+    backgroundColor: colors.secondary,
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+    paddingVertical: spacingY._5,
+    top: 5,
+    borderColor: colors.secondary2,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 2,
   },
 });

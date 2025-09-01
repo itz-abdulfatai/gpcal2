@@ -1,30 +1,28 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { CalculationCardProps, CalculationsListType } from "@/types";
+import { semesterCardProps, semestersListType } from "@/types";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import Typo from "./typo";
 import { CaretRightIcon } from "phosphor-react-native";
 import { formatDate } from "@/utils/formatDate";
 import Loading from "./Loading";
 
-const CalculationsList = ({
-  data: calculations,
+const SemestersList = ({
+  data: semesters,
   emptyListMessage,
   loading,
   title,
-}: CalculationsListType) => {
+}: semestersListType) => {
   return (
-    <View style={styles.calculationsContainer}>
-      <Typo style={styles.headings}>{title ? title : "Your Calculations"}</Typo>
+    <View style={styles.semestersContainer}>
+      <Typo style={styles.headings}>{title ? title : "Your Semesters"}</Typo>
       {loading && (
         <View style={{ alignItems: "center" }}>
           <Loading />
         </View>
       )}
-      {calculations.length > 0 ? (
-        calculations.map((calc) => (
-          <CalculationCard key={calc.id} calculation={calc} />
-        ))
+      {semesters.length > 0 ? (
+        semesters.map((sem) => <SemesterCard key={sem.id} semester={sem} />)
       ) : (
         <View style={{ alignItems: "center", paddingTop: spacingY._10 }}>
           <Typo color={colors.secondary2}>{emptyListMessage}</Typo>
@@ -34,40 +32,38 @@ const CalculationsList = ({
   );
 };
 
-export default CalculationsList;
+export default SemestersList;
 
-const CalculationCard = ({ calculation }: CalculationCardProps) => {
-  const handleOpenCalculation = (id: string) => {
-    // Handle opening the calculation details
+const SemesterCard = ({ semester }: semesterCardProps) => {
+  const handleOpenSemester = (id: string) => {
+    // Handle opening the semester details
   };
 
   return (
     <TouchableOpacity
-      style={styles.calculationCard}
+      style={styles.semesterCard}
       onPress={() => {
-        handleOpenCalculation(calculation.id);
+        handleOpenSemester(semester.id);
       }}
     >
       <View>
         <Typo size={25} fontWeight={"bold"}>
-          {calculation.name}
+          {semester.name}
         </Typo>
-        {calculation.gpa != null && (
+        {semester.gpa != null && (
           <Typo
             color={colors.primary}
             fontWeight="400"
             size={23}
             style={{ textTransform: "uppercase" }}
           >
-            Gpa: {calculation.gpa}
+            Gpa: {semester.gpa}
           </Typo>
         )}
 
         <Typo color={colors.neutral}>
           Last Updated{" "}
-          {calculation.lastUpdated
-            ? formatDate(calculation.lastUpdated)
-            : "N/A"}
+          {semester.lastUpdated ? formatDate(semester.lastUpdated) : "N/A"}
         </Typo>
       </View>
       <CaretRightIcon color={colors.neutral} size={15} />
@@ -80,10 +76,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  calculationsContainer: {
+  semestersContainer: {
     gap: spacingY._20,
   },
-  calculationCard: {
+  semesterCard: {
     paddingVertical: spacingY._12,
     paddingHorizontal: spacingX._20,
     borderWidth: 2,
