@@ -174,13 +174,13 @@ export type CourseType = {
   uid: string;
 };
 
-export type Semester = {
-  id: string;
-  name: string;
-  semesterId: string;
-  gpa: number | null;
-  uid: string;
-};
+// export type Semester = {
+//   id: string;
+//   name: string;
+//   semesterId: string;
+//   gpa: number | null;
+//   uid: string;
+// };
 
 export interface TableProps<T> {
   headings: string[];

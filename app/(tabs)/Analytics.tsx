@@ -1,18 +1,23 @@
-import { ScrollView, StyleSheet, View } from "react-native";
-import React, { JSX, useEffect, useState, useMemo } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
-import Header from "@/components/header";
-import { SemesterType, CourseType } from "@/types";
-import { dummyCourses, dummySemesters } from "@/constants/data";
-import Typo from "@/components/typo";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import Table from "@/components/Table";
-import { scale, verticalScale } from "@/utils/styling";
-import { Dropdown } from "react-native-element-dropdown";
-import { ChartPieSliceIcon, ChartBarIcon } from "phosphor-react-native";
-import { PieChart } from "react-native-gifted-charts";
+import Header from "@/components/header";
+import Typo from "@/components/typo";
+import { dummyCourses, dummySemesters } from "@/constants/data";
+import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import { CourseType, SemesterType } from "@/types";
 import { formatCoursesForDonut } from "@/utils";
-import { BarChart } from "react-native-gifted-charts";
+import { scale, verticalScale } from "@/utils/styling";
+import {
+  ChartBarIcon,
+  ChartPieSliceIcon,
+  ExportIcon,
+} from "phosphor-react-native";
+import React, { JSX, useEffect, useMemo, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import { BarChart, PieChart } from "react-native-gifted-charts";
+
+import Button from "@/components/Button";
 
 const Analytics = () => {
   const [semester, setSemester] = React.useState<SemesterType | null>(null);
@@ -46,6 +51,12 @@ const Analytics = () => {
     }
   }, [semester?.id]);
   const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
+
+  const exportData = () => {
+    // Function to handle data export
+    // This could involve generating a PDF, CSV, or sharing data via other means
+    console.log("Exporting data...");
+  };
 
   return (
     <ScreenWrapper>
@@ -214,6 +225,23 @@ const Analytics = () => {
               studies!
             </Typo>
           </View>
+
+          <Button
+            onPress={exportData}
+            style={{
+              flexDirection: "row",
+              gap: spacingX._10,
+              alignItems: "center",
+              backgroundColor: colors.white,
+              borderWidth: 1,
+              borderColor: colors.primary,
+            }}
+          >
+            <ExportIcon size={15} color={colors.primary} />
+            <Typo color={colors.primary} fontWeight={"bold"}>
+              Export Data
+            </Typo>
+          </Button>
         </View>
       </ScrollView>
     </ScreenWrapper>

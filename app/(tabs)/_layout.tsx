@@ -1,7 +1,7 @@
-import { Tabs } from 'expo-router';
-import React from "react";
+import { Tabs } from "expo-router";
 import * as Icons from "phosphor-react-native";
-import { Platform, Alert, ToastAndroid } from "react-native";
+import React from "react";
+import { Platform, ToastAndroid } from "react-native";
 
 export default function TabLayout() {
   return (

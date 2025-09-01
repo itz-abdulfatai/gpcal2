@@ -9,7 +9,7 @@ import { useRouter } from "expo-router";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import Input from "@/components/Input";
 import { Dropdown } from "react-native-element-dropdown";
-import { CourseType, Semester } from "@/types";
+import { CourseType, SemesterType } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import Button from "@/components/Button";
 // import { dummyCourses } from "@/constants/data";
@@ -25,7 +25,7 @@ const SemestersModal = () => {
     { label: "E", value: "E" },
     { label: "F", value: "F" },
   ];
-  const [semesterTitle, setSemesterTitle] = useState<string>("test semester");
+  const [semesterTitle, setSemesterTitle] = useState<string>("");
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
   const [courses, setCourses] = useState<CourseType[]>([]);
@@ -37,15 +37,15 @@ const SemestersModal = () => {
     creditUnit: null,
     GradePoint: null,
   });
-  const [semester, setSemester] = useState<Semester>({
+  const [semester, setSemester] = useState<SemesterType>({
     id: "",
     gpa: null,
     name: "",
     uid: "",
-    semesterId: "1",
+    lastUpdated: new Date(),
   });
 
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [semesters, setSemesters] = useState<SemesterType[]>([]);
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
@@ -78,14 +78,15 @@ const SemestersModal = () => {
     Keyboard.dismiss();
   };
   const addSemester = () => {
-    if (!semester.gpa || !semester.name) return;
+    if (!semester.name.trim()) return;
+    if (semester.gpa == null || Number.isNaN(semester.gpa)) return;
 
-    const newSemester: Semester = {
+    const newSemester: SemesterType = {
       id: Date.now().toString(),
       uid: "user123",
-      semesterId: "1",
       name: semester.name,
       gpa: semester.gpa,
+      lastUpdated: new Date(),
     };
 
     setSemesters((prev) => [...prev, newSemester]);
@@ -95,7 +96,7 @@ const SemestersModal = () => {
     setSemester({
       id: "",
       uid: "",
-      semesterId: "",
+      lastUpdated: new Date(),
       name: "",
       gpa: null,
     });
@@ -153,19 +154,25 @@ const SemestersModal = () => {
                   }
                 />
                 <Input
-                  value={
-                    course?.creditUnit ? course?.creditUnit.toString() : ""
-                  }
+                  value={course?.creditUnit ? course.creditUnit.toString() : ""}
                   placeholder="Credit Unit (e.g. 3)"
                   inputMode="numeric"
                   onChangeText={(text) =>
-                    setCourse((course) => ({
-                      ...course,
-                      creditUnit: Number(text),
-                    }))
+                    setCourse((course) => {
+                      const t = text.trim();
+                      if (!t) {
+                        // empty input → clear the field
+                        return { ...course, creditUnit: null };
+                      }
+                      const n = Number.parseInt(t, 10);
+                      // invalid number → clear; otherwise set parsed int
+                      return {
+                        ...course,
+                        creditUnit: Number.isNaN(n) ? null : n,
+                      };
+                    })
                   }
                 />
-
                 <Dropdown
                   data={grades}
                   value={course.GradePoint}
@@ -226,21 +233,18 @@ const SemestersModal = () => {
 
                 {/* 🔑 Input saves value directly into ref */}
                 <Input
-                  value={semester?.name}
-                  placeholder="Semester Name (e.g. 2nd semester 100L)"
-                  onChangeText={(text) =>
-                    setSemester((semester) => ({ ...semester, name: text }))
-                  }
-                />
-                <Input
                   value={semester?.gpa ? semester?.gpa.toString() : ""}
                   placeholder="GPA (e.g. 3.25)"
                   inputMode="numeric"
                   onChangeText={(text) =>
-                    setSemester((semester) => ({
-                      ...semester,
-                      gpa: Number(text),
-                    }))
+                    setSemester((semester) => {
+                      const t = text.trim();
+                      if (!t) return { ...semester, gpa: null };
+                      const n = Number.parseFloat(t);
+                      if (Number.isNaN(n)) return { ...semester, gpa: null };
+                      const clamped = Math.max(0, Math.min(5, n)); // adjust max if needed
+                      return { ...semester, gpa: clamped };
+                    })
                   }
                 />
 
