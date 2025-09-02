@@ -1,5 +1,10 @@
+import { colors } from "@/constants/theme";
 import { Tabs } from "expo-router";
-import * as Icons from "phosphor-react-native";
+import {
+  HouseSimpleIcon,
+  UserIcon,
+  ChartPieSliceIcon,
+} from "phosphor-react-native";
 import React from "react";
 import { Platform, ToastAndroid } from "react-native";
 
@@ -21,15 +26,18 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: () => <Icons.HouseSimpleIcon size={24} color={"black"} />,
+          tabBarIcon: () => (
+            <HouseSimpleIcon size={24} color={colors.primary} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="Analytics"
         options={{
           title: "Analytics",
           tabBarIcon: () => (
-            <Icons.ChartPieSliceIcon size={24} color={"black"} />
+            <ChartPieSliceIcon size={24} color={colors.primary} />
           ),
         }}
         listeners={{
@@ -50,6 +58,14 @@ export default function TabLayout() {
               });
             }
           },
+        }}
+      />
+
+      <Tabs.Screen
+        name="Profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: () => <UserIcon size={24} color={colors.primary} />,
         }}
       />
     </Tabs>

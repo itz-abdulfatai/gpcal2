@@ -18,6 +18,19 @@ export type FabProps = {
   style?: object;
 };
 
+export type SettingsType = {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: "toggle" | "dropdown";
+  toggled?: boolean;
+  options?: string[];
+  selectedOption?: string | null;
+  onToggle?: (value: boolean) => void;
+  onSelectOption?: (option: string) => void;
+  Icon: React.FC<{ size?: number }>;
+};
+
 export interface PromptDialogProps {
   visible: boolean;
   question: string;

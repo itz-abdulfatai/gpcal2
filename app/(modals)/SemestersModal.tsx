@@ -233,6 +233,13 @@ const SemestersModal = () => {
 
                 {/* 🔑 Input saves value directly into ref */}
                 <Input
+                  value={semester?.name}
+                  placeholder="Semester"
+                  onChangeText={(text) =>
+                    setSemester((semester) => ({ ...semester, name: text }))
+                  }
+                />
+                <Input
                   value={semester?.gpa ? semester?.gpa.toString() : ""}
                   placeholder="GPA (e.g. 3.25)"
                   inputMode="numeric"
