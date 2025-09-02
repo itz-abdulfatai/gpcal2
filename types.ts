@@ -30,6 +30,24 @@ export type SettingsType = {
   Icon: Icon;
 };
 
+export type UtilitiesType = {
+  id: string;
+  title: string;
+  subtitle: string;
+  onTap: () => void;
+  Icon: Icon;
+  color: string;
+  buttonText: string;
+  textColor: string;
+};
+
+export type AppInfoType = {
+  id: string;
+  title: string;
+  Icon: Icon;
+  route: string;
+};
+
 export interface PromptDialogProps {
   visible: boolean;
   question: string;
@@ -377,4 +395,10 @@ export type SettingsGroupProps = {
   title: string;
   settings: SettingsType[];
   setSettings: Dispatch<SetStateAction<SettingsType[]>>;
+};
+
+export type UtilitiesGroupProps = {
+  title: string;
+  utilities: UtilitiesType[];
+  infos: AppInfoType[];
 };

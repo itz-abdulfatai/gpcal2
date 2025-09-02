@@ -17,10 +17,17 @@ import {
   GraduationCapIcon,
   CheckCircleIcon,
   ArrowClockwiseIcon,
+  ExportIcon,
+  TrashIcon,
+  ChatCenteredTextIcon,
+  HeadphonesIcon,
+  InfoIcon,
 } from "phosphor-react-native";
-import { SettingsType } from "@/types";
+
+import { SettingsType, AppInfoType, UtilitiesType } from "@/types";
 import { Dropdown } from "react-native-element-dropdown";
 import SettingsGroup from "@/components/SettingsGroup";
+import UtilitiesGroup from "@/components/UtilitiesGroup";
 
 const generalSettings: SettingsType[] = [
   {
@@ -29,7 +36,7 @@ const generalSettings: SettingsType[] = [
     subtitle: "Toggle between Light and Dark mode",
     type: "toggle",
     toggled: false,
-    Icon: ({ size }) => <SunIcon size={size} color={colors.secondary2} />,
+    Icon: (props) => <SunIcon {...props} />,
   },
   {
     id: "2",
@@ -37,9 +44,7 @@ const generalSettings: SettingsType[] = [
     subtitle: "Receive notifications about important academic updates",
     type: "toggle",
     toggled: true,
-    Icon: ({ size }) => (
-      <NotificationIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <NotificationIcon {...props} />,
   },
   {
     id: "3",
@@ -48,9 +53,7 @@ const generalSettings: SettingsType[] = [
     type: "dropdown",
     options: ["English", "Spanish", "French", "German"],
     selectedOption: "English",
-    Icon: ({ size }) => (
-      <GlobeHemisphereWestIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <GlobeHemisphereWestIcon {...props} />,
   },
   {
     id: "4",
@@ -58,9 +61,7 @@ const generalSettings: SettingsType[] = [
     subtitle: "Require PIN or biometric authentication to open the app",
     type: "toggle",
     toggled: false,
-    Icon: ({ size }) => (
-      <FingerprintIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <FingerprintIcon {...props} />,
   },
 ];
 
@@ -70,9 +71,7 @@ const academicSettings: SettingsType[] = [
     title: "Grading Scheme",
     subtitle: "Choose how grades are represented",
     type: "dropdown",
-    Icon: ({ size }) => (
-      <GraduationCapIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <GraduationCapIcon {...props} />,
     options: [
       "A, B, C, D, E, F",
       "A+, A, B+, B, C+, C, D, F",
@@ -86,9 +85,7 @@ const academicSettings: SettingsType[] = [
     title: "Pass/Fail Option",
     subtitle: "Allow pass/fail grading for eligible courses",
     type: "toggle",
-    Icon: ({ size }) => (
-      <CheckCircleIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <CheckCircleIcon {...props} />,
     toggled: false,
   },
   {
@@ -96,9 +93,7 @@ const academicSettings: SettingsType[] = [
     title: "Grade Rounding Rules",
     subtitle: "Define how decimal grades are rounded",
     type: "dropdown",
-    Icon: ({ size }) => (
-      <ArrowClockwiseIcon size={size} color={colors.secondary2} />
-    ),
+    Icon: (props) => <ArrowClockwiseIcon {...props} />,
     options: [
       "Keep two decimals",
       "Round to nearest whole number",
@@ -108,6 +103,67 @@ const academicSettings: SettingsType[] = [
     selectedOption: "Keep two decimals",
   },
 ];
+
+const utilities: UtilitiesType[] = [
+  {
+    id: "1",
+    title: "Export Data",
+    subtitle: "Download a backup of your academic data",
+    color: colors.white,
+    onTap() {
+      console.log("export data tapped");
+    },
+    Icon: (props) => <ExportIcon {...props} />,
+    buttonText: "Export",
+    textColor: colors.black,
+  },
+  {
+    id: "2",
+    title: "Import Data",
+    subtitle: "Import a previously exported data file",
+    color: colors.white,
+    onTap() {
+      console.log("import data tapped");
+    },
+    Icon: (props) => <ExportIcon {...props} />,
+    buttonText: "Import",
+    textColor: colors.black,
+  },
+  {
+    id: "3",
+    title: "Reset All Data",
+    subtitle: "Permanently delete all your application data",
+    color: colors.rose,
+    onTap() {
+      console.log("reset data tapped");
+    },
+    Icon: (props) => <TrashIcon {...props} />,
+    buttonText: "Reset",
+    textColor: colors.white,
+  },
+];
+
+const siteInfo: AppInfoType[] = [
+  {
+    id: "1",
+    title: "Send Feedback",
+    Icon: (props) => <ChatCenteredTextIcon {...props} />,
+    route: "/",
+  },
+  {
+    id: "2",
+    title: "Get Support",
+    Icon: (props) => <HeadphonesIcon {...props} />,
+    route: "/",
+  },
+  {
+    id: "3",
+    title: "About this App",
+    Icon: (props) => <InfoIcon {...props} />,
+    route: "/",
+  },
+];
+
 const Profile = () => {
   const [settings, setSettings] =
     React.useState<SettingsType[]>(generalSettings);
@@ -153,9 +209,22 @@ const Profile = () => {
             </Button>
           </View>
 
-          <SettingsGroup title="General Settings" settings={settings} setSettings={setSettings}/>
-          <SettingsGroup title="Academic Settings" settings={academicsSettings} setSettings={setAcademicsSettings}/>
+          <SettingsGroup
+            title="General Settings"
+            settings={settings}
+            setSettings={setSettings}
+          />
+          <SettingsGroup
+            title="Academic Settings"
+            settings={academicsSettings}
+            setSettings={setAcademicsSettings}
+          />
 
+          <UtilitiesGroup
+            infos={siteInfo}
+            title="Utilities"
+            utilities={utilities}
+          />
         </View>
       </ScrollView>
     </ScreenWrapper>

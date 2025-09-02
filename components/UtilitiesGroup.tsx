@@ -1,23 +1,21 @@
-import { StyleSheet, Switch, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
-import { Dropdown } from "react-native-element-dropdown";
+import { UtilitiesGroupProps } from "@/types";
 import Typo from "./typo";
-import { SettingsGroupProps } from "@/types";
+import Button from "./Button";
+import { RelativePathString, useRouter } from "expo-router";
 
-const SettingsGroup = ({
-  title,
-  setSettings,
-  settings,
-}: SettingsGroupProps) => {
+const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
+  const router = useRouter();
   return (
     <View style={styles.sectionContainer}>
       <Typo style={styles.headings}>{title}</Typo>
       <View style={styles.settingsContainer}>
-        {settings.map((setting) => (
+        {utilities.map((utility) => (
           <View
-            key={setting.id}
+            key={utility.id}
             style={[
               styles.row,
               {
@@ -36,84 +34,67 @@ const SettingsGroup = ({
                 gap: spacingX._10,
               }}
             >
-              <setting.Icon color={colors.secondary2} weight="bold" />
+              <utility.Icon color={colors.secondary2} weight="bold" />
               <View style={{ flex: 1, gap: spacingY._5 }}>
                 <Typo
                   style={{ flexShrink: 1, flexWrap: "wrap" }}
                   fontWeight={"700"}
                 >
-                  {setting.title}
+                  {utility.title}
                 </Typo>
                 <Typo
                   style={{ flexShrink: 1, flexWrap: "wrap" }}
                   color={colors.neutral}
                 >
-                  {setting.subtitle}
+                  {utility.subtitle}
                 </Typo>
-
-                {setting.type === "dropdown" && (
-                  // <View style={{ width: scale(200) }}>
-                  <Dropdown
-                    maxHeight={verticalScale(200)}
-                    labelField="label"
-                    valueField="value"
-                    style={styles.dropdownContainer}
-                    placeholderStyle={styles.dropdownPlaceholder}
-                    selectedTextStyle={styles.dropdownSelectedText}
-                    iconStyle={styles.dropdownIcon}
-                    itemTextStyle={styles.dropdownItemText}
-                    itemContainerStyle={styles.dropdownItemContainer}
-                    containerStyle={styles.dropdownListContainer}
-                    activeColor={colors.primary}
-                    placeholder={`Select ${setting.title}`}
-                    value={setting.selectedOption}
-                    data={setting.options!.map((option) => ({
-                      label: option,
-                      value: option,
-                    }))}
-                    onChange={(val) => {
-                      setSettings((prevSettings) =>
-                        prevSettings.map((s) =>
-                          s.id === setting.id
-                            ? { ...s, selectedOption: val.value }
-                            : s
-                        )
-                      );
-                    }}
-                  />
-                  // </View>
-                )}
               </View>
             </View>
 
             {/* Right side: Toggle or Dropdown */}
-            {setting.type === "toggle" && (
-              <Switch
-                value={setting.toggled}
-                onValueChange={(val) => {
-                  setSettings((prevSettings) =>
-                    prevSettings.map((s) =>
-                      s.id === setting.id ? { ...s, toggled: val } : s
-                    )
-                  );
-                }}
-                trackColor={{
-                  false: colors.secondary,
-                  true: colors.primary,
-                }}
-                thumbColor={setting.toggled ? colors.white : colors.white}
-              />
-            )}
+            <Button
+              onPress={() => utility.onTap()}
+              style={[styles.actionButton, { backgroundColor: utility.color }]}
+            >
+              <Typo color={utility.textColor} fontWeight={"bold"}>
+                {utility.buttonText}
+              </Typo>
+            </Button>
           </View>
         ))}
+
+        <View style={styles.infoContainer}>
+          {infos.map((info) => (
+            <TouchableOpacity
+              key={info.id}
+              onPress={() => router.push(info.route as RelativePathString)}
+            >
+              <View style={[styles.row, { gap: spacingX._20 }]}>
+                <info.Icon color={colors.neutral2} />
+                <Typo color={colors.neutral2}>{info.title}</Typo>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     </View>
   );
 };
 
-export default SettingsGroup;
+export default UtilitiesGroup;
 
 const styles = StyleSheet.create({
+  actionButton: {
+    borderWidth: 1,
+    borderColor: colors.secondary2,
+    borderRadius: radius._10,
+    paddingHorizontal: spacingX._10,
+    paddingVertical: spacingY._5,
+  },
+  infoContainer: {
+    gap: spacingY._20,
+    marginTop: spacingY._20,
+  },
   settingsContainer: {
     gap: spacingY._20,
   },
