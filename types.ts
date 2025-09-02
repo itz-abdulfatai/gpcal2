@@ -1,5 +1,4 @@
-import { ReactNode } from "react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, ReactNode } from "react";
 
 import { Icon } from "phosphor-react-native";
 import {
@@ -28,7 +27,7 @@ export type SettingsType = {
   selectedOption?: string | null;
   onToggle?: (value: boolean) => void;
   onSelectOption?: (option: string) => void;
-  Icon: React.FC<{ size?: number }>;
+  Icon: Icon;
 };
 
 export interface PromptDialogProps {
@@ -39,7 +38,7 @@ export interface PromptDialogProps {
 }
 export type FloatingActionButtonAction = {
   title: string;
-  icon: React.ReactNode;
+  icon: Icon;
   path?: string; // can be route name or identifier for navigation
   onPress?: () => void; // optional custom handler
 };
@@ -63,7 +62,7 @@ export type ModalWrapperProps = {
 };
 export type accountOptionType = {
   title: string;
-  icon: React.ReactNode;
+  icon: Icon;
   bgColor: string;
   routeName?: any;
 };
@@ -202,7 +201,7 @@ export interface TableProps<T> {
 }
 
 export interface InputProps extends TextInputProps {
-  icon?: React.ReactNode;
+  icon?: Icon;
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
   inputRef?: React.RefObject<TextInput>;
@@ -340,7 +339,7 @@ export interface DashboardHeaderProps {
 
 export interface SlideUpSheetAction {
   title: string;
-  icon?: React.ReactNode;
+  icon?: Icon;
   onPress: () => void;
 }
 
@@ -372,4 +371,10 @@ export type semestersListType = {
 
 export type semesterCardProps = {
   semester: SemesterType;
+};
+
+export type SettingsGroupProps = {
+  title: string;
+  settings: SettingsType[];
+  setSettings: Dispatch<SetStateAction<SettingsType[]>>;
 };

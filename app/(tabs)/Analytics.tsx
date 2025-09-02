@@ -125,7 +125,7 @@ const Analytics = () => {
                   itemTextStyle={styles.dropdownItemText}
                   itemContainerStyle={styles.dropdownItemContainer}
                   containerStyle={styles.dropdownListContainer}
-                  activeColor={colors.primary}
+                  // activeColor={colors.primary}
                 />
               </View>
             </View>

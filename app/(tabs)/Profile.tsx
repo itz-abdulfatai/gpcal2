@@ -20,6 +20,7 @@ import {
 } from "phosphor-react-native";
 import { SettingsType } from "@/types";
 import { Dropdown } from "react-native-element-dropdown";
+import SettingsGroup from "@/components/SettingsGroup";
 
 const generalSettings: SettingsType[] = [
   {
@@ -152,192 +153,9 @@ const Profile = () => {
             </Button>
           </View>
 
-          <View style={styles.sectionContainer}>
-            <Typo style={styles.headings}>General Settings</Typo>
-            <View style={styles.settingsContainer}>
-              {settings.map((setting) => (
-                <View
-                  key={setting.id}
-                  style={[
-                    styles.row,
-                    {
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: spacingX._10,
-                    },
-                  ]}
-                >
-                  {/* Left side: Icon + Texts */}
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: spacingX._10,
-                    }}
-                  >
-                    <setting.Icon />
-                    <View style={{ flex: 1 }}>
-                      <Typo
-                        style={{ flexShrink: 1, flexWrap: "wrap" }}
-                        fontWeight={"700"}
-                      >
-                        {setting.title}
-                      </Typo>
-                      <Typo
-                        style={{ flexShrink: 1, flexWrap: "wrap" }}
-                        color={colors.neutral}
-                      >
-                        {setting.subtitle}
-                      </Typo>
-                    </View>
-                  </View>
+          <SettingsGroup title="General Settings" settings={settings} setSettings={setSettings}/>
+          <SettingsGroup title="Academic Settings" settings={academicsSettings} setSettings={setAcademicsSettings}/>
 
-                  {/* Right side: Toggle or Dropdown */}
-                  {setting.type === "toggle" ? (
-                    <Switch
-                      value={setting.toggled}
-                      onValueChange={(val) => {
-                        setSettings((prevSettings) =>
-                          prevSettings.map((s) =>
-                            s.id === setting.id ? { ...s, toggled: val } : s
-                          )
-                        );
-                      }}
-                      trackColor={{
-                        false: colors.secondary,
-                        true: colors.primary,
-                      }}
-                      thumbColor={setting.toggled ? colors.white : colors.white}
-                    />
-                  ) : (
-                    <View style={{ width: scale(100) }}>
-                      <Dropdown
-                        maxHeight={verticalScale(100)}
-                        labelField="label"
-                        valueField="value"
-                        style={styles.dropdownContainer}
-                        placeholderStyle={styles.dropdownPlaceholder}
-                        selectedTextStyle={styles.dropdownSelectedText}
-                        iconStyle={styles.dropdownIcon}
-                        itemTextStyle={styles.dropdownItemText}
-                        itemContainerStyle={styles.dropdownItemContainer}
-                        containerStyle={styles.dropdownListContainer}
-                        placeholder={`Select ${setting.title}`}
-                        value={setting.selectedOption}
-                        data={setting.options!.map((option) => ({
-                          label: option,
-                          value: option,
-                        }))}
-                        onChange={(val) => {
-                          setSettings((prevSettings) =>
-                            prevSettings.map((s) =>
-                              s.id === setting.id
-                                ? { ...s, selectedOption: val.value }
-                                : s
-                            )
-                          );
-                        }}
-                      />
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          </View>
-          <View style={styles.sectionContainer}>
-            <Typo style={styles.headings}>Academic Settings</Typo>
-            <View style={styles.settingsContainer}>
-              {academicsSettings.map((setting) => (
-                <View
-                  key={setting.id}
-                  style={[
-                    styles.row,
-                    {
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: spacingX._10,
-                    },
-                  ]}
-                >
-                  {/* Left side: Icon + Texts */}
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: spacingX._10,
-                    }}
-                  >
-                    <setting.Icon />
-                    <View style={{ flex: 1 }}>
-                      <Typo
-                        style={{ flexShrink: 1, flexWrap: "wrap" }}
-                        fontWeight={"700"}
-                      >
-                        {setting.title}
-                      </Typo>
-                      <Typo
-                        style={{ flexShrink: 1, flexWrap: "wrap" }}
-                        color={colors.neutral}
-                      >
-                        {setting.subtitle}
-                      </Typo>
-                    </View>
-                  </View>
-
-                  {/* Right side: Toggle or Dropdown */}
-                  {setting.type === "toggle" ? (
-                    <Switch
-                      value={setting.toggled}
-                      onValueChange={(val) => {
-                        setAcademicsSettings((prevSettings) =>
-                          prevSettings.map((s) =>
-                            s.id === setting.id ? { ...s, toggled: val } : s
-                          )
-                        );
-                      }}
-                      trackColor={{
-                        false: colors.secondary,
-                        true: colors.primary,
-                      }}
-                      thumbColor={setting.toggled ? colors.white : colors.white}
-                    />
-                  ) : (
-                    <View style={{ width: scale(100) }}>
-                      <Dropdown
-                        maxHeight={verticalScale(100)}
-                        labelField="label"
-                        valueField="value"
-                        style={styles.dropdownContainer}
-                        placeholderStyle={styles.dropdownPlaceholder}
-                        selectedTextStyle={styles.dropdownSelectedText}
-                        iconStyle={styles.dropdownIcon}
-                        itemTextStyle={styles.dropdownItemText}
-                        itemContainerStyle={styles.dropdownItemContainer}
-                        containerStyle={styles.dropdownListContainer}
-                        placeholder={`Select ${setting.title}`}
-                        value={setting.selectedOption}
-                        data={setting.options!.map((option) => ({
-                          label: option,
-                          value: option,
-                        }))}
-                        onChange={(val) => {
-                          setSettings((prevSettings) =>
-                            prevSettings.map((s) =>
-                              s.id === setting.id
-                                ? { ...s, selectedOption: val.value }
-                                : s
-                            )
-                          );
-                        }}
-                      />
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          </View>
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -394,8 +212,8 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     borderWidth: 1,
     borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._5,
-    height: verticalScale(35),
+    paddingHorizontal: spacingX._15,
+    height: verticalScale(54),
     borderRadius: radius._10,
     borderCurve: "continuous",
   },
@@ -406,7 +224,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   dropdownIcon: {
-    height: verticalScale(25),
+    height: verticalScale(30),
     tintColor: colors.secondary2,
   },
   dropdownItemText: { color: colors.black },
@@ -418,13 +236,203 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: radius._10,
     borderCurve: "continuous",
-    paddingVertical: spacingY._5,
+    paddingVertical: spacingY._7,
     top: 5,
     borderColor: colors.secondary2,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 1,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 5,
   },
 });
+
+          // <View style={styles.sectionContainer}>
+          //   <Typo style={styles.headings}>General Settings</Typo>
+          //   <View style={styles.settingsContainer}>
+          //     {settings.map((setting) => (
+          //       <View
+          //         key={setting.id}
+          //         style={[
+          //           styles.row,
+          //           {
+          //             alignItems: "center",
+          //             justifyContent: "space-between",
+          //             gap: spacingX._10,
+          //           },
+          //         ]}
+          //       >
+          //         {/* Left side: Icon + Texts */}
+          //         <View
+          //           style={{
+          //             flex: 1,
+          //             flexDirection: "row",
+          //             alignItems: "center",
+          //             gap: spacingX._10,
+          //           }}
+          //         >
+          //           <setting.Icon />
+          //           <View style={{ flex: 1, gap: spacingY._5 }}>
+          //             <Typo
+          //               style={{ flexShrink: 1, flexWrap: "wrap" }}
+          //               fontWeight={"700"}
+          //             >
+          //               {setting.title}
+          //             </Typo>
+          //             <Typo
+          //               style={{ flexShrink: 1, flexWrap: "wrap" }}
+          //               color={colors.neutral}
+          //             >
+          //               {setting.subtitle}
+          //             </Typo>
+
+          //             {setting.type === "dropdown" && (
+          //               // <View style={{ width: scale(200) }}>
+          //               <Dropdown
+          //                 maxHeight={verticalScale(200)}
+          //                 labelField="label"
+          //                 valueField="value"
+          //                 style={styles.dropdownContainer}
+          //                 placeholderStyle={styles.dropdownPlaceholder}
+          //                 selectedTextStyle={styles.dropdownSelectedText}
+          //                 iconStyle={styles.dropdownIcon}
+          //                 itemTextStyle={styles.dropdownItemText}
+          //                 itemContainerStyle={styles.dropdownItemContainer}
+          //                 containerStyle={styles.dropdownListContainer}
+          //                 activeColor={colors.primary}
+          //                 placeholder={`Select ${setting.title}`}
+          //                 value={setting.selectedOption}
+          //                 data={setting.options!.map((option) => ({
+          //                   label: option,
+          //                   value: option,
+          //                 }))}
+          //                 onChange={(val) => {
+          //                   setSettings((prevSettings) =>
+          //                     prevSettings.map((s) =>
+          //                       s.id === setting.id
+          //                         ? { ...s, selectedOption: val.value }
+          //                         : s
+          //                     )
+          //                   );
+          //                 }}
+          //               />
+          //               // </View>
+          //             )}
+          //           </View>
+          //         </View>
+
+          //         {/* Right side: Toggle or Dropdown */}
+          //         {setting.type === "toggle" && (
+          //           <Switch
+          //             value={setting.toggled}
+          //             onValueChange={(val) => {
+          //               setSettings((prevSettings) =>
+          //                 prevSettings.map((s) =>
+          //                   s.id === setting.id ? { ...s, toggled: val } : s
+          //                 )
+          //               );
+          //             }}
+          //             trackColor={{
+          //               false: colors.secondary,
+          //               true: colors.primary,
+          //             }}
+          //             thumbColor={setting.toggled ? colors.white : colors.white}
+          //           />
+          //         )}
+          //       </View>
+          //     ))}
+          //   </View>
+          // </View>
+          // <View style={styles.sectionContainer}>
+          //   <Typo style={styles.headings}>Academic Settings</Typo>
+          //   <View style={styles.settingsContainer}>
+          //     {academicsSettings.map((setting) => (
+          //       <View
+          //         key={setting.id}
+          //         style={[
+          //           styles.row,
+          //           {
+          //             alignItems: "center",
+          //             justifyContent: "space-between",
+          //             gap: spacingX._10,
+          //           },
+          //         ]}
+          //       >
+          //         {/* Left side: Icon + Texts */}
+          //         <View
+          //           style={{
+          //             flex: 1,
+          //             flexDirection: "row",
+          //             alignItems: "center",
+          //             gap: spacingX._10,
+          //           }}
+          //         >
+          //           <setting.Icon />
+          //           <View style={{ flex: 1 }}>
+          //             <Typo
+          //               style={{ flexShrink: 1, flexWrap: "wrap" }}
+          //               fontWeight={"700"}
+          //             >
+          //               {setting.title}
+          //             </Typo>
+          //             <Typo
+          //               style={{ flexShrink: 1, flexWrap: "wrap" }}
+          //               color={colors.neutral}
+          //             >
+          //               {setting.subtitle}
+          //             </Typo>
+          //           </View>
+          //         </View>
+
+          //         {/* Right side: Toggle or Dropdown */}
+          //         {setting.type === "toggle" ? (
+          //           <Switch
+          //             value={setting.toggled}
+          //             onValueChange={(val) => {
+          //               setAcademicsSettings((prevSettings) =>
+          //                 prevSettings.map((s) =>
+          //                   s.id === setting.id ? { ...s, toggled: val } : s
+          //                 )
+          //               );
+          //             }}
+          //             trackColor={{
+          //               false: colors.secondary,
+          //               true: colors.primary,
+          //             }}
+          //             thumbColor={setting.toggled ? colors.white : colors.white}
+          //           />
+          //         ) : (
+          //           <View style={{ width: scale(100) }}>
+          //             <Dropdown
+          //               maxHeight={verticalScale(100)}
+          //               labelField="label"
+          //               valueField="value"
+          //               style={styles.dropdownContainer}
+          //               placeholderStyle={styles.dropdownPlaceholder}
+          //               selectedTextStyle={styles.dropdownSelectedText}
+          //               iconStyle={styles.dropdownIcon}
+          //               itemTextStyle={styles.dropdownItemText}
+          //               itemContainerStyle={styles.dropdownItemContainer}
+          //               containerStyle={styles.dropdownListContainer}
+          //               placeholder={`Select ${setting.title}`}
+          //               value={setting.selectedOption}
+          //               data={setting.options!.map((option) => ({
+          //                 label: option,
+          //                 value: option,
+          //               }))}
+          //               onChange={(val) => {
+          //                 setSettings((prevSettings) =>
+          //                   prevSettings.map((s) =>
+          //                     s.id === setting.id
+          //                       ? { ...s, selectedOption: val.value }
+          //                       : s
+          //                   )
+          //                 );
+          //               }}
+          //             />
+          //           </View>
+          //         )}
+          //       </View>
+          //     ))}
+          //   </View>
+          // </View>
