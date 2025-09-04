@@ -176,6 +176,7 @@ export type SemesterType = {
   gpa: number | null;
   lastUpdated: Date | null;
   uid: string;
+  courses: CourseType[];
 };
 
 export type semestersListType = {

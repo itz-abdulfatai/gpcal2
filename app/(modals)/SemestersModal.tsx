@@ -42,6 +42,7 @@ const SemestersModal = () => {
     gpa: null,
     name: "",
     uid: "",
+    courses,
     lastUpdated: new Date(),
   });
 
@@ -134,6 +135,7 @@ const SemestersModal = () => {
           <Header
             leftIcon={<BackButton />}
             title={semesterTitle ? semesterTitle : ""}
+            
           />
 
           <ScrollView
