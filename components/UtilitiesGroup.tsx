@@ -6,6 +6,7 @@ import { UtilitiesGroupProps } from "@/types";
 import Typo from "./typo";
 import Button from "./Button";
 import { RelativePathString, useRouter } from "expo-router";
+import SettingsIcon from "./SettingsIcon";
 
 const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
   const router = useRouter();
@@ -13,55 +14,64 @@ const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
     <View style={styles.sectionContainer}>
       <Typo style={styles.headings}>{title}</Typo>
       <View style={styles.settingsContainer}>
-        {utilities.map((utility) => (
-          <View
-            key={utility.id}
-            style={[
-              styles.row,
-              {
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: spacingX._10,
-              },
-            ]}
-          >
-            {/* Left side: Icon + Texts */}
+        {utilities.map((utility) => {
+          return (
             <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacingX._10,
-              }}
+              key={utility.id}
+              style={[
+                styles.row,
+                {
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: spacingX._10,
+                },
+              ]}
             >
-              <utility.Icon color={colors.secondary2} weight="bold" />
-              <View style={{ flex: 1, gap: spacingY._5 }}>
-                <Typo
-                  style={{ flexShrink: 1, flexWrap: "wrap" }}
-                  fontWeight={"700"}
-                >
-                  {utility.title}
-                </Typo>
-                <Typo
-                  style={{ flexShrink: 1, flexWrap: "wrap" }}
-                  color={colors.neutral}
-                >
-                  {utility.subtitle}
-                </Typo>
+              {/* Left side: Icon + Texts */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacingX._10,
+                }}
+              >
+                <SettingsIcon
+                  iconName={utility.iconName}
+                  color={colors.secondary2}
+                  weight="bold"
+                />
+                <View style={{ flex: 1, gap: spacingY._5 }}>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    fontWeight={"700"}
+                  >
+                    {utility.title}
+                  </Typo>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    color={colors.neutral}
+                  >
+                    {utility.subtitle}
+                  </Typo>
+                </View>
               </View>
-            </View>
 
-            {/* Right side: Toggle or Dropdown */}
-            <Button
-              onPress={() => utility.onTap()}
-              style={[styles.actionButton, { backgroundColor: utility.color }]}
-            >
-              <Typo color={utility.textColor} fontWeight={"bold"}>
-                {utility.buttonText}
-              </Typo>
-            </Button>
-          </View>
-        ))}
+              {/* Right side: Toggle or Dropdown */}
+              <Button
+                onPress={() => utility.onTap()}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: utility.color },
+                ]}
+              >
+                <Typo color={utility.textColor} fontWeight={"bold"}>
+                  {utility.buttonText}
+                </Typo>
+              </Button>
+            </View>
+          );
+        })}
 
         <View style={styles.infoContainer}>
           {infos.map((info) => (

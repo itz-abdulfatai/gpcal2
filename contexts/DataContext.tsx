@@ -5,8 +5,14 @@ import {
   SettingsType,
   UtilitiesType,
   AppInfoType,
+  UserType,
 } from "@/types";
-import { getData } from "@/utils";
+import {
+  getData,
+  logAllStorage,
+  setItem,
+  updateSettingInStorage,
+} from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
   GraduationCapIcon,
@@ -33,7 +39,7 @@ const academicsSettings: SettingsType[] = [
     title: "Grading Scheme",
     subtitle: "Choose how grades are represented",
     type: "dropdown",
-    Icon: (props) => <GraduationCapIcon {...props} />,
+    iconName: "GraduationCapIcon",
     options: [
       "A, B, C, D, E, F",
       "A+, A, B+, B, C+, C, D, F",
@@ -47,7 +53,7 @@ const academicsSettings: SettingsType[] = [
     title: "Pass/Fail Option",
     subtitle: "Allow pass/fail grading for eligible courses",
     type: "toggle",
-    Icon: (props) => <CheckCircleIcon {...props} />,
+    iconName: "CheckCircleIcon",
     toggled: false,
   },
   {
@@ -55,7 +61,7 @@ const academicsSettings: SettingsType[] = [
     title: "Grade Rounding Rules",
     subtitle: "Define how decimal grades are rounded",
     type: "dropdown",
-    Icon: (props) => <ArrowClockwiseIcon {...props} />,
+    iconName: "ArrowClockwiseIcon",
     options: [
       "Keep two decimals",
       "Round to nearest whole number",
@@ -75,7 +81,7 @@ const defaultUtilities: UtilitiesType[] = [
     onTap() {
       console.log("export data tapped");
     },
-    Icon: (props) => <ExportIcon {...props} />,
+    iconName: "ExportIcon",
     buttonText: "Export",
     textColor: colors.black,
   },
@@ -87,7 +93,7 @@ const defaultUtilities: UtilitiesType[] = [
     onTap() {
       console.log("import data tapped");
     },
-    Icon: (props) => <ExportIcon {...props} />,
+    iconName: "ExportIcon",
     buttonText: "Import",
     textColor: colors.black,
   },
@@ -99,7 +105,7 @@ const defaultUtilities: UtilitiesType[] = [
     onTap() {
       console.log("reset data tapped");
     },
-    Icon: (props) => <TrashIcon {...props} />,
+    iconName: "TrashIcon",
     buttonText: "Reset",
     textColor: colors.white,
   },
@@ -112,7 +118,7 @@ const defaultGeneralSettings: SettingsType[] = [
     subtitle: "Toggle between Light and Dark mode",
     type: "toggle",
     toggled: false,
-    Icon: (props) => <SunIcon {...props} />,
+    iconName: "SunIcon",
   },
   {
     id: "2",
@@ -120,7 +126,7 @@ const defaultGeneralSettings: SettingsType[] = [
     subtitle: "Receive notifications about important academic updates",
     type: "toggle",
     toggled: true,
-    Icon: (props) => <NotificationIcon {...props} />,
+    iconName: "SunIcon",
   },
   {
     id: "3",
@@ -129,7 +135,7 @@ const defaultGeneralSettings: SettingsType[] = [
     type: "dropdown",
     options: ["English", "Spanish", "French", "German"],
     selectedOption: "English",
-    Icon: (props) => <GlobeHemisphereWestIcon {...props} />,
+    iconName: "SunIcon",
   },
   {
     id: "4",
@@ -137,7 +143,7 @@ const defaultGeneralSettings: SettingsType[] = [
     subtitle: "Require PIN or biometric authentication to open the app",
     type: "toggle",
     toggled: false,
-    Icon: (props) => <FingerprintIcon {...props} />,
+    iconName: "SunIcon",
   },
 ];
 
@@ -162,6 +168,37 @@ const siteInfo: AppInfoType[] = [
   },
 ];
 
+/**
+ * Seed AsyncStorage with initial app data for first-time users.
+ * Only runs if no settings/courses/semesters exist.
+ */
+const seedInitialData = async () => {
+  // Check if data already exists
+  const [semesters, courses, academicSettings, utilities, generalSettings] =
+    await Promise.all([
+      getData<SemesterType>("semesters"),
+      getData<CourseType>("courses"),
+      getData<SettingsType>("academicSettings"),
+      getData<UtilitiesType>("utilities"),
+      getData<SettingsType>("generalSettings"),
+    ]);
+
+  // Only seed if all are empty
+  if (
+    semesters.length === 0 &&
+    courses.length === 0 &&
+    academicSettings.length === 0 &&
+    utilities.length === 0 &&
+    generalSettings.length === 0
+  ) {
+    await setItem("semesters", []);
+    await setItem("courses", []);
+    await setItem("academicSettings", academicsSettings);
+    await setItem("utilities", defaultUtilities);
+    await setItem("generalSettings", defaultGeneralSettings);
+  }
+};
+
 // ----------------------------------
 // Context Setup
 // ----------------------------------
@@ -170,56 +207,91 @@ const DataContext = createContext<DataContextType | null>(null);
 export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [contextValue, setContextValue] = useState<DataContextType | null>(
-    null
-  );
+  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>([]);
+  const [academicSettings, setAcademicSettings] = useState<SettingsType[]>([]);
+  const [utilities, setUtilities] = useState<UtilitiesType[]>([]);
+  const [infos, setInfos] = useState<AppInfoType[]>([]);
+  const [semesters, setSemesters] = useState<SemesterType[]>([]);
+  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [user, setUser] = useState<UserType>(null);
+  const [language, setLanguage] = useState("en");
 
   useEffect(() => {
+    seedInitialData();
+    // logAllStorage();
     const loadData = async () => {
       try {
         const semesters = await getData<SemesterType>("semesters");
         const courses = await getData<CourseType>("courses");
-
         const academicSettings = await getData<SettingsType>(
           "academicSettings"
         );
         const utilities = await getData<UtilitiesType>("utilities");
         const generalSettings = await getData<SettingsType>("generalSettings");
 
-        setContextValue({
-          user: null,
-          semesters,
-          courses,
-          academicSettings:
-            academicSettings.length > 0 ? academicSettings : academicsSettings,
-          utilities: utilities.length > 0 ? utilities : defaultUtilities,
-          generalSettings:
-            generalSettings.length > 0
-              ? generalSettings
-              : defaultGeneralSettings,
-          infos: siteInfo,
-          language: "en",
-        });
+        setSemesters(semesters);
+        setCourses(courses);
+        setAcademicSettings(
+          academicSettings.length > 0 ? academicSettings : academicsSettings
+        );
+        setUtilities(utilities.length > 0 ? utilities : defaultUtilities);
+        setGeneralSettings(
+          generalSettings.length > 0 ? generalSettings : defaultGeneralSettings
+        );
+        setInfos(siteInfo);
       } catch (error) {
-        console.error("Failed to load data:", error);
-        // Set default values on error
-        setContextValue({
-          user: null,
-          semesters: [],
-          courses: [],
-          academicSettings: academicsSettings,
-          utilities: defaultUtilities,
-          generalSettings: defaultGeneralSettings,
-          infos: siteInfo,
-          language: "en",
-        });
+        setSemesters([]);
+        setCourses([]);
+        setAcademicSettings(academicsSettings);
+        setUtilities(defaultUtilities);
+        setGeneralSettings(defaultGeneralSettings);
+        setInfos(siteInfo);
       }
     };
-
     loadData();
   }, []);
-  if (!contextValue) {
-    return null; // ⏳ Could replace with loading spinner later
+
+  /**
+   * Update a general setting by id, persist to AsyncStorage and update state.
+   */
+  const updateGeneralSetting = async (
+    id: string,
+    changes: Partial<SettingsType>
+  ) => {
+    setGeneralSettings((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+    );
+    await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
+  };
+
+  /**
+   * Update an academic setting by id, persist to AsyncStorage and update state.
+   */
+  const updateAcademicSetting = async (
+    id: string,
+    changes: Partial<SettingsType>
+  ) => {
+    setAcademicSettings((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+    );
+    await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
+  };
+
+  const contextValue: DataContextType = {
+    user,
+    semesters,
+    courses,
+    generalSettings,
+    academicSettings,
+    utilities,
+    infos,
+    language,
+    updateGeneralSetting,
+    updateAcademicSetting,
+  };
+
+  if (!generalSettings.length || !academicSettings.length) {
+    return null; // or a loading spinner
   }
 
   return (

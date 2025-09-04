@@ -5,107 +5,107 @@ import { verticalScale } from "@/utils/styling";
 import { Dropdown } from "react-native-element-dropdown";
 import Typo from "./typo";
 import { SettingsGroupProps } from "@/types";
+import SettingsIcon from "./SettingsIcon";
 
 const SettingsGroup = ({
   title,
-  setSettings,
+  updateSetting,
   settings,
 }: SettingsGroupProps) => {
   return (
     <View style={styles.sectionContainer}>
       <Typo style={styles.headings}>{title}</Typo>
       <View style={styles.settingsContainer}>
-        {settings.map((setting) => (
-          <View
-            key={setting.id}
-            style={[
-              styles.row,
-              {
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: spacingX._10,
-              },
-            ]}
-          >
-            {/* Left side: Icon + Texts */}
+        {settings.map((setting) => {
+          return (
             <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacingX._10,
-              }}
+              key={setting.id}
+              style={[
+                styles.row,
+                {
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: spacingX._10,
+                },
+              ]}
             >
-              <setting.Icon color={colors.secondary2} weight="bold" />
-              <View style={{ flex: 1, gap: spacingY._5 }}>
-                <Typo
-                  style={{ flexShrink: 1, flexWrap: "wrap" }}
-                  fontWeight={"700"}
-                >
-                  {setting.title}
-                </Typo>
-                <Typo
-                  style={{ flexShrink: 1, flexWrap: "wrap" }}
-                  color={colors.neutral}
-                >
-                  {setting.subtitle}
-                </Typo>
+              {/* Left side: Icon + Texts */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacingX._10,
+                }}
+              >
+                {/* {IconComponent && (
+                  <IconComponent color={colors.secondary2} weight="bold" />
+                )} */}
+                <SettingsIcon
+                  iconName={setting.iconName}
+                  color={colors.secondary2}
+                  weight="bold"
+                />
+                <View style={{ flex: 1, gap: spacingY._5 }}>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    fontWeight={"700"}
+                  >
+                    {setting.title}
+                  </Typo>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    color={colors.neutral}
+                  >
+                    {setting.subtitle}
+                  </Typo>
 
-                {setting.type === "dropdown" && (
-                  // <View style={{ width: scale(200) }}>
-                  <Dropdown
-                    maxHeight={verticalScale(200)}
-                    labelField="label"
-                    valueField="value"
-                    style={styles.dropdownContainer}
-                    placeholderStyle={styles.dropdownPlaceholder}
-                    selectedTextStyle={styles.dropdownSelectedText}
-                    iconStyle={styles.dropdownIcon}
-                    itemTextStyle={styles.dropdownItemText}
-                    itemContainerStyle={styles.dropdownItemContainer}
-                    containerStyle={styles.dropdownListContainer}
-                    activeColor={colors.primary}
-                    placeholder={`Select ${setting.title}`}
-                    value={setting.selectedOption}
-                    data={setting.options!.map((option) => ({
-                      label: option,
-                      value: option,
-                    }))}
-                    onChange={(val) => {
-                      setSettings((prevSettings) =>
-                        prevSettings.map((s) =>
-                          s.id === setting.id
-                            ? { ...s, selectedOption: val.value }
-                            : s
-                        )
-                      );
-                    }}
-                  />
-                  // </View>
-                )}
+                  {setting.type === "dropdown" && (
+                    // <View style={{ width: scale(200) }}>
+                    <Dropdown
+                      maxHeight={verticalScale(200)}
+                      labelField="label"
+                      valueField="value"
+                      style={styles.dropdownContainer}
+                      placeholderStyle={styles.dropdownPlaceholder}
+                      selectedTextStyle={styles.dropdownSelectedText}
+                      iconStyle={styles.dropdownIcon}
+                      itemTextStyle={styles.dropdownItemText}
+                      itemContainerStyle={styles.dropdownItemContainer}
+                      containerStyle={styles.dropdownListContainer}
+                      activeColor={colors.primary}
+                      placeholder={`Select ${setting.title}`}
+                      value={setting.selectedOption}
+                      data={setting.options!.map((option) => ({
+                        label: option,
+                        value: option,
+                      }))}
+                      onChange={(val) =>
+                        updateSetting(setting.id, { selectedOption: val.value })
+                      }
+                    />
+                    // </View>
+                  )}
+                </View>
               </View>
-            </View>
 
-            {/* Right side: Toggle or Dropdown */}
-            {setting.type === "toggle" && (
-              <Switch
-                value={setting.toggled}
-                onValueChange={(val) => {
-                  setSettings((prevSettings) =>
-                    prevSettings.map((s) =>
-                      s.id === setting.id ? { ...s, toggled: val } : s
-                    )
-                  );
-                }}
-                trackColor={{
-                  false: colors.secondary,
-                  true: colors.primary,
-                }}
-                thumbColor={setting.toggled ? colors.white : colors.white}
-              />
-            )}
-          </View>
-        ))}
+              {/* Right side: Toggle or Dropdown */}
+              {setting.type === "toggle" && (
+                <Switch
+                  value={setting.toggled}
+                  onValueChange={(val) =>
+                    updateSetting(setting.id, { toggled: val })
+                  }
+                  trackColor={{
+                    false: colors.secondary,
+                    true: colors.primary,
+                  }}
+                  thumbColor={setting.toggled ? colors.white : colors.white}
+                />
+              )}
+            </View>
+          );
+        })}
       </View>
     </View>
   );

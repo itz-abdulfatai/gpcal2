@@ -176,6 +176,8 @@ const Profile = () => {
     generalSettings: settings,
     infos: siteInfo,
     academicSettings: academicsSettings,
+    updateGeneralSetting,
+    updateAcademicSetting,
     utilities,
   } = useData();
   return (
@@ -220,12 +222,12 @@ const Profile = () => {
           <SettingsGroup
             title="General Settings"
             settings={settings}
-            setSettings={setSettings}
+            updateSetting={updateGeneralSetting}
           />
           <SettingsGroup
             title="Academic Settings"
             settings={academicsSettings}
-            setSettings={setAcademicsSettings}
+            updateSetting={updateAcademicSetting}
           />
 
           <UtilitiesGroup

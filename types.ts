@@ -20,7 +20,7 @@ export type SettingsType = {
   selectedOption?: string | null;
   onToggle?: (value: boolean) => void;
   onSelectOption?: (option: string) => void;
-  Icon: Icon;
+  iconName: string;
 };
 
 export type UtilitiesType = {
@@ -28,7 +28,7 @@ export type UtilitiesType = {
   title: string;
   subtitle: string;
   onTap: () => void;
-  Icon: Icon;
+  iconName: string;
   color: string;
   buttonText: string;
   textColor: string;
@@ -192,7 +192,7 @@ export type semesterCardProps = {
 export type SettingsGroupProps = {
   title: string;
   settings: SettingsType[];
-  setSettings: Dispatch<SetStateAction<SettingsType[]>>;
+  updateSetting: (id: string, changes: Partial<SettingsType>) => void;
 };
 
 export type UtilitiesGroupProps = {
@@ -207,6 +207,14 @@ export type DataContextType = {
   courses: CourseType[];
   generalSettings: SettingsType[];
   academicSettings: SettingsType[];
+  updateGeneralSetting: (
+    id: string,
+    changes: Partial<SettingsType>
+  ) => Promise<void>;
+  updateAcademicSetting: (
+    id: string,
+    changes: Partial<SettingsType>
+  ) => Promise<void>;
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;

@@ -144,3 +144,58 @@ export async function getData<T>(key: string): Promise<T[]> {
 
   return [];
 }
+
+/**
+ * Update a setting in AsyncStorage by id.
+ * @param key - The AsyncStorage key (e.g., 'generalSettings', 'academicSettings')
+ * @param id - The id of the setting to update
+ * @param changes - The partial object with changes to apply
+ * @returns The updated array of settings
+ */
+export const updateSettingInStorage = async <T extends { id: string }>(
+  key: string,
+  id: string,
+  changes: Partial<T>
+): Promise<ResponseType<T[]>> => {
+  try {
+    const existing = await AsyncStorage.getItem(key);
+    const parsed = existing ? JSON.parse(existing) : [];
+    const arr: T[] = Array.isArray(parsed) ? (parsed as T[]) : [];
+    const updatedArr = arr.map((item) =>
+      item.id === id ? { ...item, ...changes } : item
+    );
+    await AsyncStorage.setItem(key, JSON.stringify(updatedArr));
+    return { success: true, data: updatedArr };
+  } catch (error) {
+    return { success: false, msg: (error as Error).message, data: [] as T[] };
+  }
+};
+
+
+export const logAllStorage = async () => {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const stores = await AsyncStorage.multiGet(keys);
+
+    stores.forEach(([key, value]) => {
+      let parsedValue;
+      try {
+        parsedValue = JSON.parse(value ?? "null");
+      } catch {
+        parsedValue = value; // fallback if it's not JSON
+      }
+
+      console.log(`${key}:`, parsedValue);
+    });
+
+    return stores.map(([key, value]) => {
+      try {
+        return [key, JSON.parse(value ?? "null")];
+      } catch {
+        return [key, value];
+      }
+    });
+  } catch (e) {
+    console.error("Error reading AsyncStorage:", e);
+  }
+};
