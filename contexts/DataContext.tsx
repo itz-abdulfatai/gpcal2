@@ -176,30 +176,48 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const loadData = async () => {
-      const semesters = await getData<SemesterType>("semesters");
-      const courses = await getData<CourseType>("courses");
+      try {
+        const semesters = await getData<SemesterType>("semesters");
+        const courses = await getData<CourseType>("courses");
 
-      const academicSettings = await getData<SettingsType>("academicSettings");
-      const utilities = await getData<UtilitiesType>("utilities");
-      const generalSettings = await getData<SettingsType>("generalSettings");
+        const academicSettings = await getData<SettingsType>(
+          "academicSettings"
+        );
+        const utilities = await getData<UtilitiesType>("utilities");
+        const generalSettings = await getData<SettingsType>("generalSettings");
 
-      setContextValue({
-        user: null,
-        semesters,
-        courses,
-        academicSettings:
-          academicSettings.length > 0 ? academicSettings : academicsSettings,
-        utilities: utilities.length > 0 ? utilities : defaultUtilities,
-        generalSettings:
-          generalSettings.length > 0 ? generalSettings : defaultGeneralSettings,
-        infos: siteInfo,
-        language: "en",
-      });
+        setContextValue({
+          user: null,
+          semesters,
+          courses,
+          academicSettings:
+            academicSettings.length > 0 ? academicSettings : academicsSettings,
+          utilities: utilities.length > 0 ? utilities : defaultUtilities,
+          generalSettings:
+            generalSettings.length > 0
+              ? generalSettings
+              : defaultGeneralSettings,
+          infos: siteInfo,
+          language: "en",
+        });
+      } catch (error) {
+        console.error("Failed to load data:", error);
+        // Set default values on error
+        setContextValue({
+          user: null,
+          semesters: [],
+          courses: [],
+          academicSettings: academicsSettings,
+          utilities: defaultUtilities,
+          generalSettings: defaultGeneralSettings,
+          infos: siteInfo,
+          language: "en",
+        });
+      }
     };
 
     loadData();
   }, []);
-
   if (!contextValue) {
     return null; // ⏳ Could replace with loading spinner later
   }

@@ -33,31 +33,29 @@ export const formatCoursesForDonut = (courses: CourseType[]) => {
 /**
  * Fetch data from AsyncStorage and return as object
  */
-export const getItem = async (key: string): Promise<ResponseType> => {
+export const getItem = async <T = unknown>(key: string): Promise<ResponseType<T | null>> => {
   try {
-    const value = await AsyncStorage.getItem(key);
-    if (value !== null) {
-      return { success: true, data: JSON.parse(value) };
+    const raw = await AsyncStorage.getItem(key);
+    if (raw !== null) {
+      return { success: true, data: JSON.parse(raw) as T };
     }
     return { success: false, data: null, msg: "No data found" };
   } catch (error) {
-    return { success: false, msg: (error as Error).message };
+    return { success: false, data: null, msg: (error as Error).message };
   }
-};
-
-/**
+};/**
  * Fetch an array from AsyncStorage (always return an array, even if empty)
  */
 export const getArray = async <T>(key: string): Promise<ResponseType<T[]>> => {
   try {
     const existing = await AsyncStorage.getItem(key);
-    const arr = existing ? JSON.parse(existing) : [];
+    const parsed = existing ? JSON.parse(existing) : [];
+    const arr: T[] = Array.isArray(parsed) ? (parsed as T[]) : [];
     return { success: true, data: arr };
   } catch (error) {
     return { success: false, msg: (error as Error).message, data: [] as T[] };
   }
 };
-
 /**
  * Take object and save to AsyncStorage
  */
@@ -76,55 +74,56 @@ export const setItem = async (
 /**
  * Add an entry to an array in AsyncStorage
  */
-export const addToArray = async (
+export const addToArray = async <T>(
   key: string,
-  newEntry: any
-): Promise<ResponseType> => {
+  newEntry: T
+): Promise<ResponseType<T[]>> => {
   try {
     const existing = await AsyncStorage.getItem(key);
-    let arr = existing ? JSON.parse(existing) : [];
-    if (!Array.isArray(arr)) arr = [];
+    const parsed = existing ? JSON.parse(existing) : [];
+    const arr: T[] = Array.isArray(parsed) ? (parsed as T[]) : [];
 
     arr.push(newEntry);
     await AsyncStorage.setItem(key, JSON.stringify(arr));
 
     return { success: true, data: arr };
   } catch (error) {
-    return { success: false, msg: (error as Error).message };
+    return { success: false, msg: (error as Error).message, data: [] as T[] };
   }
 };
-
 /**
- * Remove an entry by index from an array in AsyncStorage
+/**
+ * Remove an entry by id (if object with `id`) or by value from an array in AsyncStorage
  */
-export const removeFromArray = async (
+export const removeFromArray = async <T>(
   key: string,
-  itemToRemove: any
-): Promise<ResponseType> => {
+  itemToRemove: T
+): Promise<ResponseType<T[]>> => {
   try {
     const existing = await AsyncStorage.getItem(key);
-    let arr = existing ? JSON.parse(existing) : [];
-    if (!Array.isArray(arr)) arr = [];
+    const parsed = existing ? JSON.parse(existing) : [];
+    const arr: unknown[] = Array.isArray(parsed) ? parsed : [];
 
-    let newArr = arr;
+    const isObjectWithId = (v: unknown): v is { id: string | number } =>
+      typeof v === "object" && v !== null && "id" in v;
 
-    if (typeof itemToRemove === "object" && itemToRemove?.id) {
-      // Remove by matching object id
-      newArr = arr.filter((entry: any) => entry.id !== itemToRemove.id);
-    } else {
-      // Remove by value (string, number, etc.)
-      newArr = arr.filter((entry: any) => entry !== itemToRemove);
-    }
+    const newArr: unknown[] = isObjectWithId(itemToRemove)
+      ? arr.filter(
+          (entry) =>
+            !(typeof entry === "object" &&
+              entry !== null &&
+              "id" in entry &&
+              (entry as any).id === itemToRemove.id)
+        )
+      : arr.filter((entry) => entry !== itemToRemove);
 
     await AsyncStorage.setItem(key, JSON.stringify(newArr));
 
-    return { success: true, data: newArr };
+    return { success: true, data: newArr as T[] };
   } catch (error) {
-    return { success: false, msg: (error as Error).message };
+    return { success: false, msg: (error as Error).message, data: [] as T[] };
   }
-};
-
-/**
+};/**
  * Clear all data in AsyncStorage
  */
 export const clearStorage = async (): Promise<ResponseType> => {
