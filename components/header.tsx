@@ -4,7 +4,7 @@ import { StyleSheet, View } from "react-native";
 import Typo from "./typo";
 import { spacingY } from "@/constants/theme";
 
-const Header = ({ title = "", leftIcon, style }: HeaderProps) => {
+const Header = ({ title = "", leftIcon, style, rightIcon }: HeaderProps) => {
   return (
     <View style={[styles.container, style]}>
       {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
@@ -21,6 +21,7 @@ const Header = ({ title = "", leftIcon, style }: HeaderProps) => {
           {title}
         </Typo>
       )}
+      {rightIcon && <View style={styles.leftIcon}>{rightIcon}</View>}
     </View>
   );
 };

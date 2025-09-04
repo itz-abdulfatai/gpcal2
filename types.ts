@@ -101,6 +101,12 @@ export type BackButtonProps = {
   iconSize?: number;
 };
 
+export type SaveButtonProps = {
+  style?: ViewStyle;
+  onPress: () => void;
+  iconSize?: number;
+};
+
 export type GradeType = "A" | "B" | "C" | "D" | "E" | "F" | null;
 
 export type CourseType = {
@@ -219,6 +225,8 @@ export type DataContextType = {
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;
+  addSemester: (semester: SemesterType) => Promise<void>;
+  updateSemester: (id: string, changes: Partial<SemesterType>) => Promise<void>;
 };
 
 
