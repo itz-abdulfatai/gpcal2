@@ -225,8 +225,17 @@ export type DataContextType = {
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;
+  // addSemester: (semester: SemesterType) => Promise<void>;
+  // updateSemester: (id: string, changes: Partial<SemesterType>) => Promise<void>;
+
   addSemester: (semester: SemesterType) => Promise<void>;
   updateSemester: (id: string, changes: Partial<SemesterType>) => Promise<void>;
+  deleteSemester: (id: string) => Promise<void>;
+  addCourse: (course: CourseType, semesterId: string) => Promise<void>;
+  updateCourse: (id: string, changes: Partial<CourseType>) => Promise<void>;
+  deleteCourse: (id: string) => Promise<void>;
+  getSemesters: () => Promise<void>;
+  getCourses: (semesterId: string) => Promise<CourseType[]>;
 };
 
 

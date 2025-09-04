@@ -17,20 +17,36 @@ import {
 } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
-  GraduationCapIcon,
-  CheckCircleIcon,
-  ArrowClockwiseIcon,
-  ExportIcon,
-  TrashIcon,
   ChatCenteredTextIcon,
   HeadphonesIcon,
   InfoIcon,
-  SunIcon,
-  NotificationIcon,
-  GlobeHemisphereWestIcon,
-  FingerprintIcon,
 } from "phosphor-react-native";
 import { colors } from "@/constants/theme";
+
+import Realm from "realm";
+import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
+
+// ------------------------------------------------------------------------------------------------
+// realm matters
+// ------------------------------------------------------------------------------------------------
+
+const realmConfig = {
+  schema: [SemesterSchema, CourseSchema],
+  schemaVersion: 1,
+};
+
+let realm: Realm | null = null;
+
+const openRealm = async () => {
+  if (!realm) {
+    realm = await Realm.open(realmConfig);
+  }
+  return realm;
+};
+
+// ------------------------------------------------------------------------------------------------
+// realm matters
+// ------------------------------------------------------------------------------------------------
 
 // ----------------------------------
 // Default Data
@@ -219,20 +235,16 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   const [language, setLanguage] = useState("en");
 
   useEffect(() => {
-    seedInitialData();
-    // logAllStorage();
+    getSemesters(); // Loads semesters from Realm and sets state
+
     const loadData = async () => {
       try {
-        const semesters = await getData<SemesterType>("semesters");
-        const courses = await getData<CourseType>("courses");
         const academicSettings = await getData<SettingsType>(
           "academicSettings"
         );
         const utilities = await getData<UtilitiesType>("utilities");
         const generalSettings = await getData<SettingsType>("generalSettings");
 
-        setSemesters(semesters);
-        setCourses(courses);
         setAcademicSettings(
           academicSettings.length > 0 ? academicSettings : academicsSettings
         );
@@ -242,8 +254,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         );
         setInfos(siteInfo);
       } catch (error) {
-        setSemesters([]);
-        setCourses([]);
         setAcademicSettings(academicsSettings);
         setUtilities(defaultUtilities);
         setGeneralSettings(defaultGeneralSettings);
@@ -251,6 +261,27 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       }
     };
     loadData();
+  }, []);
+
+  useEffect(() => {
+    let realmInstance: Realm;
+    let semesters: Realm.Results<any>;
+
+    const setupListener = async () => {
+      realmInstance = await openRealm();
+      semesters = realmInstance.objects<SemesterType>("Semester");
+      setSemesters([...semesters]);
+      semesters.addListener(() => {
+        setSemesters([...semesters]);
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      semesters?.removeAllListeners();
+      realmInstance?.close();
+    };
   }, []);
 
   /**
@@ -279,20 +310,99 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
   };
 
-  const addSemester = async (semester: SemesterType) => {
-    console.log("add semester called");
-    if (!semester.name.trim()) return;
+  // const addSemester = async (semester: SemesterType) => {
+  //   console.log("add semester called");
+  //   if (!semester.name.trim()) return;
 
-    setSemesters((prev) => [...prev, semester]);
-    await addToArray<SemesterType>("semesters", semester);
-    logAllStorage();
+  //   setSemesters((prev) => [...prev, semester]);
+  //   await addToArray<SemesterType>("semesters", semester);
+  //   logAllStorage();
+  // };
+
+  // const updateSemester = async (id: string, changes: Partial<SemesterType>) => {
+  //   setSemesters((prev) =>
+  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+  //   );
+  //   await updateArrayEntry<SemesterType>("semesters", id, changes);
+  // };
+
+  // CREATE
+  const addSemester = async (semester: SemesterType) => {
+    const realm = await openRealm();
+    realm.write(() => {
+      realm.create("Semester", semester);
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
   };
 
+  const addCourse = async (course: CourseType, semesterId: string) => {
+    const realm = await openRealm();
+    realm.write(() => {
+      const semester = realm.objectForPrimaryKey("Semester", semesterId) as any;
+      if (semester && semester.courses) {
+        semester.courses.push(course);
+      }
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  };
+
+  // READ
+  const getSemesters = async () => {
+    const realm = await openRealm();
+    const semesters = realm.objects<SemesterType>("Semester");
+    setSemesters([...semesters]);
+  };
+
+  const getCourses = async (semesterId: string) => {
+    const realm = await openRealm();
+    const semester = realm.objectForPrimaryKey("Semester", semesterId) as any;
+    return semester ? (Array.from(semester.courses) as CourseType[]) : [];
+  };
+
+  // UPDATE
   const updateSemester = async (id: string, changes: Partial<SemesterType>) => {
-    setSemesters((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-    );
-    await updateArrayEntry<SemesterType>("semesters", id, changes);
+    const realm = await openRealm();
+    realm.write(() => {
+      const semester = realm.objectForPrimaryKey("Semester", id);
+      if (semester) {
+        Object.assign(semester, changes);
+      }
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  };
+
+  const updateCourse = async (id: string, changes: Partial<CourseType>) => {
+    const realm = await openRealm();
+    realm.write(() => {
+      const course = realm.objectForPrimaryKey("Course", id);
+      if (course) {
+        Object.assign(course, changes);
+      }
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  };
+
+  // DELETE
+  const deleteSemester = async (id: string) => {
+    const realm = await openRealm();
+    realm.write(() => {
+      const semester = realm.objectForPrimaryKey("Semester", id);
+      if (semester) {
+        realm.delete(semester);
+      }
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  };
+
+  const deleteCourse = async (id: string) => {
+    const realm = await openRealm();
+    realm.write(() => {
+      const course = realm.objectForPrimaryKey("Course", id);
+      if (course) {
+        realm.delete(course);
+      }
+    });
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
   };
 
   const contextValue: DataContextType = {
@@ -308,6 +418,14 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     updateAcademicSetting,
     addSemester,
     updateSemester,
+
+    addCourse,
+    getSemesters,
+    getCourses,
+
+    updateCourse,
+    deleteSemester,
+    deleteCourse,
   };
 
   if (!generalSettings.length || !academicSettings.length) {
