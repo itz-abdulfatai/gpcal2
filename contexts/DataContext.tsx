@@ -11,6 +11,8 @@ import {
   getData,
   logAllStorage,
   setItem,
+  updateArrayEntry,
+  addToArray,
   updateSettingInStorage,
 } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
@@ -277,6 +279,22 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
   };
 
+  const addSemester = async (semester: SemesterType) => {
+    console.log("add semester called");
+    if (!semester.name.trim()) return;
+
+    setSemesters((prev) => [...prev, semester]);
+    await addToArray<SemesterType>("semesters", semester);
+    logAllStorage();
+  };
+
+  const updateSemester = async (id: string, changes: Partial<SemesterType>) => {
+    setSemesters((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+    );
+    await updateArrayEntry<SemesterType>("semesters", id, changes);
+  };
+
   const contextValue: DataContextType = {
     user,
     semesters,
@@ -288,6 +306,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     language,
     updateGeneralSetting,
     updateAcademicSetting,
+    addSemester,
+    updateSemester,
   };
 
   if (!generalSettings.length || !academicSettings.length) {

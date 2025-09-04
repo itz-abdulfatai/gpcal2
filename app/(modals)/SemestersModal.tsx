@@ -15,6 +15,8 @@ import Button from "@/components/Button";
 // import { dummyCourses } from "@/constants/data";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
+import { useData } from "@/contexts/DataContext";
+import SaveButton from "@/components/saveButton";
 
 const SemestersModal = () => {
   const grades = [
@@ -27,6 +29,7 @@ const SemestersModal = () => {
   ];
   const [semesterTitle, setSemesterTitle] = useState<string>("");
   const router = useRouter();
+  const [isSaved, setIsSaved] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
   const [courses, setCourses] = useState<CourseType[]>([]);
   const [course, setCourse] = useState<CourseType>({
@@ -38,7 +41,7 @@ const SemestersModal = () => {
     GradePoint: null,
   });
   const [semester, setSemester] = useState<SemesterType>({
-    id: "",
+    id: '',
     gpa: null,
     name: "",
     uid: "",
@@ -48,63 +51,80 @@ const SemestersModal = () => {
 
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
 
+  const {addSemester, updateSemester} = useData()
+
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
   };
 
-  const addCourse = () => {
-    if (!course.GradePoint || !course.name || !course.creditUnit) return;
-
-    const newCourse: CourseType = {
+    const handleSemesterName = (name: string) => {
+    setSemester((prev) => ({
+      ...prev,
       id: Date.now().toString(),
-      uid: "user123",
-      semesterId: "1",
-      name: course.name,
-      creditUnit: course.creditUnit,
-      GradePoint: course.GradePoint,
-    };
-
-    setCourses((prev) => [...prev, newCourse]);
-
-    // reset refs
-
-    setCourse({
-      id: "",
-      uid: "",
-      semesterId: "",
-      name: "",
-      creditUnit: null,
-      GradePoint: null,
-    });
-    Keyboard.dismiss();
-  };
-  const addSemester = () => {
-    if (!semester.name.trim()) return;
-    if (semester.gpa == null || Number.isNaN(semester.gpa)) return;
-
-    const newSemester: SemesterType = {
-      id: Date.now().toString(),
-      uid: "user123",
-      name: semester.name,
-      gpa: semester.gpa,
+      name,
       lastUpdated: new Date(),
-    };
-
-    setSemesters((prev) => [...prev, newSemester]);
-
-    // reset refs
-
-    setSemester({
-      id: "",
-      uid: "",
-      lastUpdated: new Date(),
-      name: "",
-      gpa: null,
-    });
-    Keyboard.dismiss();
+    }));
   };
+
+  const addCourse = (course: CourseType) => {
+    let parsedcourse = course
+
+    parsedcourse.id = (Math.random() * Math.random() * 1234567).toString();
+    parsedcourse.semesterId = semester.id;
+    
+    
+
+    setSemester((prev) => ({
+      ...prev,
+      courses: [...prev.courses, course,],
+      lastUpdated: new Date
+    }));
+    setTimeout(()=> {
+
+      console.log(semester);
+    }, 200)
+    
+  };
+  // const addSemester = () => {
+  //   if (!semester.name.trim()) return;
+  //   if (semester.gpa == null || Number.isNaN(semester.gpa)) return;
+
+  //   const newSemester: SemesterType = {
+  //     id: Date.now().toString(),
+  //     uid: "user123",
+  //     name: semester.name,
+  //     gpa: semester.gpa,
+  //     lastUpdated: new Date(),
+  //   };
+
+  //   setSemesters((prev) => [...prev, newSemester]);
+
+  //   // reset refs
+
+  //   setSemester({
+  //     id: "",
+  //     uid: "",
+  //     lastUpdated: new Date(),
+  //     name: "",
+  //     gpa: null,
+  //   });
+  //   Keyboard.dismiss();
+  // };
+
+
+  const saveSemester = async () => {
+  if (!semester.name.trim() || semester.courses.length === 0) return;
+  if (!isSaved) {
+    await addSemester(semester);
+    setIsSaved(true);
+  } else {
+    await updateSemester(semester.id, semester);
+  }
+};
+
 
   const analyse = () => {
+    saveSemester()
     // Perform analysis on courses and semesters
     console.log("Analysing...");
   };
@@ -123,6 +143,8 @@ const SemestersModal = () => {
         question="Enter semester name"
         setResponse={(val) => {
           if (val.trim()) setSemesterTitle(val);
+          handleSemesterName(val)
+          
         }}
         onClose={(val) => {
           setPromptVisible(false);
@@ -135,7 +157,8 @@ const SemestersModal = () => {
           <Header
             leftIcon={<BackButton />}
             title={semesterTitle ? semesterTitle : ""}
-            
+            rightIcon={ <SaveButton onPress={saveSemester}/>}
+
           />
 
           <ScrollView
@@ -199,7 +222,9 @@ const SemestersModal = () => {
                 />
 
                 <Button
-                  onPress={addCourse}
+                  onPress={() => {
+                    addCourse(course)
+                  }}
                   style={{
                     flexDirection: "row",
                     gap: spacingX._10,
@@ -223,7 +248,7 @@ const SemestersModal = () => {
                       <Table
                         headings={["Course Name", "Credit Unit", "Grade"]}
                         keys={["name", "creditUnit", "GradePoint"]}
-                        data={courses}
+                        data={semester.courses}
                       />
                     )}
                   </View>
@@ -258,7 +283,7 @@ const SemestersModal = () => {
                 />
 
                 <Button
-                  onPress={addSemester}
+                  onPress={()=> {addSemester(semester)}}
                   style={{
                     flexDirection: "row",
                     gap: spacingX._10,

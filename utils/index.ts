@@ -80,6 +80,8 @@ export const addToArray = async <T>(
 ): Promise<ResponseType<T[]>> => {
   try {
     const existing = await AsyncStorage.getItem(key);
+    if (!existing) console.log("key does not even exist");
+
     const parsed = existing ? JSON.parse(existing) : [];
     const arr: T[] = Array.isArray(parsed) ? (parsed as T[]) : [];
 
@@ -110,10 +112,12 @@ export const removeFromArray = async <T>(
     const newArr: unknown[] = isObjectWithId(itemToRemove)
       ? arr.filter(
           (entry) =>
-            !(typeof entry === "object" &&
+            !(
+              typeof entry === "object" &&
               entry !== null &&
               "id" in entry &&
-              (entry as any).id === itemToRemove.id)
+              (entry as any).id === itemToRemove.id
+            )
         )
       : arr.filter((entry) => entry !== itemToRemove);
 
@@ -123,7 +127,8 @@ export const removeFromArray = async <T>(
   } catch (error) {
     return { success: false, msg: (error as Error).message, data: [] as T[] };
   }
-};/**
+};
+/**
  * Clear all data in AsyncStorage
  */
 export const clearStorage = async (): Promise<ResponseType> => {
@@ -171,7 +176,6 @@ export const updateSettingInStorage = async <T extends { id: string }>(
   }
 };
 
-
 export const logAllStorage = async () => {
   try {
     const keys = await AsyncStorage.getAllKeys();
@@ -197,5 +201,32 @@ export const logAllStorage = async () => {
     });
   } catch (e) {
     console.error("Error reading AsyncStorage:", e);
+  }
+};
+
+/**
+ * Update an entry in an array in AsyncStorage by id.
+ * If the entry does not exist, it will not add a new one.
+ * @param key - The AsyncStorage key (e.g., 'semesters')
+ * @param id - The id of the entry to update
+ * @param changes - The partial object with changes to apply
+ * @returns The updated array
+ */
+export const updateArrayEntry = async <T extends { id: string }>(
+  key: string,
+  id: string,
+  changes: Partial<T>
+): Promise<ResponseType<T[]>> => {
+  try {
+    const existing = await AsyncStorage.getItem(key);
+    const parsed = existing ? JSON.parse(existing) : [];
+    const arr: T[] = Array.isArray(parsed) ? (parsed as T[]) : [];
+    const updatedArr = arr.map((item) =>
+      item.id === id ? { ...item, ...changes } : item
+    );
+    await AsyncStorage.setItem(key, JSON.stringify(updatedArr));
+    return { success: true, data: updatedArr };
+  } catch (error) {
+    return { success: false, msg: (error as Error).message, data: [] as T[] };
   }
 };
