@@ -28,148 +28,156 @@ import { SettingsType, AppInfoType, UtilitiesType } from "@/types";
 import { Dropdown } from "react-native-element-dropdown";
 import SettingsGroup from "@/components/SettingsGroup";
 import UtilitiesGroup from "@/components/UtilitiesGroup";
+import { useData } from "@/contexts/DataContext";
 
-const generalSettings: SettingsType[] = [
-  {
-    id: "1",
-    title: "App Theme",
-    subtitle: "Toggle between Light and Dark mode",
-    type: "toggle",
-    toggled: false,
-    Icon: (props) => <SunIcon {...props} />,
-  },
-  {
-    id: "2",
-    title: "Notifications",
-    subtitle: "Receive notifications about important academic updates",
-    type: "toggle",
-    toggled: true,
-    Icon: (props) => <NotificationIcon {...props} />,
-  },
-  {
-    id: "3",
-    title: "Language",
-    subtitle: "Select your preferred language",
-    type: "dropdown",
-    options: ["English", "Spanish", "French", "German"],
-    selectedOption: "English",
-    Icon: (props) => <GlobeHemisphereWestIcon {...props} />,
-  },
-  {
-    id: "4",
-    title: "Screen Lock",
-    subtitle: "Require PIN or biometric authentication to open the app",
-    type: "toggle",
-    toggled: false,
-    Icon: (props) => <FingerprintIcon {...props} />,
-  },
-];
+// const generalSettings: SettingsType[] = [
+//   {
+//     id: "1",
+//     title: "App Theme",
+//     subtitle: "Toggle between Light and Dark mode",
+//     type: "toggle",
+//     toggled: false,
+//     Icon: (props) => <SunIcon {...props} />,
+//   },
+//   {
+//     id: "2",
+//     title: "Notifications",
+//     subtitle: "Receive notifications about important academic updates",
+//     type: "toggle",
+//     toggled: true,
+//     Icon: (props) => <NotificationIcon {...props} />,
+//   },
+//   {
+//     id: "3",
+//     title: "Language",
+//     subtitle: "Select your preferred language",
+//     type: "dropdown",
+//     options: ["English", "Spanish", "French", "German"],
+//     selectedOption: "English",
+//     Icon: (props) => <GlobeHemisphereWestIcon {...props} />,
+//   },
+//   {
+//     id: "4",
+//     title: "Screen Lock",
+//     subtitle: "Require PIN or biometric authentication to open the app",
+//     type: "toggle",
+//     toggled: false,
+//     Icon: (props) => <FingerprintIcon {...props} />,
+//   },
+// ];
 
-const academicSettings: SettingsType[] = [
-  {
-    id: "1",
-    title: "Grading Scheme",
-    subtitle: "Choose how grades are represented",
-    type: "dropdown",
-    Icon: (props) => <GraduationCapIcon {...props} />,
-    options: [
-      "A, B, C, D, E, F",
-      "A+, A, B+, B, C+, C, D, F",
-      "O, A+, A, B+, B, C (India system)",
-      "Percentage",
-    ],
-    selectedOption: "A, B, C, D, E, F",
-  },
-  {
-    id: "2",
-    title: "Pass/Fail Option",
-    subtitle: "Allow pass/fail grading for eligible courses",
-    type: "toggle",
-    Icon: (props) => <CheckCircleIcon {...props} />,
-    toggled: false,
-  },
-  {
-    id: "3",
-    title: "Grade Rounding Rules",
-    subtitle: "Define how decimal grades are rounded",
-    type: "dropdown",
-    Icon: (props) => <ArrowClockwiseIcon {...props} />,
-    options: [
-      "Keep two decimals",
-      "Round to nearest whole number",
-      "Always round up ",
-      "Always round down ",
-    ],
-    selectedOption: "Keep two decimals",
-  },
-];
+// const academicSettings: SettingsType[] = [
+//   {
+//     id: "1",
+//     title: "Grading Scheme",
+//     subtitle: "Choose how grades are represented",
+//     type: "dropdown",
+//     Icon: (props) => <GraduationCapIcon {...props} />,
+//     options: [
+//       "A, B, C, D, E, F",
+//       "A+, A, B+, B, C+, C, D, F",
+//       "O, A+, A, B+, B, C (India system)",
+//       "Percentage",
+//     ],
+//     selectedOption: "A, B, C, D, E, F",
+//   },
+//   {
+//     id: "2",
+//     title: "Pass/Fail Option",
+//     subtitle: "Allow pass/fail grading for eligible courses",
+//     type: "toggle",
+//     Icon: (props) => <CheckCircleIcon {...props} />,
+//     toggled: false,
+//   },
+//   {
+//     id: "3",
+//     title: "Grade Rounding Rules",
+//     subtitle: "Define how decimal grades are rounded",
+//     type: "dropdown",
+//     Icon: (props) => <ArrowClockwiseIcon {...props} />,
+//     options: [
+//       "Keep two decimals",
+//       "Round to nearest whole number",
+//       "Always round up ",
+//       "Always round down ",
+//     ],
+//     selectedOption: "Keep two decimals",
+//   },
+// ];
 
-const utilities: UtilitiesType[] = [
-  {
-    id: "1",
-    title: "Export Data",
-    subtitle: "Download a backup of your academic data",
-    color: colors.white,
-    onTap() {
-      console.log("export data tapped");
-    },
-    Icon: (props) => <ExportIcon {...props} />,
-    buttonText: "Export",
-    textColor: colors.black,
-  },
-  {
-    id: "2",
-    title: "Import Data",
-    subtitle: "Import a previously exported data file",
-    color: colors.white,
-    onTap() {
-      console.log("import data tapped");
-    },
-    Icon: (props) => <ExportIcon {...props} />,
-    buttonText: "Import",
-    textColor: colors.black,
-  },
-  {
-    id: "3",
-    title: "Reset All Data",
-    subtitle: "Permanently delete all your application data",
-    color: colors.rose,
-    onTap() {
-      console.log("reset data tapped");
-    },
-    Icon: (props) => <TrashIcon {...props} />,
-    buttonText: "Reset",
-    textColor: colors.white,
-  },
-];
+// const utilities: UtilitiesType[] = [
+//   {
+//     id: "1",
+//     title: "Export Data",
+//     subtitle: "Download a backup of your academic data",
+//     color: colors.white,
+//     onTap() {
+//       console.log("export data tapped");
+//     },
+//     Icon: (props) => <ExportIcon {...props} />,
+//     buttonText: "Export",
+//     textColor: colors.black,
+//   },
+//   {
+//     id: "2",
+//     title: "Import Data",
+//     subtitle: "Import a previously exported data file",
+//     color: colors.white,
+//     onTap() {
+//       console.log("import data tapped");
+//     },
+//     Icon: (props) => <ExportIcon {...props} />,
+//     buttonText: "Import",
+//     textColor: colors.black,
+//   },
+//   {
+//     id: "3",
+//     title: "Reset All Data",
+//     subtitle: "Permanently delete all your application data",
+//     color: colors.rose,
+//     onTap() {
+//       console.log("reset data tapped");
+//     },
+//     Icon: (props) => <TrashIcon {...props} />,
+//     buttonText: "Reset",
+//     textColor: colors.white,
+//   },
+// ];
 
-const siteInfo: AppInfoType[] = [
-  {
-    id: "1",
-    title: "Send Feedback",
-    Icon: (props) => <ChatCenteredTextIcon {...props} />,
-    route: "/",
-  },
-  {
-    id: "2",
-    title: "Get Support",
-    Icon: (props) => <HeadphonesIcon {...props} />,
-    route: "/",
-  },
-  {
-    id: "3",
-    title: "About this App",
-    Icon: (props) => <InfoIcon {...props} />,
-    route: "/",
-  },
-];
+// const siteInfo: AppInfoType[] = [
+//   {
+//     id: "1",
+//     title: "Send Feedback",
+//     Icon: (props) => <ChatCenteredTextIcon {...props} />,
+//     route: "/",
+//   },
+//   {
+//     id: "2",
+//     title: "Get Support",
+//     Icon: (props) => <HeadphonesIcon {...props} />,
+//     route: "/",
+//   },
+//   {
+//     id: "3",
+//     title: "About this App",
+//     Icon: (props) => <InfoIcon {...props} />,
+//     route: "/",
+//   },
+// ];
 
 const Profile = () => {
-  const [settings, setSettings] =
-    React.useState<SettingsType[]>(generalSettings);
+  // const [settings, setSettings] =
+  //   React.useState<SettingsType[]>(generalSettings);
 
-  const [academicsSettings, setAcademicsSettings] =
-    useState<SettingsType[]>(academicSettings);
+  // const [academicsSettings, setAcademicsSettings] =
+  //   useState<SettingsType[]>(academicSettings);
+
+  const {
+    generalSettings: settings,
+    infos: siteInfo,
+    academicSettings: academicsSettings,
+    utilities,
+  } = useData();
   return (
     <ScreenWrapper>
       <Header title="Profile" />

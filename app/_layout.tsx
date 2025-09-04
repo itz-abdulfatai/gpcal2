@@ -2,7 +2,8 @@ import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { applyCustomFont } from "@/providers/FontProvider";
-export default function RootLayout() {
+import { DataContextProvider } from "@/contexts/DataContext";
+function StackLayout() {
   const [fontsLoaded] = useFonts({
     ManropeLight: require("@/assets/fonts/Manrope-Light.ttf"),
     ManropeRegular: require("@/assets/fonts/Manrope-Regular.ttf"),
@@ -27,9 +28,17 @@ export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }} initialRouteName="(tabs)">
       <Stack.Screen
-        name="(modals)/SemestersModal"
+        name="(modals)/semestersModal"
         options={{ presentation: "modal" }}
       ></Stack.Screen>
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <DataContextProvider>
+      <StackLayout />
+    </DataContextProvider>
   );
 }

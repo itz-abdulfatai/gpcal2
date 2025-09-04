@@ -2,19 +2,19 @@ import Fab from "@/components/Fab";
 import Header from "@/components/header";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import SemestersList from "@/components/SemestersList";
-import { dummySemesters } from "@/constants/data";
+// import { dummySemesters } from "@/constants/data";
 import { spacingX, spacingY } from "@/constants/theme";
-import { SemesterType } from "@/types";
+import { useData } from "@/contexts/DataContext";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [semesters, setSemesters] = useState<SemesterType[]>(dummySemesters);
+  const { semesters } = useData();
+  // const [semesters, setSemesters] = useState<SemesterType[]>(storedSemesters);
 
   const openSemestersModal = () => {
-    router.push("/(modals)/SemestersModal");
+    router.push("/(modals)/semestersModal");
   };
   return (
     <ScreenWrapper>

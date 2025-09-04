@@ -7,7 +7,7 @@ import {
   AppInfoType,
 } from "@/types";
 import { getData } from "@/utils";
-import { createContext, FC, useContext } from "react";
+import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
   GraduationCapIcon,
   CheckCircleIcon,
@@ -23,8 +23,10 @@ import {
   FingerprintIcon,
 } from "phosphor-react-native";
 import { colors } from "@/constants/theme";
-const DataContext = createContext<DataContextType | null>(null);
 
+// ----------------------------------
+// Default Data
+// ----------------------------------
 const academicsSettings: SettingsType[] = [
   {
     id: "1",
@@ -160,69 +162,54 @@ const siteInfo: AppInfoType[] = [
   },
 ];
 
-// get semester
-// get course
-// add semester
-// add course
-// analyse
+// ----------------------------------
+// Context Setup
+// ----------------------------------
+const DataContext = createContext<DataContextType | null>(null);
 
-// change grading system
-// set grading to pass or fail
-// change gpa rounding
-// change theme
-// allow or disable notifications
-// change language
-// show fingerprint/pin
-// change gpa scale
-
-// export data
-// import data
-// delete data
-
-export const DataContextProvider: FC<{ children: React.ReactNode }> = async ({
+export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const contextValue: DataContextType = {
-    user: null,
-    semesters: await getData<SemesterType>("semesters"),
-    courses: await getData<CourseType>("semesters"),
-    academicSettings: [],
-    utilities: [],
-    infos: siteInfo,
-    generalSettings: [],
+  const [contextValue, setContextValue] = useState<DataContextType | null>(
+    null
+  );
 
-    language: "en",
-  };
+  useEffect(() => {
+    const loadData = async () => {
+      const semesters = await getData<SemesterType>("semesters");
+      const courses = await getData<CourseType>("courses");
 
-  const academicSettings = await getData<SettingsType>("academicSettings");
-  if (academicSettings.length > 0) {
-    contextValue.academicSettings = academicSettings;
-  } else {
-    contextValue.academicSettings = academicsSettings;
+      const academicSettings = await getData<SettingsType>("academicSettings");
+      const utilities = await getData<UtilitiesType>("utilities");
+      const generalSettings = await getData<SettingsType>("generalSettings");
+
+      setContextValue({
+        user: null,
+        semesters,
+        courses,
+        academicSettings:
+          academicSettings.length > 0 ? academicSettings : academicsSettings,
+        utilities: utilities.length > 0 ? utilities : defaultUtilities,
+        generalSettings:
+          generalSettings.length > 0 ? generalSettings : defaultGeneralSettings,
+        infos: siteInfo,
+        language: "en",
+      });
+    };
+
+    loadData();
+  }, []);
+
+  if (!contextValue) {
+    return null; // ⏳ Could replace with loading spinner later
   }
 
-  const utilities = await getData<UtilitiesType>("utilities");
-
-  if (utilities.length > 0) {
-    contextValue.utilities = utilities;
-  } else {
-    contextValue.utilities = defaultUtilities;
-  }
-
-  const generalSettings = await getData<SettingsType>("generalSettings");
-
-  if (generalSettings.length > 0) {
-    contextValue.generalSettings = generalSettings;
-  } else {
-    contextValue.generalSettings = defaultGeneralSettings;
-  }
   return (
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
   );
 };
 
-export default DataContextProvider;
-
+// Custom hook
 export const useData = (): DataContextType => {
   const context = useContext(DataContext);
   if (!context) {
@@ -230,3 +217,5 @@ export const useData = (): DataContextType => {
   }
   return context;
 };
+
+export default DataContextProvider;
