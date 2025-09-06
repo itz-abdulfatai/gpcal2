@@ -6,15 +6,9 @@ import {
   UtilitiesType,
   AppInfoType,
   UserType,
+  ResponseType,
 } from "@/types";
-import {
-  getData,
-  logAllStorage,
-  setItem,
-  updateArrayEntry,
-  addToArray,
-  updateSettingInStorage,
-} from "@/utils";
+import { getData, setItem, updateSettingInStorage } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
   ChatCenteredTextIcon,
@@ -254,6 +248,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         );
         setInfos(siteInfo);
       } catch (error) {
+        console.log("an error occured(loadData)", error);
+
         setAcademicSettings(academicsSettings);
         setUtilities(defaultUtilities);
         setGeneralSettings(defaultGeneralSettings);
@@ -327,25 +323,47 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   // };
 
   // CREATE
-  const addSemester = async (semester: SemesterType) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      realm.create("Semester", semester);
-    });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        realm.create("Semester", semester);
+      });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (addSemester)", error);
+      return { success: false, msg: error.message };
+    }
   };
 
-  const addCourse = async (course: CourseType, semesterId: string) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      const semester = realm.objectForPrimaryKey("Semester", semesterId) as any;
-      if (semester && semester.courses) {
-        semester.courses.push(course);
-      }
-    });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  const addCourse = async (
+    course: CourseType,
+    semesterId: string
+  ): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey(
+          "Semester",
+          semesterId
+        ) as any;
+        if (!semester) {
+          throw new Error(`Semester with id ${semesterId} not found`);
+        }
+        if (semester.courses) {
+          semester.courses.push(course);
+        } else {
+          throw new Error(`Semester courses array is not initialized`);
+        }
+      });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (addCourse)", error);
+      return { success: false, msg: error.message };
+    }
   };
-
   // READ
   const getSemesters = async () => {
     const realm = await openRealm();
@@ -360,15 +378,24 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   };
 
   // UPDATE
-  const updateSemester = async (id: string, changes: Partial<SemesterType>) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      const semester = realm.objectForPrimaryKey("Semester", id);
-      if (semester) {
-        Object.assign(semester, changes);
-      }
-    });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  const updateSemester = async (
+    id: string,
+    changes: Partial<SemesterType>
+  ): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey("Semester", id);
+        if (semester) {
+          Object.assign(semester, changes);
+        }
+      });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (updateSemester)", error);
+      return { success: false, msg: error.message };
+    }
   };
 
   const updateCourse = async (id: string, changes: Partial<CourseType>) => {
@@ -383,26 +410,38 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   };
 
   // DELETE
-  const deleteSemester = async (id: string) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      const semester = realm.objectForPrimaryKey("Semester", id);
-      if (semester) {
-        realm.delete(semester);
-      }
-    });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  const deleteSemester = async (id: string): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey("Semester", id);
+        if (semester) {
+          realm.delete(semester);
+        }
+      });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (deleteSemester)", error);
+      return { success: false, msg: error.message };
+    }
   };
 
-  const deleteCourse = async (id: string) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      const course = realm.objectForPrimaryKey("Course", id);
-      if (course) {
-        realm.delete(course);
-      }
-    });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+  const deleteCourse = async (id: string): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const course = realm.objectForPrimaryKey("Course", id);
+        if (course) {
+          realm.delete(course);
+        }
+      });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (addSemester)", error);
+      return { success: false, msg: error.message };
+    }
   };
 
   const contextValue: DataContextType = {

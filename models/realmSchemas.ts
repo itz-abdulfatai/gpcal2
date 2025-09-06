@@ -1,14 +1,13 @@
-import { BSON } from "realm";
-
 export const CourseSchema = {
   name: "Course",
   primaryKey: "id",
   properties: {
-    id: "string",
+    id: "objectId",
     name: "string",
     creditUnit: "int?",
-    GradePoint: "string?",
+    gradePoint: "string?",
     semesterId: "string",
+    semester: "Semester",
     uid: "string",
   },
 };
@@ -17,9 +16,9 @@ export const SemesterSchema = {
   name: "Semester",
   primaryKey: "id",
   properties: {
-    id: "string",
+    id: "objectId",
     name: "string",
-    gpa: "float?",
+    gpa: "double?",
     lastUpdated: "date?",
     uid: "string",
     courses: "Course[]",
