@@ -1,11 +1,11 @@
-import { ScrollView, StyleSheet, View, Keyboard } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import ModalWrapper from "@/components/ModalWrapper";
 import Typo from "@/components/typo";
 import Header from "@/components/header";
 import BackButton from "@/components/BackButton";
 import PromptDialog from "@/components/PromptDialog";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import Input from "@/components/Input";
 import { Dropdown } from "react-native-element-dropdown";
@@ -15,10 +15,41 @@ import Button from "@/components/Button";
 // import { dummyCourses } from "@/constants/data";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
+// import SaveButton from "@/components/saveButton";
+import { alert } from "@/utils";
+import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
-import SaveButton from "@/components/saveButton";
+
+const { UUID } = BSON;
 
 const SemestersModal = () => {
+  const { id } = useLocalSearchParams();
+  
+  const { getSemesterById } = useData();
+  let oldSemester: SemesterType | null;
+
+  const getOldSemester = async () => {
+    if (id) {
+      oldSemester = await getSemesterById(id as string);
+
+      
+      if (oldSemester) {
+        setSemesterTitle(oldSemester.name);
+        setSememsterSaved(true);
+        setSemester(oldSemester);
+        // setCourses({...oldSemester.courses})
+        setPromptVisible(false);
+      }
+    } else {
+      
+      openChooseSemesterModal();
+    }
+  };
+
+  useEffect(() => {
+    getOldSemester();
+  }, []);
+
   const grades = [
     { label: "A", value: "A" },
     { label: "B", value: "B" },
@@ -27,113 +58,130 @@ const SemestersModal = () => {
     { label: "E", value: "E" },
     { label: "F", value: "F" },
   ];
-  const [semesterTitle, setSemesterTitle] = useState<string>("");
   const router = useRouter();
-  const [isSaved, setIsSaved] = useState(false);
+  // const [isSaved, setIsSaved] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
-  const [courses, setCourses] = useState<CourseType[]>([]);
-  const [course, setCourse] = useState<CourseType>({
-    id: "",
-    uid: "",
-    semesterId: "",
-    name: "",
-    creditUnit: null,
-    GradePoint: null,
-  });
+
   const [semester, setSemester] = useState<SemesterType>({
-    id: '',
+    id: new UUID(),
     gpa: null,
     name: "",
     uid: "",
-    courses,
+    courses: [],
     lastUpdated: new Date(),
   });
+  const [semesterTyped, setSememstertyped] = useState<SemesterType>({
+    id: new UUID(),
+    gpa: null,
+    name: "",
+    uid: "",
+    courses: [],
+    lastUpdated: new Date(),
+  });
+  const [course, setCourse] = useState<CourseType>({
+    id: new UUID(),
+    uid: "",
+    semesterId: semester.id,
+    name: "",
+    creditUnit: null,
+    gradePoint: null,
+  });
 
-  const [semesters, setSemesters] = useState<SemesterType[]>([]);
+  const [semesterTitle, setSemesterTitle] = useState<string>(semester? semester.name :"");
 
-  const {addSemester, updateSemester} = useData()
+  // useEffect(()=> {
+  //   if (oldSemester) {
+  //     setSemesterTitle(oldSemester.name)
+  //     setSememsterSaved(true)
+  //     setSemester(oldSemester)
+  //     // setCourses({...oldSemester.courses})
+  //     setPromptVisible(false)
+  //   }
+  // }, [oldSemester])
+
+  const [semesters] = useState<SemesterType[]>([]);
+  const [semesterSaved, setSememsterSaved] = useState(false);
+
+  const { addSemester, addCourse: addCourseToSemester } = useData();
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
   };
 
-    const handleSemesterName = (name: string) => {
+  const handleSemesterName = (name: string) => {
     setSemester((prev) => ({
       ...prev,
-      id: Date.now().toString(),
       name,
       lastUpdated: new Date(),
+      uid: "1",
     }));
   };
 
-  const addCourse = (course: CourseType) => {
-    let parsedcourse = course
+  const addCourse = async (course: CourseType) => {
+    let parsedCourse = {
+      ...course,
+      id: new UUID(),
+      semesterId: semester.id,
+    };
 
-    parsedcourse.id = (Math.random() * Math.random() * 1234567).toString();
-    parsedcourse.semesterId = semester.id;
-    
-    
+    // If semester hasn’t been saved yet, save it first
+    if (!semesterSaved) {
+      const { success, msg } = await addSemester(semester);
+      if (!success) return alert(msg!);
 
+      // setCourses((prev) => [...prev, parsedCourse]); // only needed for first-time semester
+      // setSemester(prev => ({
+      //   ...prev,
+      //   lastUpdated: new Date()
+      // }))
+
+      setSememsterSaved(true);
+    }
+
+    // Now always try to add course
+    const { success: addCourseSuccess, msg: addCourseMsg } =
+      await addCourseToSemester(parsedCourse, semester.id);
+
+    if (!addCourseSuccess) return alert(addCourseMsg!);
+
+    // Update local semester state
     setSemester((prev) => ({
       ...prev,
-      courses: [...prev.courses, course,],
-      lastUpdated: new Date
+      courses: [...prev.courses, parsedCourse],
+      lastUpdated: new Date(),
     }));
-    setTimeout(()=> {
 
-      console.log(semester);
-    }, 200)
-    
+    setCourse({
+      id: new UUID(),
+      uid: "",
+      semesterId: semester.id,
+      name: "",
+      creditUnit: null,
+      gradePoint: null,
+    });
   };
-  // const addSemester = () => {
-  //   if (!semester.name.trim()) return;
-  //   if (semester.gpa == null || Number.isNaN(semester.gpa)) return;
 
-  //   const newSemester: SemesterType = {
-  //     id: Date.now().toString(),
-  //     uid: "user123",
-  //     name: semester.name,
-  //     gpa: semester.gpa,
-  //     lastUpdated: new Date(),
-  //   };
-
-  //   setSemesters((prev) => [...prev, newSemester]);
-
-  //   // reset refs
-
-  //   setSemester({
-  //     id: "",
-  //     uid: "",
-  //     lastUpdated: new Date(),
-  //     name: "",
-  //     gpa: null,
-  //   });
-  //   Keyboard.dismiss();
+  //   const saveSemester = async () => {
+  //   if (!semester.name.trim() || semester.courses.length === 0) return;
+  //   if (!isSaved) {
+  //     await addSemester(semester);
+  //     setIsSaved(true);
+  //   } else {
+  //     await updateSemester(semester.id, semester);
+  //   }
   // };
 
-
-  const saveSemester = async () => {
-  if (!semester.name.trim() || semester.courses.length === 0) return;
-  if (!isSaved) {
-    await addSemester(semester);
-    setIsSaved(true);
-  } else {
-    await updateSemester(semester.id, semester);
-  }
-};
-
-
   const analyse = () => {
-    saveSemester()
+    // saveSemester()
     // Perform analysis on courses and semesters
     console.log("Analysing...");
   };
 
-  useEffect(() => {
-    if (!semesterTitle) {
-      openChooseSemesterModal();
-    }
-  }, [semesterTitle]);
+  // useEffect(() => {
+  //   if (!semesterTitle) {
+  //     openChooseSemesterModal();
+  //   }
+  // }, [semesterTitle]);
 
   return (
     <ModalWrapper>
@@ -142,9 +190,10 @@ const SemestersModal = () => {
         visible={promptVisible}
         question="Enter semester name"
         setResponse={(val) => {
-          if (val.trim()) setSemesterTitle(val);
-          handleSemesterName(val)
-          
+          if (val.trim()) {
+            setSemesterTitle(val);
+            handleSemesterName(val);
+          }
         }}
         onClose={(val) => {
           setPromptVisible(false);
@@ -157,8 +206,7 @@ const SemestersModal = () => {
           <Header
             leftIcon={<BackButton />}
             title={semesterTitle ? semesterTitle : ""}
-            rightIcon={ <SaveButton onPress={saveSemester}/>}
-
+            // rightIcon={ <SaveButton onPress={saveSemester}/>}
           />
 
           <ScrollView
@@ -200,7 +248,7 @@ const SemestersModal = () => {
                 />
                 <Dropdown
                   data={grades}
-                  value={course.GradePoint}
+                  value={course.gradePoint}
                   placeholder="Grade Point"
                   maxHeight={300}
                   labelField="label"
@@ -208,7 +256,7 @@ const SemestersModal = () => {
                   onChange={(item) => {
                     setCourse((course) => ({
                       ...course,
-                      GradePoint: item.value,
+                      gradePoint: item.value,
                     }));
                   }}
                   style={styles.dropdownContainer}
@@ -223,7 +271,7 @@ const SemestersModal = () => {
 
                 <Button
                   onPress={() => {
-                    addCourse(course)
+                    addCourse(course);
                   }}
                   style={{
                     flexDirection: "row",
@@ -238,16 +286,16 @@ const SemestersModal = () => {
                 </Button>
               </View>
 
-              {courses.length > 0 && (
+              {semester.courses.length > 0 && (
                 <View style={styles.sectionContainer}>
                   <Typo style={styles.headings}>Added Courses</Typo>
                   <View style={styles.tableContainer}>
-                    {courses.length === 0 ? (
+                    {semester.courses.length === 0 ? (
                       <Typo>No courses added yet</Typo>
                     ) : (
                       <Table
                         headings={["Course Name", "Credit Unit", "Grade"]}
-                        keys={["name", "creditUnit", "GradePoint"]}
+                        keys={["name", "creditUnit", "gradePoint"]}
                         data={semester.courses}
                       />
                     )}
@@ -260,18 +308,23 @@ const SemestersModal = () => {
 
                 {/* 🔑 Input saves value directly into ref */}
                 <Input
-                  value={semester?.name}
+                  value={semesterTyped?.name}
                   placeholder="Semester"
                   onChangeText={(text) =>
-                    setSemester((semester) => ({ ...semester, name: text }))
+                    setSememstertyped((semester) => ({
+                      ...semester,
+                      name: text,
+                    }))
                   }
                 />
                 <Input
-                  value={semester?.gpa ? semester?.gpa.toString() : ""}
+                  value={
+                    semesterTyped?.gpa ? semesterTyped?.gpa.toString() : ""
+                  }
                   placeholder="GPA (e.g. 3.25)"
                   inputMode="numeric"
                   onChangeText={(text) =>
-                    setSemester((semester) => {
+                    setSememstertyped((semester) => {
                       const t = text.trim();
                       if (!t) return { ...semester, gpa: null };
                       const n = Number.parseFloat(t);
@@ -283,7 +336,9 @@ const SemestersModal = () => {
                 />
 
                 <Button
-                  onPress={()=> {addSemester(semester)}}
+                  onPress={() => {
+                    addSemester(semester);
+                  }}
                   style={{
                     flexDirection: "row",
                     gap: spacingX._10,

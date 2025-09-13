@@ -1,9 +1,11 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import Typo from "../components/typo";
 
 const Index = () => {
   return (
     <View style={styles.container}>
+      <Typo>home</Typo>
       {/* <Image resizeMode="contain" style={styles.logo} source={} /> */}
     </View>
   );

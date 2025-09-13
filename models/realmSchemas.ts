@@ -2,11 +2,11 @@ export const CourseSchema = {
   name: "Course",
   primaryKey: "id",
   properties: {
-    id: "objectId",
+    id: "uuid",
     name: "string",
     creditUnit: "int?",
     gradePoint: "string?",
-    semesterId: "string",
+    semesterId: "uuid",
     semester: "Semester",
     uid: "string",
   },
@@ -16,7 +16,7 @@ export const SemesterSchema = {
   name: "Semester",
   primaryKey: "id",
   properties: {
-    id: "objectId",
+    id: "uuid",
     name: "string",
     gpa: "double?",
     lastUpdated: "date?",

@@ -1,11 +1,12 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { semesterCardProps, semestersListType } from "@/types";
+import { semesterCardProps, semestersListType, SemesterType } from "@/types";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import Typo from "./typo";
 import { CaretRightIcon } from "phosphor-react-native";
 import { formatDate } from "@/utils/formatDate";
 import Loading from "./Loading";
+import { useRouter } from "expo-router";
 
 const SemestersList = ({
   data: semesters,
@@ -22,7 +23,7 @@ const SemestersList = ({
         </View>
       )}
       {semesters.length > 0 ? (
-        semesters.map((sem) => <SemesterCard key={sem.id} semester={sem} />)
+        semesters.map((sem) => <SemesterCard key={sem.name} semester={sem} />)
       ) : (
         <View style={{ alignItems: "center", paddingTop: spacingY._10 }}>
           <Typo color={colors.secondary2}>{emptyListMessage}</Typo>
@@ -35,15 +36,20 @@ const SemestersList = ({
 export default SemestersList;
 
 const SemesterCard = ({ semester }: semesterCardProps) => {
-  const handleOpenSemester = (id: string) => {
-    // Handle opening the semester details
+  const router = useRouter();
+  const handleOpenSemester = (semester: SemesterType) => {
+    // Handle opening the semester
+    router.push({
+      pathname: "/(modals)/semestersModal",
+      params: { id: semester.id?.toString() },
+    });
   };
 
   return (
     <TouchableOpacity
       style={styles.semesterCard}
       onPress={() => {
-        handleOpenSemester(semester.id);
+        handleOpenSemester(semester);
       }}
     >
       <View>

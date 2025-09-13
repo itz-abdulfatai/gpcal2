@@ -26,7 +26,8 @@ import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
 
 const realmConfig = {
   schema: [SemesterSchema, CourseSchema],
-  schemaVersion: 1,
+  schemaVersion: 3,
+  deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
 };
 
 let realm: Realm | null = null;
@@ -37,7 +38,6 @@ const openRealm = async () => {
   }
   return realm;
 };
-
 // ------------------------------------------------------------------------------------------------
 // realm matters
 // ------------------------------------------------------------------------------------------------
@@ -276,7 +276,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
     return () => {
       semesters?.removeAllListeners();
-      realmInstance?.close();
+      // realmInstance?.close();
+      // realm = null;
     };
   }, []);
 
@@ -339,7 +340,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   const addCourse = async (
     course: CourseType,
-    semesterId: string
+    semesterId: Realm.BSON.UUID
   ): Promise<ResponseType> => {
     try {
       const realm = await openRealm();
@@ -365,10 +366,37 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     }
   };
   // READ
-  const getSemesters = async () => {
-    const realm = await openRealm();
-    const semesters = realm.objects<SemesterType>("Semester");
-    setSemesters([...semesters]);
+  const getSemesters = async (): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      const semesters = realm.objects<SemesterType>("Semester");
+      setSemesters([...semesters]);
+
+      return { success: true, data: semesters };
+    } catch (error: any) {
+      console.log("error occured (getSemesters)", error);
+      return { success: false, msg: error.message };
+    }
+  };
+
+  const getSemesterById = async (
+    id: Realm.BSON.UUID | string
+  ): Promise<SemesterType | null> => {
+    try {
+      const realm = await openRealm();
+
+      // Convert string to UUID if needed
+      const uuid = typeof id === "string" ? new Realm.BSON.UUID(id) : id;
+
+      const semester = realm.objectForPrimaryKey<SemesterType>(
+        "Semester",
+        uuid
+      );
+      return semester ? { ...semester } : null;
+    } catch (error) {
+      console.log("error occured (getSemesterById)", error);
+      return null;
+    }
   };
 
   const getCourses = async (semesterId: string) => {
@@ -460,6 +488,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
     addCourse,
     getSemesters,
+    getSemesterById,
     getCourses,
 
     updateCourse,

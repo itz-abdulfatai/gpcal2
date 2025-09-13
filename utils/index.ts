@@ -1,3 +1,4 @@
+import { Platform, ToastAndroid, Alert } from "react-native";
 import { CourseType, ResponseType } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -33,7 +34,9 @@ export const formatCoursesForDonut = (courses: CourseType[]) => {
 /**
  * Fetch data from AsyncStorage and return as object
  */
-export const getItem = async <T = unknown>(key: string): Promise<ResponseType<T | null>> => {
+export const getItem = async <T = unknown>(
+  key: string
+): Promise<ResponseType<T | null>> => {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw !== null) {
@@ -43,7 +46,8 @@ export const getItem = async <T = unknown>(key: string): Promise<ResponseType<T 
   } catch (error) {
     return { success: false, data: null, msg: (error as Error).message };
   }
-};/**
+};
+/**
  * Fetch an array from AsyncStorage (always return an array, even if empty)
  */
 export const getArray = async <T>(key: string): Promise<ResponseType<T[]>> => {
@@ -228,5 +232,13 @@ export const updateArrayEntry = async <T extends { id: string }>(
     return { success: true, data: updatedArr };
   } catch (error) {
     return { success: false, msg: (error as Error).message, data: [] as T[] };
+  }
+};
+
+export const alert = (message: string): void => {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  } else {
+    Alert.alert("", message);
   }
 };

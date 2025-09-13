@@ -80,7 +80,7 @@ const Analytics = () => {
             <Table
               data={courses}
               headings={["Course", "Credits", "Grade"]}
-              keys={["name", "creditUnit", "GradePoint"]}
+              keys={["name", "creditUnit", "gradePoint"]}
             />
           </View>
           <Typo style={styles.headings}>Performance Charts</Typo>

@@ -1,4 +1,4 @@
-import { Stack, SplashScreen } from "expo-router";
+import { Stack, SplashScreen, useRouter } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { applyCustomFont } from "@/providers/FontProvider";
@@ -14,14 +14,14 @@ function StackLayout() {
     ManropeExtraLight: require("@/assets/fonts/Manrope-ExtraLight.ttf"),
   });
 
-  // const router = useRouter();
+  const router = useRouter();
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
     if (fontsLoaded) {
       applyCustomFont();
       console.log("✅ Manrope fonts loaded!");
       SplashScreen.hideAsync();
-      // router.push("/(tabs)");
+      router.replace("/(tabs)");
     }
   }, [fontsLoaded]);
   if (!fontsLoaded) return null;

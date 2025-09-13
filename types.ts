@@ -1,4 +1,5 @@
-import { Dispatch, SetStateAction, ReactNode } from "react";
+import { ReactNode } from "react";
+import type { BSON } from "realm";
 
 import { Icon } from "phosphor-react-native";
 import {
@@ -110,11 +111,11 @@ export type SaveButtonProps = {
 export type GradeType = "A" | "B" | "C" | "D" | "E" | "F" | null;
 
 export type CourseType = {
-  id: string;
+  id: BSON.UUID;
   name: string;
   creditUnit: number | null;
-  GradePoint: GradeType | null;
-  semesterId: string;
+  gradePoint: GradeType | null;
+  semesterId: BSON.UUID;
   uid: string;
 };
 
@@ -177,7 +178,7 @@ export type ResponseType<T = any> = {
 };
 
 export type SemesterType = {
-  id: string;
+  id: BSON.UUID;
   name: string;
   gpa: number | null;
   lastUpdated: Date | null;
@@ -234,11 +235,15 @@ export type DataContextType = {
     changes: Partial<SemesterType>
   ) => Promise<ResponseType>;
   deleteSemester: (id: string) => Promise<ResponseType>;
-  addCourse: (course: CourseType, semesterId: string) => Promise<ResponseType>;
+  addCourse: (
+    course: CourseType,
+    semesterId: BSON.UUID
+  ) => Promise<ResponseType>;
   updateCourse: (id: string, changes: Partial<CourseType>) => Promise<void>;
   deleteCourse: (id: string) => Promise<ResponseType>;
-  getSemesters: () => Promise<void>;
+  getSemesters: () => Promise<ResponseType>;
   getCourses: (semesterId: string) => Promise<CourseType[]>;
+  getSemesterById: (
+    id: Realm.BSON.UUID | string
+  ) => Promise<SemesterType | null>;
 };
-
-
