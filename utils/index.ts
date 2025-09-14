@@ -1,5 +1,5 @@
 import { Platform, ToastAndroid, Alert } from "react-native";
-import { CourseType, ResponseType } from "@/types";
+import { CourseType, GradeType, ResponseType } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getRandomColor = () =>
@@ -20,7 +20,7 @@ export const formatCoursesForDonut = (courses: CourseType[]) => {
   console.log("formatCoursesForDonut");
 
   return courses.map((course) => {
-    const gradeValue = gradeScale[course.GradePoint!] ?? 0;
+    const gradeValue = gradeScale[course.gradePoint!] ?? 0;
     const weightedValue = course.creditUnit! * gradeValue;
 
     return {
@@ -180,33 +180,33 @@ export const updateSettingInStorage = async <T extends { id: string }>(
   }
 };
 
-export const logAllStorage = async () => {
-  try {
-    const keys = await AsyncStorage.getAllKeys();
-    const stores = await AsyncStorage.multiGet(keys);
+// export const logAllStorage = async () => {
+//   try {
+//     const keys = await AsyncStorage.getAllKeys();
+//     const stores = await AsyncStorage.multiGet(keys);
 
-    stores.forEach(([key, value]) => {
-      let parsedValue;
-      try {
-        parsedValue = JSON.parse(value ?? "null");
-      } catch {
-        parsedValue = value; // fallback if it's not JSON
-      }
+//     stores.forEach(([key, value]) => {
+//       let parsedValue;
+//       try {
+//         parsedValue = JSON.parse(value ?? "null");
+//       } catch {
+//         parsedValue = value; // fallback if it's not JSON
+//       }
 
-      console.log(`${key}:`, parsedValue);
-    });
+//       console.log(`${key}:`, parsedValue);
+//     });
 
-    return stores.map(([key, value]) => {
-      try {
-        return [key, JSON.parse(value ?? "null")];
-      } catch {
-        return [key, value];
-      }
-    });
-  } catch (e) {
-    console.error("Error reading AsyncStorage:", e);
-  }
-};
+//     return stores.map(([key, value]) => {
+//       try {
+//         return [key, JSON.parse(value ?? "null")];
+//       } catch {
+//         return [key, value];
+//       }
+//     });
+//   } catch (e) {
+//     console.error("Error reading AsyncStorage:", e);
+//   }
+// };
 
 /**
  * Update an entry in an array in AsyncStorage by id.
@@ -241,4 +241,33 @@ export const alert = (message: string): void => {
   } else {
     Alert.alert("", message);
   }
+};
+
+export const gradeMap: Record<Exclude<GradeType, null>, number> = {
+  A: 5,
+  B: 4,
+  C: 3,
+  D: 2,
+  E: 1,
+  F: 0,
+};
+export const gradeToPoint = (grade: GradeType) => {
+  if (grade === null) return 0;
+  return gradeMap[grade];
+};
+
+export const computeGPA = (courses: CourseType[]) => {
+  const filtered = courses.filter((c) => c.creditUnit && c.gradePoint);
+  let totalCredits = 0;
+  let totalWeighted = 0;
+  for (const c of filtered) {
+    const gp =
+      typeof c.gradePoint === "string"
+        ? gradeToPoint(c.gradePoint)
+        : Number(c.gradePoint);
+    const credits = Number(c.creditUnit ?? 0);
+    totalCredits += credits;
+    totalWeighted += gp * credits;
+  }
+  return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };

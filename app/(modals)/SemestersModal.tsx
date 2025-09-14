@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ModalWrapper from "@/components/ModalWrapper";
 import Typo from "@/components/typo";
 import Header from "@/components/header";
@@ -23,16 +23,75 @@ import { useData } from "@/contexts/DataContext";
 const { UUID } = BSON;
 
 const SemestersModal = () => {
+  const [semester, setSemester] = useState<SemesterType>({
+    id: new UUID(),
+    gpa: null,
+    name: "",
+    uid: "",
+    courses: [],
+    lastUpdated: new Date(),
+    linkedSemesters: [],
+  });
   const { id } = useLocalSearchParams();
-  
-  const { getSemesterById } = useData();
+  const dropdownRef = useRef<any>(null);
+  const { getSemesterById, semesters: dbSemesters, linkSemester } = useData();
   let oldSemester: SemesterType | null;
+  const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
+
+  const idToStr = (id: any): string =>
+    typeof id === "string"
+      ? id
+      : typeof id?.toHexString === "function"
+      ? id.toHexString()
+      : String(id);
+
+  const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
+    (semester.linkedSemesters ?? []).map(idToStr)
+  );
+
+  useEffect(() => {
+    setCourse((prev) => ({ ...prev, semesterId: semester.id }));
+  }, [semester.id]);
+
+  useEffect(() => {
+    if (selectingPastSemesters) {
+      // let render commit then open
+      const t = setTimeout(() => {
+        dropdownRef.current?.open?.();
+      }, 0);
+      return () => clearTimeout(t);
+    }
+  }, [selectingPastSemesters]);
+
+  // Safe linked IDs set (derived)
+  const linkedIdsSet = useMemo(
+    () => new Set((linkedSemesterIds ?? []).map((s) => String(s))),
+    [linkedSemesterIds]
+  );
+
+  const handleDropDownOpen = () => {
+    // safe call — only call if method exists
+    setTimeout(() => {
+      if (dropdownRef.current?.open) {
+        dropdownRef.current.open();
+      } else {
+        console.warn(
+          "Dropdown ref or .open() not available:",
+          dropdownRef.current
+        );
+      }
+    }, 10);
+  };
+
+  const handleSelectPastSemester = () => {
+    setSelectingPastSemesters(true);
+    handleDropDownOpen();
+  };
 
   const getOldSemester = async () => {
     if (id) {
       oldSemester = await getSemesterById(id as string);
 
-      
       if (oldSemester) {
         setSemesterTitle(oldSemester.name);
         setSememsterSaved(true);
@@ -41,7 +100,6 @@ const SemestersModal = () => {
         setPromptVisible(false);
       }
     } else {
-      
       openChooseSemesterModal();
     }
   };
@@ -61,15 +119,8 @@ const SemestersModal = () => {
   const router = useRouter();
   // const [isSaved, setIsSaved] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
+  const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
-  const [semester, setSemester] = useState<SemesterType>({
-    id: new UUID(),
-    gpa: null,
-    name: "",
-    uid: "",
-    courses: [],
-    lastUpdated: new Date(),
-  });
   const [semesterTyped, setSememstertyped] = useState<SemesterType>({
     id: new UUID(),
     gpa: null,
@@ -77,6 +128,7 @@ const SemestersModal = () => {
     uid: "",
     courses: [],
     lastUpdated: new Date(),
+    linkedSemesters: [],
   });
   const [course, setCourse] = useState<CourseType>({
     id: new UUID(),
@@ -87,22 +139,44 @@ const SemestersModal = () => {
     gradePoint: null,
   });
 
-  const [semesterTitle, setSemesterTitle] = useState<string>(semester? semester.name :"");
+  const [semesterTitle, setSemesterTitle] = useState<string>(
+    semester ? semester.name : ""
+  );
 
-  // useEffect(()=> {
-  //   if (oldSemester) {
-  //     setSemesterTitle(oldSemester.name)
-  //     setSememsterSaved(true)
-  //     setSemester(oldSemester)
-  //     // setCourses({...oldSemester.courses})
-  //     setPromptVisible(false)
-  //   }
-  // }, [oldSemester])
+  // const linkedIdsSet = new Set(
+  //   (semester.linkedSemesters ?? []).map((id: any) =>
+  //     typeof id === "string" ? id : id.toHexString()
+  //   )
+  // );
 
-  const [semesters] = useState<SemesterType[]>([]);
+  const handleLinkSemester = async (idStr: string) => {
+    if (!idStr || linkedIdsSet.has(idStr)) return;
+    const res = await linkSemester(semester.id.toString(), idStr);
+    if (!res.success) {
+      return alert(res.msg!);
+    }
+
+    setLinkedSemesterIds((prev) => [...prev, idStr]);
+    setSelectingPastSemesters(false);
+  };
+
+  const linkedSemestersData = useMemo(() => {
+    const mapById = new Map(
+      dbSemesters.map((s) => [idToStr((s as any).id), s])
+    );
+    return linkedSemesterIds
+      .map((lid) => mapById.get(lid))
+      .filter(Boolean) as SemesterType[];
+  }, [dbSemesters, linkedSemesterIds]);
+
+  // const [semesters] = useState<SemesterType[]>([]);
   const [semesterSaved, setSememsterSaved] = useState(false);
 
-  const { addSemester, addCourse: addCourseToSemester } = useData();
+  const {
+    addSemester,
+    addCourse: addCourseToSemester,
+    updateSemester,
+  } = useData();
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
@@ -123,6 +197,9 @@ const SemestersModal = () => {
       id: new UUID(),
       semesterId: semester.id,
     };
+
+    if (!parsedCourse.name || !parsedCourse.creditUnit)
+      return alert("invalid course name or credit unit");
 
     // If semester hasn’t been saved yet, save it first
     if (!semesterSaved) {
@@ -145,11 +222,11 @@ const SemestersModal = () => {
     if (!addCourseSuccess) return alert(addCourseMsg!);
 
     // Update local semester state
-    setSemester((prev) => ({
-      ...prev,
-      courses: [...prev.courses, parsedCourse],
-      lastUpdated: new Date(),
-    }));
+    // setSemester((prev) => ({
+    //   ...prev,
+    //   courses: [...prev.courses, parsedCourse],
+    //   lastUpdated: new Date(),
+    // }));
 
     setCourse({
       id: new UUID(),
@@ -159,6 +236,8 @@ const SemestersModal = () => {
       creditUnit: null,
       gradePoint: null,
     });
+
+    console.log(semester);
   };
 
   //   const saveSemester = async () => {
@@ -182,6 +261,22 @@ const SemestersModal = () => {
   //     openChooseSemesterModal();
   //   }
   // }, [semesterTitle]);
+
+  const linkedIds = (semester.linkedSemesters ?? []).map((id) =>
+    id.toHexString()
+  );
+
+  const semesterOptions = useMemo(() => {
+    return dbSemesters
+      .filter((s) => {
+        const sId = idToStr((s as any).id);
+        return sId !== idToStr(semester.id) && !linkedIdsSet.has(sId);
+      })
+      .map((s) => ({
+        label: s.name ?? "Untitled Semester",
+        value: idToStr((s as any).id),
+      }));
+  }, [dbSemesters, linkedIdsSet, semester.id]);
 
   return (
     <ModalWrapper>
@@ -304,7 +399,44 @@ const SemestersModal = () => {
               )}
 
               <View style={styles.sectionContainer}>
-                <Typo style={styles.headings}>Past Semesters</Typo>
+                <View style={[styles.row, styles.btw]}>
+                  <Typo style={styles.headings}>Past Semesters</Typo>
+                  {!selectingPastSemesters && (
+                    <TouchableOpacity onPress={handleSelectPastSemester}>
+                      <Typo style={styles.pastSemesterTtl}>
+                        🔗 Link existing
+                      </Typo>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {selectingPastSemesters && (
+                  <Dropdown
+                    onBlur={() => setSelectingPastSemesters(false)}
+                    ref={dropdownRef}
+                    data={semesterOptions}
+                    value={selectedSemester}
+                    placeholder="Select semester"
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    search
+                    onChange={(item) => {
+                      if (!item?.value) return;
+                      setSelectedSemester(item.value);
+                      handleLinkSemester(item.value);
+                      console.log(semester.linkedSemesters);
+                    }}
+                    style={styles.dropdownContainer}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    selectedTextStyle={styles.dropdownSelectedText}
+                    iconStyle={styles.dropdownIcon}
+                    itemTextStyle={styles.dropdownItemText}
+                    itemContainerStyle={styles.dropdownItemContainer}
+                    containerStyle={styles.dropdownListContainer}
+                    activeColor={colors.primary}
+                  />
+                )}
 
                 {/* 🔑 Input saves value directly into ref */}
                 <Input
@@ -336,8 +468,26 @@ const SemestersModal = () => {
                 />
 
                 <Button
-                  onPress={() => {
-                    addSemester(semester);
+                  onPress={async () => {
+                    const res = await addSemester(semesterTyped);
+                    if (!res.success)
+                      return alert(res.msg ?? "Failed to add semester");
+                    // addSemester wrote into realm and semesterTyped.id is a BSON.UUID. Convert to string for UI:
+                    const idStr = idToStr(semesterTyped.id);
+                    setLinkedSemesterIds((prev) => {
+                      if (prev.includes(idStr)) return prev;
+                      return [...prev, idStr];
+                    });
+
+                    setSememstertyped({
+                      id: new UUID(),
+                      gpa: null,
+                      name: "",
+                      uid: "",
+                      courses: [],
+                      lastUpdated: new Date(),
+                      linkedSemesters: [],
+                    });
                   }}
                   style={{
                     flexDirection: "row",
@@ -355,19 +505,15 @@ const SemestersModal = () => {
                 </Button>
               </View>
 
-              {semesters.length > 0 && (
+              {linkedSemestersData.length > 0 && (
                 <View style={styles.sectionContainer}>
-                  <Typo style={styles.headings}>Added Semesters</Typo>
+                  <Typo style={styles.headings}>Linked Semesters</Typo>
                   <View style={styles.tableContainer}>
-                    {semesters.length === 0 ? (
-                      <Typo>No courses added yet</Typo>
-                    ) : (
-                      <Table
-                        headings={["Semester", "GPA"]}
-                        data={semesters}
-                        keys={["name", "gpa"]}
-                      />
-                    )}
+                    <Table<SemesterType>
+                      headings={["Semester", "GPA"]}
+                      data={linkedSemestersData}
+                      keys={["name", "gpa"]}
+                    />
                   </View>
                 </View>
               )}
@@ -398,6 +544,8 @@ const SemestersModal = () => {
 export default SemestersModal;
 
 const styles = StyleSheet.create({
+  row: { flexDirection: "row", alignItems: "baseline" },
+  btw: { justifyContent: "space-between" },
   footerContainer: {},
   tableContainer: {},
   container: {
@@ -415,6 +563,11 @@ const styles = StyleSheet.create({
   headings: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  pastSemesterTtl: {
+    marginTop: verticalScale(-20),
+    fontWeight: "light",
+    color: colors.neutral2,
   },
   dropdownContainer: {
     borderWidth: 1,

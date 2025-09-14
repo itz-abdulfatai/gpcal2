@@ -23,7 +23,9 @@ const SemestersList = ({
         </View>
       )}
       {semesters.length > 0 ? (
-        semesters.map((sem) => <SemesterCard key={sem.name} semester={sem} />)
+        semesters.map((sem) => (
+          <SemesterCard key={sem.id.toString()} semester={sem} />
+        ))
       ) : (
         <View style={{ alignItems: "center", paddingTop: spacingY._10 }}>
           <Typo color={colors.secondary2}>{emptyListMessage}</Typo>

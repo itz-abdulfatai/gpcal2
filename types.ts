@@ -184,6 +184,7 @@ export type SemesterType = {
   lastUpdated: Date | null;
   uid: string;
   courses: CourseType[];
+  linkedSemesters: BSON.UUID[];
 };
 
 export type semestersListType = {
@@ -246,4 +247,12 @@ export type DataContextType = {
   getSemesterById: (
     id: Realm.BSON.UUID | string
   ) => Promise<SemesterType | null>;
+  linkSemester: (
+    semesterId: string,
+    linkedSemesterId: string
+  ) => Promise<ResponseType>;
+  unlinkSemester: (
+    semesterId: string,
+    linkedSemesterId: string
+  ) => Promise<ResponseType>;
 };

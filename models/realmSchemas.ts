@@ -22,5 +22,6 @@ export const SemesterSchema = {
     lastUpdated: "date?",
     uid: "string",
     courses: "Course[]",
+    linkedSemesters: "uuid[]",
   },
 };

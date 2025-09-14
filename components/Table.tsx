@@ -4,7 +4,8 @@ import { View, Text, StyleSheet } from "react-native";
 import { colors } from "@/constants/theme"; // adjust path
 import { TableProps } from "@/types";
 
-function Table<T>({ headings, data, keys }: TableProps<T>) {
+function Table<T extends object>(props: TableProps<T>) {
+  const { headings, data, keys } = props;
   return (
     <View style={styles.container}>
       {/* Header */}

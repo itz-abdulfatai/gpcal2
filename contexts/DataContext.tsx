@@ -26,7 +26,7 @@ import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
 
 const realmConfig = {
   schema: [SemesterSchema, CourseSchema],
-  schemaVersion: 3,
+  schemaVersion: 5,
   deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
 };
 
@@ -36,6 +36,7 @@ const openRealm = async () => {
   if (!realm) {
     realm = await Realm.open(realmConfig);
   }
+  console.log("Realm file path:", realm.path);
   return realm;
 };
 // ------------------------------------------------------------------------------------------------
@@ -224,12 +225,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   const [utilities, setUtilities] = useState<UtilitiesType[]>([]);
   const [infos, setInfos] = useState<AppInfoType[]>([]);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
-  const [courses, setCourses] = useState<CourseType[]>([]);
-  const [user, setUser] = useState<UserType>(null);
-  const [language, setLanguage] = useState("en");
+  const [courses] = useState<CourseType[]>([]);
+  const [user] = useState<UserType>(null);
+  const [language] = useState("en");
 
   useEffect(() => {
     getSemesters(); // Loads semesters from Realm and sets state
+    // logAllStorage();
 
     const loadData = async () => {
       try {
@@ -276,8 +278,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
     return () => {
       semesters?.removeAllListeners();
-      // realmInstance?.close();
-      // realm = null;
+      if (realmInstance && !realmInstance.isClosed) {
+        realmInstance.close();
+      }
+      realm = null;
     };
   }, []);
 
@@ -405,6 +409,74 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     return semester ? (Array.from(semester.courses) as CourseType[]) : [];
   };
 
+  const linkSemester = async (
+    semesterId: string,
+    linkedSemesterId: string
+  ): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey<SemesterType>(
+          "Semester",
+          new Realm.BSON.UUID(semesterId)
+        );
+        if (!semester) {
+          throw new Error(`Semester with id ${semesterId} not found`);
+        }
+
+        // Ensure linkedSemesters array exists
+        if (!semester.linkedSemesters) {
+          semester.linkedSemesters = [] as any;
+        }
+
+        // Prevent duplicates
+        const alreadyLinked = semester.linkedSemesters.some(
+          (id: Realm.BSON.UUID) =>
+            id.equals(new Realm.BSON.UUID(linkedSemesterId))
+        );
+
+        if (!alreadyLinked) {
+          semester.linkedSemesters.push(new Realm.BSON.UUID(linkedSemesterId));
+        }
+      });
+
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (linkSemester)", error);
+      return { success: false, msg: error.message };
+    }
+  };
+
+  const unlinkSemester = async (
+    semesterId: string,
+    linkedSemesterId: string
+  ): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey<SemesterType>(
+          "Semester",
+          new Realm.BSON.UUID(semesterId)
+        );
+        if (!semester) {
+          throw new Error(`Semester with id ${semesterId} not found`);
+        }
+
+        semester.linkedSemesters = semester.linkedSemesters.filter(
+          (id: Realm.BSON.UUID) =>
+            !id.equals(new Realm.BSON.UUID(linkedSemesterId))
+        ) as any;
+      });
+
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (unlinkSemester)", error);
+      return { success: false, msg: error.message };
+    }
+  };
+
   // UPDATE
   const updateSemester = async (
     id: string,
@@ -413,7 +485,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     try {
       const realm = await openRealm();
       realm.write(() => {
-        const semester = realm.objectForPrimaryKey("Semester", id);
+        const semester = realm.objectForPrimaryKey(
+          "Semester",
+          new Realm.BSON.UUID(id)
+        );
         if (semester) {
           Object.assign(semester, changes);
         }
@@ -494,6 +569,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     updateCourse,
     deleteSemester,
     deleteCourse,
+    linkSemester,
+    unlinkSemester,
   };
 
   if (!generalSettings.length || !academicSettings.length) {
