@@ -96,7 +96,6 @@ const SemestersModal = () => {
         setSemesterTitle(oldSemester.name);
         setSememsterSaved(true);
         setSemester(oldSemester);
-        // setCourses({...oldSemester.courses})
         setPromptVisible(false);
       }
     } else {
@@ -160,6 +159,28 @@ const SemestersModal = () => {
     setSelectingPastSemesters(false);
   };
 
+  const handleAddLinkedSemester = async () => {
+    if (!semesterTyped.name || !semesterTyped.gpa) return;
+    const res = await addSemester(semesterTyped);
+    if (!res.success) return alert(res.msg ?? "Failed to add semester");
+    // addSemester wrote into realm and semesterTyped.id is a BSON.UUID. Convert to string for UI:
+    const idStr = idToStr(semesterTyped.id);
+    setLinkedSemesterIds((prev) => {
+      if (prev.includes(idStr)) return prev;
+      return [...prev, idStr];
+    });
+
+    setSememstertyped({
+      id: new UUID(),
+      gpa: null,
+      name: "",
+      uid: "",
+      courses: [],
+      lastUpdated: new Date(),
+      linkedSemesters: [],
+    });
+  };
+
   const linkedSemestersData = useMemo(() => {
     const mapById = new Map(
       dbSemesters.map((s) => [idToStr((s as any).id), s])
@@ -169,14 +190,16 @@ const SemestersModal = () => {
       .filter(Boolean) as SemesterType[];
   }, [dbSemesters, linkedSemesterIds]);
 
+  useEffect(() => {
+    if (semester && semester.linkedSemesters) {
+      setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
+    }
+  }, [semester]);
+
   // const [semesters] = useState<SemesterType[]>([]);
   const [semesterSaved, setSememsterSaved] = useState(false);
 
-  const {
-    addSemester,
-    addCourse: addCourseToSemester,
-    updateSemester,
-  } = useData();
+  const { addSemester, addCourse: addCourseToSemester } = useData();
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
@@ -206,12 +229,6 @@ const SemestersModal = () => {
       const { success, msg } = await addSemester(semester);
       if (!success) return alert(msg!);
 
-      // setCourses((prev) => [...prev, parsedCourse]); // only needed for first-time semester
-      // setSemester(prev => ({
-      //   ...prev,
-      //   lastUpdated: new Date()
-      // }))
-
       setSememsterSaved(true);
     }
 
@@ -220,13 +237,6 @@ const SemestersModal = () => {
       await addCourseToSemester(parsedCourse, semester.id);
 
     if (!addCourseSuccess) return alert(addCourseMsg!);
-
-    // Update local semester state
-    // setSemester((prev) => ({
-    //   ...prev,
-    //   courses: [...prev.courses, parsedCourse],
-    //   lastUpdated: new Date(),
-    // }));
 
     setCourse({
       id: new UUID(),
@@ -239,28 +249,11 @@ const SemestersModal = () => {
 
     console.log(semester);
   };
-
-  //   const saveSemester = async () => {
-  //   if (!semester.name.trim() || semester.courses.length === 0) return;
-  //   if (!isSaved) {
-  //     await addSemester(semester);
-  //     setIsSaved(true);
-  //   } else {
-  //     await updateSemester(semester.id, semester);
-  //   }
-  // };
-
   const analyse = () => {
     // saveSemester()
     // Perform analysis on courses and semesters
     console.log("Analysing...");
   };
-
-  // useEffect(() => {
-  //   if (!semesterTitle) {
-  //     openChooseSemesterModal();
-  //   }
-  // }, [semesterTitle]);
 
   const linkedIds = (semester.linkedSemesters ?? []).map((id) =>
     id.toHexString()
@@ -468,27 +461,7 @@ const SemestersModal = () => {
                 />
 
                 <Button
-                  onPress={async () => {
-                    const res = await addSemester(semesterTyped);
-                    if (!res.success)
-                      return alert(res.msg ?? "Failed to add semester");
-                    // addSemester wrote into realm and semesterTyped.id is a BSON.UUID. Convert to string for UI:
-                    const idStr = idToStr(semesterTyped.id);
-                    setLinkedSemesterIds((prev) => {
-                      if (prev.includes(idStr)) return prev;
-                      return [...prev, idStr];
-                    });
-
-                    setSememstertyped({
-                      id: new UUID(),
-                      gpa: null,
-                      name: "",
-                      uid: "",
-                      courses: [],
-                      lastUpdated: new Date(),
-                      linkedSemesters: [],
-                    });
-                  }}
+                  onPress={handleAddLinkedSemester}
                   style={{
                     flexDirection: "row",
                     gap: spacingX._10,

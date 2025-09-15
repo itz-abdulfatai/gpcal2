@@ -278,9 +278,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
     return () => {
       semesters?.removeAllListeners();
-      if (realmInstance && !realmInstance.isClosed) {
-        realmInstance.close();
-      }
+      // if (realmInstance && !realmInstance.isClosed) {
+      //   realmInstance.close();
+      // }
       realm = null;
     };
   }, []);
@@ -420,23 +420,31 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           "Semester",
           new Realm.BSON.UUID(semesterId)
         );
-        if (!semester) {
-          throw new Error(`Semester with id ${semesterId} not found`);
-        }
-
-        // Ensure linkedSemesters array exists
-        if (!semester.linkedSemesters) {
-          semester.linkedSemesters = [] as any;
-        }
-
-        // Prevent duplicates
-        const alreadyLinked = semester.linkedSemesters.some(
-          (id: Realm.BSON.UUID) =>
-            id.equals(new Realm.BSON.UUID(linkedSemesterId))
+        const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
+          "Semester",
+          new Realm.BSON.UUID(linkedSemesterId)
         );
 
-        if (!alreadyLinked) {
+        if (!semester || !linkedSemester) {
+          throw new Error("Semester not found");
+        }
+
+        // Add linkedSemesterId to semester.linkedSemesters
+        if (
+          !semester.linkedSemesters.some((id) =>
+            id.equals(new Realm.BSON.UUID(linkedSemesterId))
+          )
+        ) {
           semester.linkedSemesters.push(new Realm.BSON.UUID(linkedSemesterId));
+        }
+
+        // Add semesterId to linkedSemester.linkedSemesters
+        if (
+          !linkedSemester.linkedSemesters.some((id) =>
+            id.equals(new Realm.BSON.UUID(semesterId))
+          )
+        ) {
+          linkedSemester.linkedSemesters.push(new Realm.BSON.UUID(semesterId));
         }
       });
 
@@ -459,13 +467,23 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           "Semester",
           new Realm.BSON.UUID(semesterId)
         );
-        if (!semester) {
-          throw new Error(`Semester with id ${semesterId} not found`);
+        const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
+          "Semester",
+          new Realm.BSON.UUID(linkedSemesterId)
+        );
+
+        if (!semester || !linkedSemester) {
+          throw new Error("Semester not found");
         }
 
+        // Remove linkedSemesterId from semester.linkedSemesters
         semester.linkedSemesters = semester.linkedSemesters.filter(
-          (id: Realm.BSON.UUID) =>
-            !id.equals(new Realm.BSON.UUID(linkedSemesterId))
+          (id) => !id.equals(new Realm.BSON.UUID(linkedSemesterId))
+        ) as any;
+
+        // Remove semesterId from linkedSemester.linkedSemesters
+        linkedSemester.linkedSemesters = linkedSemester.linkedSemesters.filter(
+          (id) => !id.equals(new Realm.BSON.UUID(semesterId))
         ) as any;
       });
 
@@ -476,6 +494,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       return { success: false, msg: error.message };
     }
   };
+
 
   // UPDATE
   const updateSemester = async (
