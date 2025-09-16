@@ -12,10 +12,8 @@ import { Dropdown } from "react-native-element-dropdown";
 import { CourseType, SemesterType } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import Button from "@/components/Button";
-// import { dummyCourses } from "@/constants/data";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
-// import SaveButton from "@/components/saveButton";
 import { alert } from "@/utils";
 import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
@@ -34,7 +32,7 @@ const SemestersModal = () => {
   });
   const { id } = useLocalSearchParams();
   const dropdownRef = useRef<any>(null);
-  const { getSemesterById, semesters: dbSemesters, linkSemester } = useData();
+  const { getSemesterById, semesters: dbSemesters, linkSemester, addSemester, addCourse: addCourseToSemester } = useData();
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
 
@@ -116,7 +114,6 @@ const SemestersModal = () => {
     { label: "F", value: "F" },
   ];
   const router = useRouter();
-  // const [isSaved, setIsSaved] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
@@ -142,14 +139,16 @@ const SemestersModal = () => {
     semester ? semester.name : ""
   );
 
-  // const linkedIdsSet = new Set(
-  //   (semester.linkedSemesters ?? []).map((id: any) =>
-  //     typeof id === "string" ? id : id.toHexString()
-  //   )
-  // );
-
   const handleLinkSemester = async (idStr: string) => {
     if (!idStr || linkedIdsSet.has(idStr)) return;
+
+    // If semester hasn’t been saved yet, save it first
+    if (!semesterSaved) {
+      const { success, msg } = await addSemester(semester);
+      if (!success) return alert(msg!);
+
+      setSememsterSaved(true);
+    }
     const res = await linkSemester(semester.id.toString(), idStr);
     if (!res.success) {
       return alert(res.msg!);
@@ -160,9 +159,27 @@ const SemestersModal = () => {
   };
 
   const handleAddLinkedSemester = async () => {
-    if (!semesterTyped.name || !semesterTyped.gpa) return;
+    if (!semesterTyped.name || semesterTyped.gpa == null) return;
+
+    // If semester hasn’t been saved yet, save it first
+    if (!semesterSaved) {
+      const { success, msg } = await addSemester(semester);
+      if (!success) return alert(msg!);
+
+      setSememsterSaved(true);
+    }
     const res = await addSemester(semesterTyped);
     if (!res.success) return alert(res.msg ?? "Failed to add semester");
+
+    try {
+      await linkSemester(
+        semester.id.toHexString(),
+        semesterTyped.id.toHexString()
+      );
+    } catch (error: any) {
+      console.log("error linking semester (handleAddLinkedSemester)", error);
+    }
+
     // addSemester wrote into realm and semesterTyped.id is a BSON.UUID. Convert to string for UI:
     const idStr = idToStr(semesterTyped.id);
     setLinkedSemesterIds((prev) => {
@@ -196,10 +213,7 @@ const SemestersModal = () => {
     }
   }, [semester]);
 
-  // const [semesters] = useState<SemesterType[]>([]);
   const [semesterSaved, setSememsterSaved] = useState(false);
-
-  const { addSemester, addCourse: addCourseToSemester } = useData();
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
@@ -254,10 +268,10 @@ const SemestersModal = () => {
     // Perform analysis on courses and semesters
     console.log("Analysing...");
   };
-
-  const linkedIds = (semester.linkedSemesters ?? []).map((id) =>
-    id.toHexString()
-  );
+  // dont delete
+  // const linkedIds = (semester.linkedSemesters ?? []).map((id) =>
+  //   id.toHexString()
+  // );
 
   const semesterOptions = useMemo(() => {
     return dbSemesters
