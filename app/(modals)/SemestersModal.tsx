@@ -87,6 +87,7 @@ const SemestersModal = () => {
     handleDropDownOpen();
   };
 
+  
   const getOldSemester = async () => {
     if (id) {
       oldSemester = await getSemesterById(id as string);
@@ -101,9 +102,9 @@ const SemestersModal = () => {
       openChooseSemesterModal();
     }
   };
-
   useEffect(() => {
     getOldSemester();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const grades = [
@@ -309,12 +310,13 @@ useEffect(() => {
   return () => {
     cancelled = true;
   };
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [semester]);
 
 
   const analyse = () => {
     router.push({
-      pathname: "/(tabs)/Analytics",
+      pathname: "/(modals)/analyticsModal",
       params: {id: semester.id.toHexString()}
     })
   };
@@ -337,35 +339,25 @@ useEffect(() => {
 
   return (
     <ModalWrapper>
-      {/* PromptDialog */}
-      <PromptDialog
-        visible={promptVisible}
-        question="Enter semester name"
-        setResponse={(val) => {
-          if (val.trim()) {
-            setSemesterTitle(val);
-            handleSemesterName(val);
-          }
-        }}
-        onClose={(val) => {
-          setPromptVisible(false);
-          if (!val) router.back();
-        }}
-      />
 
       {semesterTitle && (
-        <View style={styles.container}>
+
+        <>
+<View style={{paddingHorizontal: spacingX._20}}>
+
           <Header
             leftIcon={<BackButton />}
             title={semesterTitle ? semesterTitle : ""}
             // rightIcon={ <SaveButton onPress={saveSemester}/>}
-          />
+            />
+            </View>
 
           <ScrollView
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}
           >
+        <View style={styles.container}>
             <View style={{ gap: spacingX._20 }}>
               <View style={styles.sectionContainer}>
                 <Typo style={styles.headings}>Add New Course</Typo>
@@ -555,6 +547,7 @@ useEffect(() => {
                 </View>
               )}
             </View>
+            </View>
           </ScrollView>
 
           <View style={styles.footerContainer}>
@@ -572,9 +565,26 @@ useEffect(() => {
               </Typo>
             </Button>
           </View>
-        </View>
+
+        </>
       )}
-    </ModalWrapper>
+    
+          {/* PromptDialog */}
+      <PromptDialog
+        visible={promptVisible}
+        question="Enter semester name"
+        setResponse={(val) => {
+          if (val.trim()) {
+            setSemesterTitle(val);
+            handleSemesterName(val);
+          }
+        }}
+        onClose={(val) => {
+          setPromptVisible(false);
+          if (!val) router.back();
+        }}
+      />
+</ModalWrapper>
   );
 };
 
@@ -583,7 +593,10 @@ export default SemestersModal;
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "baseline" },
   btw: { justifyContent: "space-between" },
-  footerContainer: {},
+  footerContainer: {
+    paddingHorizontal: spacingX._20,
+    paddingVertical: spacingY._5
+  },
   tableContainer: {},
   container: {
     flex: 1,

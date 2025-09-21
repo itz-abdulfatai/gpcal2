@@ -1,12 +1,8 @@
 import { colors } from "@/constants/theme";
 import { Tabs } from "expo-router";
-import {
-  HouseSimpleIcon,
-  UserIcon,
-  ChartPieSliceIcon,
-} from "phosphor-react-native";
+import { HouseSimpleIcon, UserIcon } from "phosphor-react-native";
 import React from "react";
-import { Platform, ToastAndroid } from "react-native";
+import { Platform } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -32,7 +28,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="Analytics"
         options={{
           title: "Analytics",
@@ -59,7 +55,7 @@ export default function TabLayout() {
             }
           },
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="Profile"

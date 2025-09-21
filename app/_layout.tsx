@@ -31,6 +31,10 @@ function StackLayout() {
         name="(modals)/semestersModal"
         options={{ presentation: "modal" }}
       ></Stack.Screen>
+      <Stack.Screen
+        name="(modals)/analyticsModal"
+        options={{ presentation: "modal" }}
+      ></Stack.Screen>
     </Stack>
   );
 }

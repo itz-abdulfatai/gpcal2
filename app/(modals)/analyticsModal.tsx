@@ -1,4 +1,3 @@
-import ScreenWrapper from "@/components/ScreenWrapper";
 import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
@@ -19,6 +18,8 @@ import { BarChart, PieChart } from "react-native-gifted-charts";
 import Button from "@/components/Button";
 import { router, useLocalSearchParams } from "expo-router";
 import { useData } from "@/contexts/DataContext";
+import ModalWrapper from "@/components/ModalWrapper";
+import BackButton from "@/components/BackButton";
 
 const Analytics = () => {
   const [semester, setSemester] = React.useState<SemesterType | null>(null);
@@ -55,6 +56,10 @@ const Analytics = () => {
   );
 
   const { id } = useLocalSearchParams();
+  if (!id) {
+    alert("Please select a semester from the Home page.");
+    router.back();
+  }
   const { getSemesterById, semesters: dbSemesters } = useData();
   useEffect(() => {
     // Fetch or calculate analytics data here based on semester
@@ -66,6 +71,7 @@ const Analytics = () => {
       setCourses(semester.courses);
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
   const linkedSemestersData = useMemo(() => {
@@ -87,8 +93,10 @@ const Analytics = () => {
   };
 
   return (
-    <ScreenWrapper>
-      <Header title={semester?.name} />
+    <ModalWrapper>
+      <View style={{ paddingHorizontal: spacingX._20 }}>
+        <Header title={semester?.name} leftIcon={<BackButton />} />
+      </View>
       <ScrollView>
         <View style={styles.container}>
           <Typo style={styles.headings}>Results Summary</Typo>
@@ -272,7 +280,7 @@ const Analytics = () => {
           </Button>
         </View>
       </ScrollView>
-    </ScreenWrapper>
+    </ModalWrapper>
   );
 };
 
