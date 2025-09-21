@@ -36,7 +36,7 @@ const openRealm = async () => {
   if (!realm) {
     realm = await Realm.open(realmConfig);
   }
-  console.log("Realm file path:", realm.path);
+  // console.log("Realm file path:", realm.path);
   return realm;
 };
 // ------------------------------------------------------------------------------------------------
@@ -311,22 +311,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
   };
 
-  // const addSemester = async (semester: SemesterType) => {
-  //   console.log("add semester called");
-  //   if (!semester.name.trim()) return;
-
-  //   setSemesters((prev) => [...prev, semester]);
-  //   await addToArray<SemesterType>("semesters", semester);
-  //   logAllStorage();
-  // };
-
-  // const updateSemester = async (id: string, changes: Partial<SemesterType>) => {
-  //   setSemesters((prev) =>
-  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-  //   );
-  //   await updateArrayEntry<SemesterType>("semesters", id, changes);
-  // };
-
   // CREATE
   const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
     try {
@@ -494,7 +478,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       return { success: false, msg: error.message };
     }
   };
-
 
   // UPDATE
   const updateSemester = async (

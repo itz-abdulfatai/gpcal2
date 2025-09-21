@@ -14,7 +14,7 @@ import { verticalScale } from "@/utils/styling";
 import Button from "@/components/Button";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
-import { alert } from "@/utils";
+import { alert, computeGPA } from "@/utils";
 import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
 
@@ -32,7 +32,7 @@ const SemestersModal = () => {
   });
   const { id } = useLocalSearchParams();
   const dropdownRef = useRef<any>(null);
-  const { getSemesterById, semesters: dbSemesters, linkSemester, addSemester, addCourse: addCourseToSemester } = useData();
+  const { getSemesterById, semesters: dbSemesters, linkSemester, addSemester, addCourse: addCourseToSemester, updateSemester } = useData();
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
 
@@ -46,6 +46,7 @@ const SemestersModal = () => {
   const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
     (semester.linkedSemesters ?? []).map(idToStr)
   );
+
 
   useEffect(() => {
     setCourse((prev) => ({ ...prev, semesterId: semester.id }));
@@ -231,7 +232,6 @@ const SemestersModal = () => {
   const addCourse = async (course: CourseType) => {
     let parsedCourse = {
       ...course,
-      id: new UUID(),
       semesterId: semester.id,
     };
 
@@ -252,6 +252,15 @@ const SemestersModal = () => {
 
     if (!addCourseSuccess) return alert(addCourseMsg!);
 
+    
+    const gpa = computeGPA(semester.courses);
+    console.log("my gpa: ",gpa);
+
+    await updateSemester(semester.id.toHexString(), {gpa})
+
+    
+    
+
     setCourse({
       id: new UUID(),
       uid: "",
@@ -261,7 +270,7 @@ const SemestersModal = () => {
       gradePoint: null,
     });
 
-    console.log(semester);
+    // console.log(semester);
   };
   const analyse = () => {
     // saveSemester()

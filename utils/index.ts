@@ -257,6 +257,8 @@ export const gradeToPoint = (grade: GradeType) => {
 };
 
 export const computeGPA = (courses: CourseType[]) => {
+  console.log("calculating gpa");
+  
   const filtered = courses.filter((c) => c.creditUnit && c.gradePoint);
   let totalCredits = 0;
   let totalWeighted = 0;

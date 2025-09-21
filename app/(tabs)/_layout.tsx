@@ -42,7 +42,7 @@ export default function TabLayout() {
         }}
         listeners={{
           tabPress: (e) => {
-            e.preventDefault(); // stops navigation
+            //e.preventDefault(); // stops navigation
             // optionally show an alert/toast here
             if (Platform.OS === "android") {
               ToastAndroid.show(
