@@ -321,7 +321,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
-      console.log("error occured (deleteCourse)", error);
+      console.log("error occured (addSemester)", error);
       return { success: false, msg: error.message };
     }
   };

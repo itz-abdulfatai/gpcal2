@@ -1,5 +1,5 @@
 import { Platform, ToastAndroid, Alert } from "react-native";
-import { CourseType, GradeType, ResponseType } from "@/types";
+import { CourseType, GradeType, ResponseType, SemesterType } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getRandomColor = () =>
@@ -258,7 +258,7 @@ export const gradeToPoint = (grade: GradeType) => {
 
 export const computeGPA = (courses: CourseType[]) => {
   console.log("calculating gpa");
-  
+
   const filtered = courses.filter((c) => c.creditUnit && c.gradePoint);
   let totalCredits = 0;
   let totalWeighted = 0;
@@ -273,3 +273,40 @@ export const computeGPA = (courses: CourseType[]) => {
   }
   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };
+
+export const computeCGPAWeighted = (semesters: SemesterType[]) => {
+  console.log("calculating cgpa (weighted)");
+
+  let totalCredits = 0;
+  let totalWeighted = 0;
+
+  for (const semester of semesters) {
+    const filtered = semester.courses.filter(
+      (c) => c.creditUnit && c.gradePoint
+    );
+
+    for (const c of filtered) {
+      const gp =
+        typeof c.gradePoint === "string"
+          ? gradeToPoint(c.gradePoint) // assumes you already have this function
+          : Number(c.gradePoint);
+
+      const credits = Number(c.creditUnit ?? 0);
+      totalCredits += credits;
+      totalWeighted += gp * credits;
+    }
+  }
+
+  return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
+};
+
+// export const computeCGPAAverage = (semesters: SemesterType[]) => {
+//   console.log("calculating cgpa (average)");
+
+//   const valid = semesters.filter((s) => s.gpa !== null);
+
+//   if (valid.length === 0) return null;
+
+//   const sum = valid.reduce((acc, s) => acc + (s.gpa ?? 0), 0);
+//   return +(sum / valid.length).toFixed(2);
+// };

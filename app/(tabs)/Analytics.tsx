@@ -2,10 +2,9 @@ import ScreenWrapper from "@/components/ScreenWrapper";
 import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
-import { dummyCourses, dummySemesters } from "@/constants/data";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { CourseType, SemesterType } from "@/types";
-import { formatCoursesForDonut } from "@/utils";
+import { computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
 import {
   ChartBarIcon,
@@ -18,6 +17,8 @@ import { Dropdown } from "react-native-element-dropdown";
 import { BarChart, PieChart } from "react-native-gifted-charts";
 
 import Button from "@/components/Button";
+import { router, useLocalSearchParams } from "expo-router";
+import { useData } from "@/contexts/DataContext";
 
 const Analytics = () => {
   const [semester, setSemester] = React.useState<SemesterType | null>(null);
@@ -35,22 +36,49 @@ const Analytics = () => {
   const [mode, setMode] = useState<"piechart" | "barchart">(
     chartOptions[0].value
   );
-
-  const [courses, setCourses] = React.useState<CourseType[]>([]);
+  const idToStr = (id: any): string =>
+    typeof id === "string"
+      ? id
+      : typeof id?.toHexString === "function"
+      ? id.toHexString()
+      : String(id);
 
   useEffect(() => {
-    // Fetch or calculate analytics data here based on semester
-    setSemester(dummySemesters[0]);
-
-    // Dummy courses data
-    const semesterCourses = dummyCourses.filter(
-      (course) => course.semesterId === semester?.id
-    );
-    if (semesterCourses) {
-      setCourses(semesterCourses);
+    if (semester && semester.linkedSemesters) {
+      setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     }
-  }, [semester?.id]);
+  }, [semester]);
+
+  const [courses, setCourses] = React.useState<CourseType[]>([]);
+  const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
+    semester ? (semester.linkedSemesters ?? []).map(idToStr) : []
+  );
+
+  const { id } = useLocalSearchParams();
+  const { getSemesterById, semesters: dbSemesters } = useData();
+  useEffect(() => {
+    // Fetch or calculate analytics data here based on semester
+    const fetchData = async () => {
+      const semester = await getSemesterById(id.toString());
+
+      if (!semester) return router.back();
+      setSemester(semester);
+      setCourses(semester.courses);
+    };
+    fetchData();
+  }, [id]);
   const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
+  const linkedSemestersData = useMemo(() => {
+    const mapById = new Map(
+      dbSemesters.map((s) => [idToStr((s as any).id), s])
+    );
+    return linkedSemesterIds
+      .map((lid) => mapById.get(lid))
+      .filter(Boolean) as SemesterType[];
+  }, [dbSemesters, linkedSemesterIds]);
+  const cgpa = semester
+    ? computeCGPAWeighted([semester, ...linkedSemestersData])
+    : 0.0;
 
   const exportData = () => {
     // Function to handle data export
@@ -71,7 +99,7 @@ const Analytics = () => {
             </View>
             <View style={[styles.card, { backgroundColor: "#dcefe1" }]}>
               <Typo style={styles.cardTitle}>Cumulative GPA</Typo>
-              <Typo style={styles.cardValue}>3.65</Typo>
+              <Typo style={styles.cardValue}>{cgpa}</Typo>
             </View>
           </View>
 
