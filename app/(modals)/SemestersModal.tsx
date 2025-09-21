@@ -253,10 +253,12 @@ const SemestersModal = () => {
     if (!addCourseSuccess) return alert(addCourseMsg!);
 
     
-    const gpa = computeGPA(semester.courses);
-    console.log("my gpa: ",gpa);
+    // const gpa = computeGPA(semester.courses);
+    // console.log("my gpa: ",gpa);
 
-    await updateSemester(semester.id.toHexString(), {gpa})
+    // const {success, msg} = await updateSemester(semester.id.toHexString(), {gpa})
+
+    // if (!success) return alert(msg!);
 
     
     
@@ -272,10 +274,34 @@ const SemestersModal = () => {
 
     // console.log(semester);
   };
+
+  useEffect(() => {
+
+    const updateGpa = async () => {
+console.log('updating gpa');
+
+      
+      if (!semester) return;
+      if (!semester.courses || semester.courses.length === 0) return;
+      
+      const gpa = computeGPA(semester.courses);
+      
+      if (gpa !== semester.gpa) {
+        const {success, msg} = await updateSemester(semester.id.toHexString(), { gpa });
+
+        if (!success) return alert(msg!)
+      }
+      
+    }
+    updateGpa()
+
+}, [semester]);
+
   const analyse = () => {
-    // saveSemester()
-    // Perform analysis on courses and semesters
-    console.log("Analysing...");
+    router.push({
+      pathname: "/(tabs)/Analytics",
+      params: {id: semester.id.toHexString()}
+    })
   };
   // dont delete
   // const linkedIds = (semester.linkedSemesters ?? []).map((id) =>
