@@ -254,15 +254,7 @@ const SemestersModal = () => {
     if (!addCourseSuccess) return alert(addCourseMsg!);
 
     
-    // const gpa = computeGPA(semester.courses);
-    // console.log("my gpa: ",gpa);
 
-    // const {success, msg} = await updateSemester(semester.id.toHexString(), {gpa})
-
-    // if (!success) return alert(msg!);
-
-    
-    
 
     setCourse({
       id: new UUID(),
@@ -282,18 +274,21 @@ useEffect(() => {
   let cancelled = false;
 
   const run = async () => {
-    const gpa = computeGPA(semester.courses);
 
-    // if GPA hasn’t changed, skip DB write
-    if (gpa === semester.gpa) return;
+    if (semester.courses.length > 0) {
 
-    try {
-      const { success, msg } = await updateSemester(
-        semester.id.toHexString(),
-        { gpa }
-      );
-
-      if (cancelled) return; // prevent updates after unmount
+      const gpa = computeGPA(semester.courses);
+      
+      // if GPA hasn’t changed, skip DB write
+      if (gpa === semester.gpa) return;
+      
+      try {
+        const { success, msg } = await updateSemester(
+          semester.id.toHexString(),
+          { gpa }
+        );
+        
+        if (cancelled) return; // prevent updates after unmount
 
       if (!success) {
         alert( msg!);
@@ -303,6 +298,7 @@ useEffect(() => {
     } catch (err) {
       if (!cancelled) console.error("Error updating GPA:", err);
     }
+  }
   };
 
   run();
