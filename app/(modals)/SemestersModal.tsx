@@ -275,27 +275,42 @@ const SemestersModal = () => {
     // console.log(semester);
   };
 
-  useEffect(() => {
+useEffect(() => {
+  if (!semester || !semester.courses) return;
 
-    const updateGpa = async () => {
-console.log('updating gpa');
+  let cancelled = false;
 
-      
-      if (!semester) return;
-      if (!semester.courses || semester.courses.length === 0) return;
-      
-      const gpa = computeGPA(semester.courses);
-      
-      if (gpa !== semester.gpa) {
-        const {success, msg} = await updateSemester(semester.id.toHexString(), { gpa });
+  const run = async () => {
+    const gpa = computeGPA(semester.courses);
 
-        if (!success) return alert(msg!)
+    // if GPA hasn’t changed, skip DB write
+    if (gpa === semester.gpa) return;
+
+    try {
+      const { success, msg } = await updateSemester(
+        semester.id.toHexString(),
+        { gpa }
+      );
+
+      if (cancelled) return; // prevent updates after unmount
+
+      if (!success) {
+        alert( msg!);
+      } else {
+        setSemester((prev) => ({ ...prev, gpa }));
       }
-      
+    } catch (err) {
+      if (!cancelled) console.error("Error updating GPA:", err);
     }
-    updateGpa()
+  };
 
+  run();
+
+  return () => {
+    cancelled = true;
+  };
 }, [semester]);
+
 
   const analyse = () => {
     router.push({
