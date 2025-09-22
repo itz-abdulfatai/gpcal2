@@ -312,19 +312,23 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   };
 
   // CREATE
-  const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        realm.create("Semester", semester);
-      });
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (addSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
+  try {
+    const realm = await openRealm();
+
+    const created = realm.write(() => {
+      return realm.create("Semester", semester);
+    });
+
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+
+    return { success: true, data: { ...created } };
+  } catch (error: any) {
+    console.log("error occured (addSemester)", error);
+    return { success: false, msg: error.message };
+  }
+};
+
 
   const addCourse = async (
     course: CourseType,
@@ -381,9 +385,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         uuid
       );
       return semester ? { ...semester } : null;
-    } catch (error) {
+    } catch (error: any) {
       console.log("error occured (getSemesterById)", error);
-      return null;
+      throw new Error(error.message);
     }
   };
 

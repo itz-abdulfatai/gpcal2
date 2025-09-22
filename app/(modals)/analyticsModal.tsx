@@ -20,9 +20,11 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useData } from "@/contexts/DataContext";
 import ModalWrapper from "@/components/ModalWrapper";
 import BackButton from "@/components/BackButton";
+import Loading from "@/components/Loading";
 
 const Analytics = () => {
-  const [semester, setSemester] = React.useState<SemesterType | null>(null);
+  const [semester, setSemester] = useState<SemesterType | null>(null);
+  const [loading, setLoading] = useState(false);
   const chartOptions: { value: "piechart" | "barchart"; icon: JSX.Element }[] =
     [
       {
@@ -64,11 +66,25 @@ const Analytics = () => {
   useEffect(() => {
     // Fetch or calculate analytics data here based on semester
     const fetchData = async () => {
-      const semester = await getSemesterById(id.toString());
+      setLoading(true);
+      try {
+        const semester = await getSemesterById(id.toString());
 
-      if (!semester) return router.back();
-      setSemester(semester);
-      setCourses(semester.courses);
+        if (!semester) return router.back();
+        setSemester(semester);
+        setCourses(semester.courses);
+
+        setLoading(false);
+      } catch (error: any) {
+        console.log(
+          "an error occured while fetching data (analyticsModal)",
+          error
+        );
+
+        alert(error.message);
+        router.back();
+        setLoading(false);
+      }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,6 +107,17 @@ const Analytics = () => {
     // This could involve generating a PDF, CSV, or sharing data via other means
     console.log("Exporting data...");
   };
+
+  if (loading)
+    return (
+      <ModalWrapper>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Loading />
+        </View>
+      </ModalWrapper>
+    );
 
   return (
     <ModalWrapper>

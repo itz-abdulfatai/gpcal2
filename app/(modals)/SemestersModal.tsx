@@ -94,7 +94,7 @@ const SemestersModal = () => {
 
       if (oldSemester) {
         setSemesterTitle(oldSemester.name);
-        setSememsterSaved(true);
+        setSemesterSaved(true);
         setSemester(oldSemester);
         setPromptVisible(false);
       }
@@ -119,7 +119,7 @@ const SemestersModal = () => {
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
-  const [semesterTyped, setSememstertyped] = useState<SemesterType>({
+  const [semesterTyped, setSemesterTyped] = useState<SemesterType>({
     id: new UUID(),
     gpa: null,
     name: "",
@@ -146,10 +146,12 @@ const SemestersModal = () => {
 
     // If semester hasn’t been saved yet, save it first
     if (!semesterSaved) {
-      const { success, msg } = await addSemester(semester);
+      const { success, msg, data } = await addSemester(semester);
       if (!success) return alert(msg!);
 
-      setSememsterSaved(true);
+      setSemester(data)
+
+      setSemesterSaved(true);
     }
     const res = await linkSemester(semester.id.toString(), idStr);
     if (!res.success) {
@@ -165,10 +167,13 @@ const SemestersModal = () => {
 
     // If semester hasn’t been saved yet, save it first
     if (!semesterSaved) {
-      const { success, msg } = await addSemester(semester);
+      const { success, msg, data } = await addSemester(semester);
       if (!success) return alert(msg!);
 
-      setSememsterSaved(true);
+      setSemester(data)
+
+
+      setSemesterSaved(true);
     }
     const res = await addSemester(semesterTyped);
     if (!res.success) return alert(res.msg ?? "Failed to add semester");
@@ -189,7 +194,7 @@ const SemestersModal = () => {
       return [...prev, idStr];
     });
 
-    setSememstertyped({
+    setSemesterTyped({
       id: new UUID(),
       gpa: null,
       name: "",
@@ -215,7 +220,7 @@ const SemestersModal = () => {
     }
   }, [semester]);
 
-  const [semesterSaved, setSememsterSaved] = useState(false);
+  const [semesterSaved, setSemesterSaved] = useState(false);
 
   const openChooseSemesterModal = () => {
     setPromptVisible(true);
@@ -241,10 +246,13 @@ const SemestersModal = () => {
 
     // If semester hasn’t been saved yet, save it first
     if (!semesterSaved) {
-      const { success, msg } = await addSemester(semester);
+      const { success, msg, data } = await addSemester(semester);
       if (!success) return alert(msg!);
 
-      setSememsterSaved(true);
+      setSemester(data)
+
+
+      setSemesterSaved(true);
     }
 
     // Now always try to add course
@@ -307,10 +315,14 @@ useEffect(() => {
     cancelled = true;
   };
 // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [semester]);
+}, [semester.courses]);
 
 
   const analyse = () => {
+
+    if (semester.courses.length === 0) {
+      return alert("Add some courses first")
+    }
     router.push({
       pathname: "/(modals)/analyticsModal",
       params: {id: semester.id.toHexString()}
@@ -488,7 +500,7 @@ useEffect(() => {
                   value={semesterTyped?.name}
                   placeholder="Semester"
                   onChangeText={(text) =>
-                    setSememstertyped((semester) => ({
+                    setSemesterTyped((semester) => ({
                       ...semester,
                       name: text,
                     }))
@@ -501,7 +513,7 @@ useEffect(() => {
                   placeholder="GPA (e.g. 3.25)"
                   inputMode="numeric"
                   onChangeText={(text) =>
-                    setSememstertyped((semester) => {
+                    setSemesterTyped((semester) => {
                       const t = text.trim();
                       if (!t) return { ...semester, gpa: null };
                       const n = Number.parseFloat(t);

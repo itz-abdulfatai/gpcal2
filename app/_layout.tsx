@@ -23,6 +23,7 @@ function StackLayout() {
       SplashScreen.hideAsync();
       router.replace("/(tabs)");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fontsLoaded]);
   if (!fontsLoaded) return null;
   return (
