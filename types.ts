@@ -3,6 +3,7 @@ import type { BSON } from "realm";
 
 import { Icon } from "phosphor-react-native";
 import {
+  GestureResponderEvent,
   TextInput,
   TextInputProps,
   TextProps,
@@ -101,6 +102,11 @@ export type BackButtonProps = {
   style?: ViewStyle;
   iconSize?: number;
 };
+export type DeleteButtonProps = {
+  style?: ViewStyle;
+  iconSize?: number;
+  onPress: (event: GestureResponderEvent) => void;
+};
 
 export type SaveButtonProps = {
   style?: ViewStyle;
@@ -131,6 +137,7 @@ export interface TableProps<T> {
   headings: string[];
   data: T[];
   keys: (keyof T)[];
+  handleDelete?: (id: string) => void;
 }
 
 export interface InputProps extends TextInputProps {

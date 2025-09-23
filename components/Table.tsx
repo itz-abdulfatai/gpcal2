@@ -1,11 +1,11 @@
-// CoursesTable.tsx
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme"; // adjust path
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { colors } from "@/constants/theme";
 import { TableProps } from "@/types";
 
 function Table<T extends object>(props: TableProps<T>) {
-  const { headings, data, keys } = props;
+  const { headings, data, keys, handleDelete } = props;
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -22,6 +22,9 @@ function Table<T extends object>(props: TableProps<T>) {
             {h}
           </Text>
         ))}
+
+        {/* empty header cell to align with delete column when present */}
+        {handleDelete && <View style={styles.actionCell} />}
       </View>
 
       {/* Rows */}
@@ -29,15 +32,32 @@ function Table<T extends object>(props: TableProps<T>) {
         <View key={rowIndex} style={styles.row}>
           {keys.map((k, colIndex) => (
             <Text
-              key={colIndex}
+              key={String(colIndex)}
               style={[
                 styles.cell,
                 { textAlign: colIndex === 0 ? "left" : "center" },
               ]}
             >
-              {String(item[k] ?? "")}
+              {String((item as any)[k] ?? "")}
             </Text>
           ))}
+
+          {handleDelete && (
+            <TouchableOpacity
+              onPress={() => {
+                try {
+                  const id = (item as any).id;
+                  handleDelete(id);
+                } catch (e) {
+                  console.warn("Table.handleDelete failed to read id", e);
+                }
+              }}
+              style={styles.deleteButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.deleteText}>✕</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ))}
     </View>
@@ -58,6 +78,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.secondary2,
     paddingVertical: 12,
     paddingHorizontal: 8,
+    alignItems: "center",
   },
   cell: {
     flex: 1,
@@ -67,5 +88,18 @@ const styles = StyleSheet.create({
   headerText: {
     fontWeight: "bold",
     fontSize: 15,
+  },
+  actionCell: {
+    width: 40, // reserve space for the delete column in header
+  },
+  deleteButton: {
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteText: {
+    color: "red",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });

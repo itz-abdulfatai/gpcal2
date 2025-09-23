@@ -519,39 +519,53 @@ const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
   };
 
   // DELETE
-  const deleteSemester = async (id: string): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey("Semester", id);
-        if (semester) {
-          realm.delete(semester);
-        }
-      });
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (deleteSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+const deleteSemester = async (id: string): Promise<ResponseType> => {
+  try {
+    const realm = await openRealm();
+    realm.write(() => {
+      const semester = realm.objectForPrimaryKey(
+        "Semester",
+        new Realm.BSON.UUID(id)
+      ) as any;
 
-  const deleteCourse = async (id: string): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const course = realm.objectForPrimaryKey("Course", id);
-        if (course) {
-          realm.delete(course);
+      if (semester) {
+        if (semester.courses && semester.courses.length > 0) {
+          realm.delete(semester.courses);
         }
-      });
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (addSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+
+        realm.delete(semester);
+      }
+    });
+
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+    return { success: true };
+  } catch (error: any) {
+    console.log("error occured (deleteSemester)", error);
+    return { success: false, msg: error.message };
+  }
+};
+
+const deleteCourse = async (id: string): Promise<ResponseType> => {
+  try {
+    const realm = await openRealm();
+    realm.write(() => {
+      const uuid = new Realm.BSON.UUID(id);
+      const course = realm.objectForPrimaryKey("Course", uuid);
+      if (course) {
+        realm.delete(course);
+      }
+    });
+
+    // Refresh semesters so UI reflects changes
+    setSemesters([...realm.objects<SemesterType>("Semester")]);
+
+    return { success: true };
+  } catch (error: any) {
+    console.log("error occured (deleteCourse)", error);
+    return { success: false, msg: error.message };
+  }
+};
+
 
   const contextValue: DataContextType = {
     user,
