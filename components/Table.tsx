@@ -38,19 +38,15 @@ function Table<T extends object>(props: TableProps<T>) {
                 { textAlign: colIndex === 0 ? "left" : "center" },
               ]}
             >
-              {String((item as any)[k] ?? "")}
+              {String(item[k] ?? "")}
             </Text>
           ))}
 
           {handleDelete && (
             <TouchableOpacity
               onPress={() => {
-                try {
-                  const id = (item as any).id;
-                  handleDelete(id);
-                } catch (e) {
-                  console.warn("Table.handleDelete failed to read id", e);
-                }
+                const id = (item as any).id;
+                handleDelete(id);
               }}
               style={styles.deleteButton}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

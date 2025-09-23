@@ -74,16 +74,16 @@ const Analytics = () => {
         setSemester(semester);
         setCourses(semester.courses);
 
-        setLoading(false);
       } catch (error: any) {
         console.log(
           "an error occured while fetching data (analyticsModal)",
           error
         );
 
-        alert(error.message);
+        alert("Failed to load analytics data. Please try again.");
         router.back();
-        setLoading(false);
+      } finally {
+        setLoading(false)
       }
     };
     fetchData();
