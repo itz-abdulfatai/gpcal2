@@ -273,32 +273,84 @@ export const computeGPA = (courses: CourseType[]) => {
   }
   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };
+// without linked semester fallback
+// export const computeCGPAWeighted = (semesters: SemesterType[]) => {
+//   console.log("calculating cgpa (weighted)");
 
+//   let totalCredits = 0;
+//   let totalWeighted = 0;
+
+//   for (const semester of semesters) {
+//     const filtered = semester.courses.filter(
+//       (c) => c.creditUnit && c.gradePoint
+//     );
+
+//     for (const c of filtered) {
+//       const gp =
+//         typeof c.gradePoint === "string"
+//           ? gradeToPoint(c.gradePoint) // assumes you already have this function
+//           : Number(c.gradePoint);
+
+//       const credits = Number(c.creditUnit ?? 0);
+//       totalCredits += credits;
+//       totalWeighted += gp * credits;
+//     }
+//   }
+
+//   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
+// };
+
+
+// with linked semester fallback
 export const computeCGPAWeighted = (semesters: SemesterType[]) => {
-  console.log("calculating cgpa (weighted)");
+  console.log("calculating cgpa (weighted + fallback)");
 
   let totalCredits = 0;
   let totalWeighted = 0;
 
+  // Step 1: collect course-based credits + weights
   for (const semester of semesters) {
     const filtered = semester.courses.filter(
       (c) => c.creditUnit && c.gradePoint
     );
 
-    for (const c of filtered) {
-      const gp =
-        typeof c.gradePoint === "string"
-          ? gradeToPoint(c.gradePoint) // assumes you already have this function
-          : Number(c.gradePoint);
+    if (filtered.length > 0) {
+      for (const c of filtered) {
+        const gp =
+          typeof c.gradePoint === "string"
+            ? gradeToPoint(c.gradePoint)
+            : Number(c.gradePoint);
 
-      const credits = Number(c.creditUnit ?? 0);
-      totalCredits += credits;
-      totalWeighted += gp * credits;
+        const credits = Number(c.creditUnit ?? 0);
+        totalCredits += credits;
+        totalWeighted += gp * credits;
+      }
+    }
+  }
+
+  // Step 2: estimate an "average semester load" from actual course data
+  const semesterLoads = semesters.map((s) =>
+    s.courses.reduce((sum, c) => sum + (c.creditUnit ?? 0), 0)
+  );
+  const avgLoad =
+    semesterLoads.filter((x) => x > 0).reduce((a, b) => a + b, 0) /
+    Math.max(1, semesterLoads.filter((x) => x > 0).length);
+
+  // Step 3: handle GPA-only semesters (no courses, but gpa != null)
+  for (const semester of semesters) {
+    const hasCourses = semester.courses.some(
+      (c) => c.creditUnit && c.gradePoint
+    );
+    if (!hasCourses && semester.gpa != null) {
+      const assumedCredits = avgLoad || 1; // fallback to 1 if nothing else
+      totalCredits += assumedCredits;
+      totalWeighted += semester.gpa * assumedCredits;
     }
   }
 
   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };
+
 
 // export const computeCGPAAverage = (semesters: SemesterType[]) => {
 //   console.log("calculating cgpa (average)");
