@@ -219,6 +219,7 @@ export type UtilitiesGroupProps = {
 
 export type DataContextType = {
   user: UserType;
+  setUser: React.Dispatch<React.SetStateAction<UserType>>;
   semesters: SemesterType[];
   courses: CourseType[];
   generalSettings: SettingsType[];

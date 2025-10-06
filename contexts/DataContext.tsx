@@ -226,7 +226,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   const [infos, setInfos] = useState<AppInfoType[]>([]);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
   const [courses] = useState<CourseType[]>([]);
-  const [user] = useState<UserType>(null);
+  const [user, setUser] = useState<UserType>({
+    name: "kamaru Doe",
+    image: null,
+    createdAt: new Date(),
+    onboarded: false,
+    uid: "user123",
+  });
   const [language] = useState("en");
 
   useEffect(() => {
@@ -569,6 +575,7 @@ const deleteCourse = async (id: string): Promise<ResponseType> => {
 
   const contextValue: DataContextType = {
     user,
+    setUser,
     semesters,
     courses,
     generalSettings,
