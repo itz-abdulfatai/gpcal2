@@ -178,23 +178,32 @@ const Profile = () => {
   
 
     const onPickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      cameraType: ImagePicker.CameraType.back,
-      // allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.5,
-    });
-    // console.log(result.assets);
-    if (!result.canceled) {
-      const savedImageUri = await saveImage(result.assets?.[0]?.uri);
-      setUser({ ...user, image: savedImageUri, name: user?.name ?? "" });
-      console.log("Image saved at: (onPickImage)", savedImageUri);
-    } else {
-    }
-  };
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need permissions to change your profile picture.');
+        return;
+      }
 
-  async function saveImage(uri: any) {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        cameraType: ImagePicker.CameraType.back,
+        // allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+      // console.log(result.assets);
+      if (!result.canceled) {
+        const savedImageUri = await saveImage(result.assets?.[0]?.uri);
+        if (savedImageUri) {
+          setUser({ ...user, image: savedImageUri, name: user?.name ?? null });
+          console.log("Image saved at: (onPickImage)", savedImageUri);
+        } else {
+          alert('Failed to save image. Please try again.');
+        }
+      } else {
+      }
+    };
+  async function saveImage(uri: string): Promise<string | null> {
   try {
     const fileUri = FileSystem.documentDirectory + "profileImage.jpg";
 
@@ -207,6 +216,7 @@ const Profile = () => {
     return fileUri;
   } catch (error) {
     console.error("Error saving image: (saveImage)", error);
+    return null;
   }
 }
 
