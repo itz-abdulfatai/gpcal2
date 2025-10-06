@@ -2,12 +2,13 @@ import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-na
 import React, { useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/typo";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import { radius, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
 import Header from "@/components/header";
 import { getProfileImage } from "@/services/imageService";
 import { Image } from "expo-image";
-import Button from "@/components/Button";
+import { useTheme } from "@/contexts/ThemeContext";
+
 import {
   UserIcon,
   SunIcon,
@@ -175,6 +176,7 @@ const Profile = () => {
   // const [academicsSettings, setAcademicsSettings] =
   //   useState<SettingsType[]>(academicSettings);
     const [promptVisible, setPromptVisible] = useState(false);
+    const { colors } = useTheme();
   
 
     const onPickImage = async () => {
@@ -236,96 +238,7 @@ const Profile = () => {
     user,
     setUser,
   } = useData();
-  return (
-    <ScreenWrapper>
-      <Header title="Profile" />
-      <ScrollView>
-        <View style={styles.container}>
-          <View
-            style={[
-              styles.sectionContainer,
-              {
-                backgroundColor: "#f5f8fa",
-                alignItems: "center",
-                gap: spacingY._15,
-              },
-            ]}
-          >
-
-          <View style={styles.avatarContainer}>
-            
-            <Image
-              source={getProfileImage(user?.image)}
-              style={styles.avatar}
-              contentFit="cover"
-              transition={100}
-            />
-            <TouchableOpacity style={styles.editIcon} onPress={onPickImage}>
-              <PencilIcon
-                size={verticalScale(20)}
-                color={colors.white}
-              />
-            </TouchableOpacity>
-
-            </View>
-            <TouchableOpacity onPress={() => setPromptVisible(true)}>
-            <Typo style={styles.headings}>{user?.name}</Typo>
-            </TouchableOpacity>
-
-            {/* <Typo color={colors.secondary2}>john.doe@example.com</Typo>
-            <Button
-              style={[
-                styles.row,
-                {
-                  alignSelf: "stretch",
-                  justifyContent: "center",
-                  gap: spacingX._10,
-                },
-              ]}
-            >
-              <UserIcon color={colors.white} size={15} />
-              <Typo color={colors.white}>Edit Profile</Typo>
-            </Button> */}
-          </View>
-
-          <SettingsGroup
-            title="General Settings"
-            settings={settings}
-            updateSetting={updateGeneralSetting}
-          />
-          <SettingsGroup
-            title="Academic Settings"
-            settings={academicsSettings}
-            updateSetting={updateAcademicSetting}
-          />
-
-          <UtilitiesGroup
-            infos={siteInfo}
-            title="Utilities"
-            utilities={utilities}
-          />
-        </View>
-      </ScrollView>
-            <PromptDialog
-              visible={promptVisible}
-              question="Enter Your name"
-              initialValue={user?.name ?? undefined}                 
-              setResponse={(val) => {
-                if (val.trim()) {
-                  setUser({ ...user, name: val.trim(), image: user?.image ?? null });
-                }
-              }}
-              onClose={(val) => {
-                setPromptVisible(false);
-              }}
-            />
-    </ScreenWrapper>
-  );
-};
-
-export default Profile;
-
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
     editIcon: {
     position: "absolute",
     bottom: spacingY._5,
@@ -424,6 +337,97 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
+  return (
+    <ScreenWrapper>
+      <Header title="Profile" />
+      <ScrollView>
+        <View style={styles.container}>
+          <View
+            style={[
+              styles.sectionContainer,
+              {
+                backgroundColor: colors.secondary,
+                alignItems: "center",
+                gap: spacingY._15,
+              },
+            ]}
+          >
+
+          <View style={styles.avatarContainer}>
+            
+            <Image
+              source={getProfileImage(user?.image)}
+              style={styles.avatar}
+              contentFit="cover"
+              transition={100}
+            />
+            <TouchableOpacity style={styles.editIcon} onPress={onPickImage}>
+              <PencilIcon
+                size={verticalScale(20)}
+                color={colors.white}
+              />
+            </TouchableOpacity>
+
+            </View>
+            <TouchableOpacity onPress={() => setPromptVisible(true)}>
+            <Typo style={styles.headings}>{user?.name}</Typo>
+            </TouchableOpacity>
+
+            {/* <Typo color={colors.secondary2}>john.doe@example.com</Typo>
+            <Button
+              style={[
+                styles.row,
+                {
+                  alignSelf: "stretch",
+                  justifyContent: "center",
+                  gap: spacingX._10,
+                },
+              ]}
+            >
+              <UserIcon color={colors.white} size={15} />
+              <Typo color={colors.white}>Edit Profile</Typo>
+            </Button> */}
+          </View>
+
+          <SettingsGroup
+            title="General Settings"
+            settings={settings}
+            updateSetting={updateGeneralSetting}
+          />
+          <SettingsGroup
+            title="Academic Settings"
+            settings={academicsSettings}
+            updateSetting={updateAcademicSetting}
+          />
+
+          <UtilitiesGroup
+            infos={siteInfo}
+            title="Utilities"
+            utilities={utilities}
+          />
+        </View>
+      </ScrollView>
+            <PromptDialog
+              visible={promptVisible}
+              question="Enter Your name"
+              initialValue={user?.name ?? undefined}                 
+              setResponse={(val) => {
+                if (val.trim()) {
+                  setUser({ ...user, name: val.trim(), image: user?.image ?? null });
+                }
+              }}
+              onClose={(val) => {
+                setPromptVisible(false);
+              }}
+            />
+    </ScreenWrapper>
+  );
+};
+
+export default Profile;
+
+
 
           // <View style={styles.sectionContainer}>
           //   <Typo style={styles.headings}>General Settings</Typo>

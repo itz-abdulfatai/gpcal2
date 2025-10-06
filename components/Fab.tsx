@@ -1,24 +1,18 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
-import { FabProps } from "@/types";
+import {  spacingX, spacingY } from "@/constants/theme";
+export interface FabProps {
+  onPress: () => void;
+  style?: ViewStyle;
+}
+// If you want to keep it local, use the above. Otherwise, move it to types.ts and export from there.
+// import { FabProps } from "@/types"; // Remove this line if defining locally.
 import { PlusIcon } from "phosphor-react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Fab: React.FC<FabProps> = ({ onPress, style }) => {
-  return (
-    <TouchableOpacity
-      style={[styles.fab, style]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <PlusIcon color={colors.white} size={28} weight="bold" />
-    </TouchableOpacity>
-  );
-};
-
-export default Fab;
-
-const styles = StyleSheet.create({
+  const { colors } = useTheme();
+  const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     bottom: spacingY._20,
@@ -37,3 +31,17 @@ const styles = StyleSheet.create({
     zIndex: 99,
   } as ViewStyle,
 });
+  return (
+    <TouchableOpacity
+      style={[styles.fab, style]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <PlusIcon color={colors.white} size={28} weight="bold" />
+    </TouchableOpacity>
+  );
+};
+
+export default Fab;
+
+

@@ -1,12 +1,26 @@
-import { colors, radius } from "@/constants/theme";
+import {  radius } from "@/constants/theme";
 import { SaveButtonProps } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import { useRouter } from "expo-router";
 import { FloppyDiskIcon } from "phosphor-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const SaveButton = ({ style, iconSize = 26, onPress }: SaveButtonProps) => {
+    const { colors } = useTheme();
+const styles = StyleSheet.create({
+      button: {
+        // backgroundColor: colors.neutral,
+        alignSelf: "flex-start",
+        borderRadius: radius._12,
+        borderCurve: "continuous",
+        padding: 5,
+        borderWidth: 1,
+        borderColor: colors.secondary,
+      },
+    });
+  
   return (
     <TouchableOpacity
       style={[styles.button, style]}
@@ -26,14 +40,3 @@ const SaveButton = ({ style, iconSize = 26, onPress }: SaveButtonProps) => {
 
 export default SaveButton;
 
-const styles = StyleSheet.create({
-  button: {
-    // backgroundColor: colors.neutral,
-    alignSelf: "flex-start",
-    borderRadius: radius._12,
-    borderCurve: "continuous",
-    padding: 5,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-  },
-});

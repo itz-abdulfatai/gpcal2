@@ -1,99 +1,19 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import {  radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { UtilitiesGroupProps } from "@/types";
 import Typo from "./typo";
 import Button from "./Button";
 import { RelativePathString, useRouter } from "expo-router";
 import SettingsIcon from "./SettingsIcon";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
   const router = useRouter();
-  return (
-    <View style={styles.sectionContainer}>
-      <Typo style={styles.headings}>{title}</Typo>
-      <View style={styles.settingsContainer}>
-        {utilities.map((utility) => {
-          return (
-            <View
-              key={utility.id}
-              style={[
-                styles.row,
-                {
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: spacingX._10,
-                },
-              ]}
-            >
-              {/* Left side: Icon + Texts */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacingX._10,
-                }}
-              >
-                <SettingsIcon
-                  iconName={utility.iconName}
-                  color={colors.secondary2}
-                  weight="bold"
-                />
-                <View style={{ flex: 1, gap: spacingY._5 }}>
-                  <Typo
-                    style={{ flexShrink: 1, flexWrap: "wrap" }}
-                    fontWeight={"700"}
-                  >
-                    {utility.title}
-                  </Typo>
-                  <Typo
-                    style={{ flexShrink: 1, flexWrap: "wrap" }}
-                    color={colors.neutral}
-                  >
-                    {utility.subtitle}
-                  </Typo>
-                </View>
-              </View>
+  const { colors } = useTheme();
 
-              {/* Right side: Toggle or Dropdown */}
-              <Button
-                onPress={() => utility.onTap()}
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: utility.color },
-                ]}
-              >
-                <Typo color={utility.textColor} fontWeight={"bold"}>
-                  {utility.buttonText}
-                </Typo>
-              </Button>
-            </View>
-          );
-        })}
-
-        <View style={styles.infoContainer}>
-          {infos.map((info) => (
-            <TouchableOpacity
-              key={info.id}
-              onPress={() => router.push(info.route as RelativePathString)}
-            >
-              <View style={[styles.row, { gap: spacingX._20 }]}>
-                <info.Icon color={colors.neutral2} />
-                <Typo color={colors.neutral2}>{info.title}</Typo>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    </View>
-  );
-};
-
-export default UtilitiesGroup;
-
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
   actionButton: {
     borderWidth: 1,
     borderColor: colors.secondary2,
@@ -187,3 +107,87 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+  return (
+    <View style={styles.sectionContainer}>
+      <Typo style={styles.headings}>{title}</Typo>
+      <View style={styles.settingsContainer}>
+        {utilities.map((utility) => {
+          return (
+            <View
+              key={utility.id}
+              style={[
+                styles.row,
+                {
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: spacingX._10,
+                },
+              ]}
+            >
+              {/* Left side: Icon + Texts */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacingX._10,
+                }}
+              >
+                <SettingsIcon
+                  iconName={utility.iconName}
+                  color={colors.secondary2}
+                  weight="bold"
+                />
+                <View style={{ flex: 1, gap: spacingY._5 }}>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    fontWeight={"700"}
+                  >
+                    {utility.title}
+                  </Typo>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    color={colors.neutral}
+                  >
+                    {utility.subtitle}
+                  </Typo>
+                </View>
+              </View>
+
+              {/* Right side: Toggle or Dropdown */}
+              <Button
+                onPress={() => utility.onTap()}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: utility.color },
+                ]}
+              >
+                <Typo color={utility.textColor} fontWeight={"bold"}>
+                  {utility.buttonText}
+                </Typo>
+              </Button>
+            </View>
+          );
+        })}
+
+        <View style={styles.infoContainer}>
+          {infos.map((info) => (
+            <TouchableOpacity
+              key={info.id}
+              onPress={() => router.push(info.route as RelativePathString)}
+            >
+              <View style={[styles.row, { gap: spacingX._20 }]}>
+                <info.Icon color={colors.neutral2} />
+                <Typo color={colors.neutral2}>{info.title}</Typo>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export default UtilitiesGroup;
+
+

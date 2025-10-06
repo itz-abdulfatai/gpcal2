@@ -1,119 +1,20 @@
 import { StyleSheet, Switch, View } from "react-native";
 import React from "react";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import {  radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { Dropdown } from "react-native-element-dropdown";
 import Typo from "./typo";
 import { SettingsGroupProps } from "@/types";
 import SettingsIcon from "./SettingsIcon";
-
+import { useTheme } from "@/contexts/ThemeContext";
 const SettingsGroup = ({
   title,
   updateSetting,
   settings,
 }: SettingsGroupProps) => {
-  return (
-    <View style={styles.sectionContainer}>
-      <Typo style={styles.headings}>{title}</Typo>
-      <View style={styles.settingsContainer}>
-        {settings.map((setting) => {
-          return (
-            <View
-              key={setting.id}
-              style={[
-                styles.row,
-                {
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: spacingX._10,
-                },
-              ]}
-            >
-              {/* Left side: Icon + Texts */}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacingX._10,
-                }}
-              >
-                {/* {IconComponent && (
-                  <IconComponent color={colors.secondary2} weight="bold" />
-                )} */}
-                <SettingsIcon
-                  iconName={setting.iconName}
-                  color={colors.secondary2}
-                  weight="bold"
-                />
-                <View style={{ flex: 1, gap: spacingY._5 }}>
-                  <Typo
-                    style={{ flexShrink: 1, flexWrap: "wrap" }}
-                    fontWeight={"700"}
-                  >
-                    {setting.title}
-                  </Typo>
-                  <Typo
-                    style={{ flexShrink: 1, flexWrap: "wrap" }}
-                    color={colors.neutral}
-                  >
-                    {setting.subtitle}
-                  </Typo>
-
-                  {setting.type === "dropdown" && (
-                    // <View style={{ width: scale(200) }}>
-                    <Dropdown
-                      maxHeight={verticalScale(200)}
-                      labelField="label"
-                      valueField="value"
-                      style={styles.dropdownContainer}
-                      placeholderStyle={styles.dropdownPlaceholder}
-                      selectedTextStyle={styles.dropdownSelectedText}
-                      iconStyle={styles.dropdownIcon}
-                      itemTextStyle={styles.dropdownItemText}
-                      itemContainerStyle={styles.dropdownItemContainer}
-                      containerStyle={styles.dropdownListContainer}
-                      activeColor={colors.primary}
-                      placeholder={`Select ${setting.title}`}
-                      value={setting.selectedOption}
-                      data={setting.options!.map((option) => ({
-                        label: option,
-                        value: option,
-                      }))}
-                      onChange={(val) =>
-                        updateSetting(setting.id, { selectedOption: val.value })
-                      }
-                    />
-                    // </View>
-                  )}
-                </View>
-              </View>
-
-              {/* Right side: Toggle or Dropdown */}
-              {setting.type === "toggle" && (
-                <Switch
-                  value={setting.toggled}
-                  onValueChange={(val) =>
-                    updateSetting(setting.id, { toggled: val })
-                  }
-                  trackColor={{
-                    false: colors.secondary,
-                    true: colors.primary,
-                  }}
-                  thumbColor={setting.toggled ? colors.white : colors.white}
-                />
-              )}
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-};
-
-export default SettingsGroup;
-
-const styles = StyleSheet.create({
+    const { colors } = useTheme();
+  
+    const styles = StyleSheet.create({
   settingsContainer: {
     gap: spacingY._20,
   },
@@ -196,3 +97,109 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
+  return (
+    <View style={styles.sectionContainer}>
+      <Typo style={styles.headings}>{title}</Typo>
+      <View style={styles.settingsContainer}>
+        {settings.map((setting) => {
+          console.log(setting.title + ":", setting);
+          
+          return (
+            <View
+              key={setting.id}
+              style={[
+                styles.row,
+                {
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: spacingX._10,
+                },
+              ]}
+            >
+              {/* Left side: Icon + Texts */}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacingX._10,
+                }}
+              >
+                {/* {IconComponent && (
+                  <IconComponent color={colors.secondary2} weight="bold" />
+                )} */}
+                <SettingsIcon
+                  iconName={setting.iconName}
+                  color={colors.secondary2}
+                  weight="bold"
+                />
+                <View style={{ flex: 1, gap: spacingY._5 }}>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    fontWeight={"700"}
+                  >
+                    {setting.title}
+                  </Typo>
+                  <Typo
+                    style={{ flexShrink: 1, flexWrap: "wrap" }}
+                    color={colors.neutral}
+                  >
+                    {setting.subtitle}
+                  </Typo>
+
+                  {setting.type === "dropdown" && (
+                    // <View style={{ width: scale(200) }}>
+                    <Dropdown
+                      maxHeight={verticalScale(200)}
+                      labelField="label"
+                      valueField="value"
+                      style={styles.dropdownContainer}
+                      placeholderStyle={styles.dropdownPlaceholder}
+                      selectedTextStyle={styles.dropdownSelectedText}
+                      iconStyle={styles.dropdownIcon}
+                      itemTextStyle={styles.dropdownItemText}
+                      itemContainerStyle={styles.dropdownItemContainer}
+                      containerStyle={styles.dropdownListContainer}
+                      activeColor={colors.primary}
+                      placeholder={`Select ${setting.title}`}
+                      value={setting.selectedOption}
+                      data={setting.options!.map((option) => ({
+                        label: option,
+                        value: option,
+                      }))}
+                      onChange={(val) =>
+                        updateSetting(setting.id, { selectedOption: val.value })
+                      }
+                    />
+                    // </View>
+                  )}
+                </View>
+              </View>
+
+              {/* Right side: Toggle or Dropdown */}
+              {setting.type === "toggle" && (
+                <Switch
+                  value={setting.toggled}
+                  onValueChange={(val) =>{
+                    updateSetting(setting.id, { toggled: val })
+                    setting.onToggle && setting.onToggle(val);
+                  }}
+                  trackColor={{
+                    false: colors.secondary,
+                    true: colors.primary,
+                  }}
+                  thumbColor={setting.toggled ? colors.white : colors.white}
+                />
+              )}
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
+
+export default SettingsGroup;
+
+

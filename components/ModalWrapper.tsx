@@ -3,15 +3,18 @@ import { ModalWrapperProps } from "@/types";
 import React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/contexts/ThemeContext";
+
 const isIos = Platform.OS === "ios";
 const ModalWrapper = ({
   style,
   children,
-  bg = colors.white,
+  bg ,
 }: ModalWrapperProps) => {
+  const { colors } = useTheme();
   return (
     <SafeAreaView
-      style={[styles.container, style, { backgroundColor: bg }, style && style]}
+      style={[styles.container, style, { backgroundColor: bg || colors.white }, style && style]}
     >
       {children}
     </SafeAreaView>

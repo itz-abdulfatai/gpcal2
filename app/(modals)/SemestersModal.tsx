@@ -13,7 +13,7 @@ import Header from "@/components/header";
 import BackButton from "@/components/BackButton";
 import PromptDialog from "@/components/PromptDialog";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import {  radius, spacingX, spacingY } from "@/constants/theme";
 import Input from "@/components/Input";
 import { Dropdown } from "react-native-element-dropdown";
 import { CourseType, SemesterType } from "@/types";
@@ -25,10 +25,14 @@ import { alert, computeGPA } from "@/utils";
 import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
 import DeleteButton from "@/components/DeleteButton";
+import { useTheme } from "@/contexts/ThemeContext";
+
 
 const { UUID } = BSON;
 
 const SemestersModal = () => {
+    const { colors } = useTheme();
+  
   const [semester, setSemester] = useState<SemesterType>({
     id: new UUID(),
     gpa: null,
@@ -434,6 +438,73 @@ console.log('actually changing the gpa in db');
       }));
   }, [dbSemesters, linkedIdsSet, semester.id]);
 
+  const styles = StyleSheet.create({
+  row: { flexDirection: "row", alignItems: "baseline" },
+  btw: { justifyContent: "space-between" },
+  footerContainer: {
+    paddingHorizontal: spacingX._20,
+    paddingVertical: spacingY._5,
+  },
+  tableContainer: {},
+  container: {
+    flex: 1,
+    padding: spacingX._20,
+    gap: spacingX._20,
+  },
+  sectionContainer: {
+    padding: spacingX._10,
+    gap: spacingX._20,
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: radius._10,
+  },
+  headings: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  pastSemesterTtl: {
+    marginTop: verticalScale(-20),
+    fontWeight: "light",
+    color: colors.neutral2,
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: colors.secondary2,
+    paddingHorizontal: spacingX._15,
+    height: verticalScale(54),
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+  },
+  dropdownPlaceholder: {
+    color: colors.secondary2,
+  },
+  dropdownSelectedText: {
+    color: colors.black,
+  },
+  dropdownIcon: {
+    height: verticalScale(30),
+    tintColor: colors.secondary2,
+  },
+  dropdownItemText: { color: colors.black },
+  dropdownItemContainer: {
+    borderRadius: radius._10,
+    marginHorizontal: spacingX._7,
+  },
+  dropdownListContainer: {
+    backgroundColor: colors.secondary,
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+    paddingVertical: spacingY._7,
+    top: 5,
+    borderColor: colors.secondary2,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+});
+
   return (
     <ModalWrapper>
       {semesterTitle && (
@@ -688,69 +759,4 @@ console.log('actually changing the gpa in db');
 
 export default SemestersModal;
 
-const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "baseline" },
-  btw: { justifyContent: "space-between" },
-  footerContainer: {
-    paddingHorizontal: spacingX._20,
-    paddingVertical: spacingY._5,
-  },
-  tableContainer: {},
-  container: {
-    flex: 1,
-    padding: spacingX._20,
-    gap: spacingX._20,
-  },
-  sectionContainer: {
-    padding: spacingX._10,
-    gap: spacingX._20,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: radius._10,
-  },
-  headings: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  pastSemesterTtl: {
-    marginTop: verticalScale(-20),
-    fontWeight: "light",
-    color: colors.neutral2,
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._15,
-    height: verticalScale(54),
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-  },
-  dropdownPlaceholder: {
-    color: colors.secondary2,
-  },
-  dropdownSelectedText: {
-    color: colors.black,
-  },
-  dropdownIcon: {
-    height: verticalScale(30),
-    tintColor: colors.secondary2,
-  },
-  dropdownItemText: { color: colors.black },
-  dropdownItemContainer: {
-    borderRadius: radius._10,
-    marginHorizontal: spacingX._7,
-  },
-  dropdownListContainer: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-    paddingVertical: spacingY._7,
-    top: 5,
-    borderColor: colors.secondary2,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-});
+

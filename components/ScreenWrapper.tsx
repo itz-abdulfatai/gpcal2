@@ -1,9 +1,10 @@
-import { colors } from "@/constants/theme";
 import { ScreenWrapperProps } from "@/types";
 import { StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const ScreenWrapper = ({ style, children }: ScreenWrapperProps) => {
+    const { colors } = useTheme();
   return (
     <SafeAreaView
       style={[

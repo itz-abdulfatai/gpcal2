@@ -1,11 +1,13 @@
-import { colors, radius } from "@/constants/theme";
+import {  radius } from "@/constants/theme";
 import { DeleteButtonProps } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import { TrashIcon } from "phosphor-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const DeleteButton = ({ style, iconSize = 26, onPress }: DeleteButtonProps) => {
+  const { colors } = useTheme();
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       <TrashIcon

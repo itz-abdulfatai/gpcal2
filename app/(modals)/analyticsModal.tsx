@@ -1,7 +1,7 @@
 import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
-import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import {  radius, spacingX, spacingY } from "@/constants/theme";
 import { CourseType, SemesterType } from "@/types";
 import { computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
@@ -21,8 +21,10 @@ import { useData } from "@/contexts/DataContext";
 import ModalWrapper from "@/components/ModalWrapper";
 import BackButton from "@/components/BackButton";
 import Loading from "@/components/Loading";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Analytics = () => {
+  const { colors } = useTheme();
   const [semester, setSemester] = useState<SemesterType | null>(null);
   const [loading, setLoading] = useState(false);
   const chartOptions: { value: "piechart" | "barchart"; icon: JSX.Element }[] =
@@ -118,6 +120,101 @@ const Analytics = () => {
         </View>
       </ModalWrapper>
     );
+
+    const styles = StyleSheet.create({
+  keysContainer: {
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: spacingX._10,
+    marginTop: spacingY._10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  btw: {
+    justifyContent: "space-between",
+  },
+  sectionContainer: {
+    padding: spacingX._10,
+    gap: spacingX._20,
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: radius._10,
+  },
+  cardTitle: {
+    fontSize: 20,
+    color: colors.neutral,
+    textAlign: "center",
+  },
+  cardValue: {
+    fontSize: 50,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardscontainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacingX._15,
+    // marginTop: spacingX._20,
+  },
+  card: {
+    flex: 1,
+    padding: spacingX._20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacingX._10,
+    borderRadius: radius._10,
+    // elevation: 2,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: spacingX._20,
+    paddingTop: spacingY._10,
+    paddingBottom: spacingY._20,
+    gap: spacingY._20,
+  },
+  headings: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: colors.secondary2,
+    paddingHorizontal: spacingX._5,
+    height: verticalScale(35),
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+  },
+  dropdownPlaceholder: {
+    color: colors.secondary2,
+  },
+  dropdownSelectedText: {
+    color: colors.black,
+  },
+  dropdownIcon: {
+    height: verticalScale(25),
+    tintColor: colors.secondary2,
+  },
+  dropdownItemText: { color: colors.black },
+  dropdownItemContainer: {
+    borderRadius: radius._10,
+    marginHorizontal: spacingX._7,
+  },
+  dropdownListContainer: {
+    backgroundColor: colors.secondary,
+    borderRadius: radius._10,
+    borderCurve: "continuous",
+    paddingVertical: spacingY._5,
+    top: 5,
+    borderColor: colors.secondary2,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+});
 
   return (
     <ModalWrapper>
@@ -309,101 +406,10 @@ const Analytics = () => {
       </ScrollView>
     </ModalWrapper>
   );
+
+  
 };
 
 export default Analytics;
 
-const styles = StyleSheet.create({
-  keysContainer: {
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: spacingX._10,
-    marginTop: spacingY._10,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  btw: {
-    justifyContent: "space-between",
-  },
-  sectionContainer: {
-    padding: spacingX._10,
-    gap: spacingX._20,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: radius._10,
-  },
-  cardTitle: {
-    fontSize: 20,
-    color: colors.neutral,
-    textAlign: "center",
-  },
-  cardValue: {
-    fontSize: 50,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  cardscontainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: spacingX._15,
-    // marginTop: spacingX._20,
-  },
-  card: {
-    flex: 1,
-    padding: spacingX._20,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacingX._10,
-    borderRadius: radius._10,
-    // elevation: 2,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: spacingX._20,
-    paddingTop: spacingY._10,
-    paddingBottom: spacingY._20,
-    gap: spacingY._20,
-  },
-  headings: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._5,
-    height: verticalScale(35),
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-  },
-  dropdownPlaceholder: {
-    color: colors.secondary2,
-  },
-  dropdownSelectedText: {
-    color: colors.black,
-  },
-  dropdownIcon: {
-    height: verticalScale(25),
-    tintColor: colors.secondary2,
-  },
-  dropdownItemText: { color: colors.black },
-  dropdownItemContainer: {
-    borderRadius: radius._10,
-    marginHorizontal: spacingX._7,
-  },
-  dropdownListContainer: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-    paddingVertical: spacingY._5,
-    top: 5,
-    borderColor: colors.secondary2,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-});
+

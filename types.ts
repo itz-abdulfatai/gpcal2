@@ -265,3 +265,16 @@ export type DataContextType = {
     linkedSemesterId: string
   ) => Promise<ResponseType>;
 };
+
+
+export interface ThemeColors {
+    [key: string]: string;
+}
+
+export type ThemeType = "light" | "dark";
+
+export interface ThemeContextType {
+    colors: ThemeColors;
+    theme: ThemeType;
+    setTheme: (theme: ThemeType) => void;
+}

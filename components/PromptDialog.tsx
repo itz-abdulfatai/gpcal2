@@ -1,8 +1,8 @@
 // PromptDialog.tsx
-import { colors } from "@/constants/theme";
 import { PromptDialogProps } from "@/types";
 import React, { useState, useEffect } from "react";
 import Dialog from "react-native-dialog";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const PromptDialog: React.FC<PromptDialogProps> = ({
   visible,
@@ -11,6 +11,7 @@ const PromptDialog: React.FC<PromptDialogProps> = ({
   onClose,
   initialValue
 }) => {
+    const { colors } = useTheme();
   const [input, setInput] = useState(initialValue || "");
 
    useEffect(() => {

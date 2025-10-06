@@ -1,20 +1,21 @@
-import { colors } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { TypoProps } from "@/types";
 import React from "react";
 import { Text, TextStyle } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Typo = ({
   size,
-  color = colors.text,
+  color,
   fontWeight = "400",
   children,
   style,
   textProps = {},
 }: TypoProps) => {
+  const { colors } = useTheme();
   const textStyle: TextStyle = {
     fontSize: size ? verticalScale(size) : verticalScale(18),
-    color,
+    color: color || colors.text,
     fontWeight,
   };
   return (

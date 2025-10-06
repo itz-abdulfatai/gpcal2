@@ -15,7 +15,8 @@ import {
   HeadphonesIcon,
   InfoIcon,
 } from "phosphor-react-native";
-import { colors } from "@/constants/theme";
+// import { colors } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 
 import Realm from "realm";
 import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
@@ -86,6 +87,71 @@ const academicsSettings: SettingsType[] = [
   },
 ];
 
+
+
+
+const siteInfo: AppInfoType[] = [
+  {
+    id: "1",
+    title: "Send Feedback",
+    Icon: (props) => <ChatCenteredTextIcon {...props} />,
+    route: "/",
+  },
+  {
+    id: "2",
+    title: "Get Support",
+    Icon: (props) => <HeadphonesIcon {...props} />,
+    route: "/",
+  },
+  {
+    id: "3",
+    title: "About this App",
+    Icon: (props) => <InfoIcon {...props} />,
+    route: "/",
+  },
+];
+
+/**
+ * Seed AsyncStorage with initial app data for first-time users.
+ * Only runs if no settings/courses/semesters exist.
+ */
+// const seedInitialData = async () => {
+//   // Check if data already exists
+//   const [semesters, courses, academicSettings, utilities, generalSettings] =
+//     await Promise.all([
+//       getData<SemesterType>("semesters"),
+//       getData<CourseType>("courses"),
+//       getData<SettingsType>("academicSettings"),
+//       getData<UtilitiesType>("utilities"),
+//       getData<SettingsType>("generalSettings"),
+//     ]);
+
+//   // Only seed if all are empty
+//   if (
+//     semesters.length === 0 &&
+//     courses.length === 0 &&
+//     academicSettings.length === 0 &&
+//     utilities.length === 0 &&
+//     generalSettings.length === 0
+//   ) {
+//     await setItem("semesters", []);
+//     await setItem("courses", []);
+//     await setItem("academicSettings", academicsSettings);
+//     await setItem("utilities", defaultUtilities);
+//     await setItem("generalSettings", defaultGeneralSettings);
+//   }
+// };
+
+// ----------------------------------
+// Context Setup
+// ----------------------------------
+const DataContext = createContext<DataContextType | null>(null);
+
+export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { colors, theme, setTheme } = useTheme();
+  
 const defaultUtilities: UtilitiesType[] = [
   {
     id: "1",
@@ -128,11 +194,13 @@ const defaultUtilities: UtilitiesType[] = [
 const defaultGeneralSettings: SettingsType[] = [
   {
     id: "1",
-    title: "App Theme",
+    title: "Dark Theme",
     subtitle: "Toggle between Light and Dark mode",
     type: "toggle",
     toggled: false,
     iconName: "SunIcon",
+    onToggle(value) { setTheme(value ? "dark" : "light"); console.log("Theme changed to:", value ? "dark" : "light"); },
+
   },
   {
     id: "2",
@@ -160,67 +228,6 @@ const defaultGeneralSettings: SettingsType[] = [
     iconName: "SunIcon",
   },
 ];
-
-const siteInfo: AppInfoType[] = [
-  {
-    id: "1",
-    title: "Send Feedback",
-    Icon: (props) => <ChatCenteredTextIcon {...props} />,
-    route: "/",
-  },
-  {
-    id: "2",
-    title: "Get Support",
-    Icon: (props) => <HeadphonesIcon {...props} />,
-    route: "/",
-  },
-  {
-    id: "3",
-    title: "About this App",
-    Icon: (props) => <InfoIcon {...props} />,
-    route: "/",
-  },
-];
-
-/**
- * Seed AsyncStorage with initial app data for first-time users.
- * Only runs if no settings/courses/semesters exist.
- */
-const seedInitialData = async () => {
-  // Check if data already exists
-  const [semesters, courses, academicSettings, utilities, generalSettings] =
-    await Promise.all([
-      getData<SemesterType>("semesters"),
-      getData<CourseType>("courses"),
-      getData<SettingsType>("academicSettings"),
-      getData<UtilitiesType>("utilities"),
-      getData<SettingsType>("generalSettings"),
-    ]);
-
-  // Only seed if all are empty
-  if (
-    semesters.length === 0 &&
-    courses.length === 0 &&
-    academicSettings.length === 0 &&
-    utilities.length === 0 &&
-    generalSettings.length === 0
-  ) {
-    await setItem("semesters", []);
-    await setItem("courses", []);
-    await setItem("academicSettings", academicsSettings);
-    await setItem("utilities", defaultUtilities);
-    await setItem("generalSettings", defaultGeneralSettings);
-  }
-};
-
-// ----------------------------------
-// Context Setup
-// ----------------------------------
-const DataContext = createContext<DataContextType | null>(null);
-
-export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
   const [generalSettings, setGeneralSettings] = useState<SettingsType[]>([]);
   const [academicSettings, setAcademicSettings] = useState<SettingsType[]>([]);
   const [utilities, setUtilities] = useState<UtilitiesType[]>([]);

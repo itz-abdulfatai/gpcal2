@@ -1,10 +1,11 @@
-import { colors } from "@/constants/theme";
 import { Tabs } from "expo-router";
 import { HouseSimpleIcon, UserIcon } from "phosphor-react-native";
 import React from "react";
 import { Platform } from "react-native";
-
+import { useTheme } from "@/contexts/ThemeContext";
+  
 export default function TabLayout() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{

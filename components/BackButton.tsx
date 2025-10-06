@@ -5,9 +5,25 @@ import { useRouter } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
+
 
 const BackButton = ({ style, iconSize = 26 }: BackButtonProps) => {
   const router = useRouter();
+  const { colors } = useTheme();
+
+  const styles = StyleSheet.create({
+  button: {
+    // backgroundColor: colors.neutral,
+    alignSelf: "flex-start",
+    borderRadius: radius._12,
+    borderCurve: "continuous",
+    padding: 5,
+    borderWidth: 1,
+    borderColor: colors.secondary,
+  },
+});
+
   return (
     <TouchableOpacity
       style={[styles.button, style]}
@@ -26,14 +42,4 @@ const BackButton = ({ style, iconSize = 26 }: BackButtonProps) => {
 
 export default BackButton;
 
-const styles = StyleSheet.create({
-  button: {
-    // backgroundColor: colors.neutral,
-    alignSelf: "flex-start",
-    borderRadius: radius._12,
-    borderCurve: "continuous",
-    padding: 5,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-  },
-});
+

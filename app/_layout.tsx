@@ -3,6 +3,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { applyCustomFont } from "@/providers/FontProvider";
 import { DataContextProvider } from "@/contexts/DataContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 function StackLayout() {
   const [fontsLoaded] = useFonts({
     ManropeLight: require("@/assets/fonts/Manrope-Light.ttf"),
@@ -42,8 +43,10 @@ function StackLayout() {
 
 export default function RootLayout() {
   return (
+      <ThemeProvider>
     <DataContextProvider>
-      <StackLayout />
+        <StackLayout />
     </DataContextProvider>
+      </ThemeProvider>
   );
 }
