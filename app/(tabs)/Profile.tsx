@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Switch, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/typo";
@@ -22,6 +22,7 @@ import {
   ChatCenteredTextIcon,
   HeadphonesIcon,
   InfoIcon,
+  PencilIcon
 } from "phosphor-react-native";
 
 import { SettingsType, AppInfoType, UtilitiesType } from "@/types";
@@ -29,7 +30,9 @@ import { Dropdown } from "react-native-element-dropdown";
 import SettingsGroup from "@/components/SettingsGroup";
 import UtilitiesGroup from "@/components/UtilitiesGroup";
 import { useData } from "@/contexts/DataContext";
-
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from "expo-file-system";
+import PromptDialog from "@/components/PromptDialog";
 // const generalSettings: SettingsType[] = [
 //   {
 //     id: "1",
@@ -171,6 +174,41 @@ const Profile = () => {
 
   // const [academicsSettings, setAcademicsSettings] =
   //   useState<SettingsType[]>(academicSettings);
+    const [promptVisible, setPromptVisible] = useState(false);
+  
+
+    const onPickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      cameraType: ImagePicker.CameraType.back,
+      // allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+    // console.log(result.assets);
+    if (!result.canceled) {
+      const savedImageUri = await saveImage(result.assets?.[0]?.uri);
+      setUser({ ...user, image: savedImageUri, name: user?.name ?? "" });
+      console.log("Image saved at: (onPickImage)", savedImageUri);
+    } else {
+    }
+  };
+
+  async function saveImage(uri: any) {
+  try {
+    const fileUri = FileSystem.documentDirectory + "profileImage.jpg";
+
+    await FileSystem.copyAsync({
+      from: uri,    
+      to: fileUri,  
+    });
+
+    console.log("Image saved at:", fileUri);
+    return fileUri;
+  } catch (error) {
+    console.error("Error saving image: (saveImage)", error);
+  }
+}
 
   const {
     generalSettings: settings,
@@ -179,6 +217,8 @@ const Profile = () => {
     updateGeneralSetting,
     updateAcademicSetting,
     utilities,
+    user,
+    setUser,
   } = useData();
   return (
     <ScreenWrapper>
@@ -195,15 +235,28 @@ const Profile = () => {
               },
             ]}
           >
+
+          <View style={styles.avatarContainer}>
+            
             <Image
-              source={getProfileImage(null)}
+              source={getProfileImage(user?.image)}
               style={styles.avatar}
               contentFit="cover"
               transition={100}
             />
-            <Typo style={styles.headings}>John Doe</Typo>
+            <TouchableOpacity style={styles.editIcon} onPress={onPickImage}>
+              <PencilIcon
+                size={verticalScale(20)}
+                color={colors.white}
+              />
+            </TouchableOpacity>
 
-            <Typo color={colors.secondary2}>john.doe@example.com</Typo>
+            </View>
+            <TouchableOpacity onPress={() => setPromptVisible(true)}>
+            <Typo style={styles.headings}>{user?.name}</Typo>
+            </TouchableOpacity>
+
+            {/* <Typo color={colors.secondary2}>john.doe@example.com</Typo>
             <Button
               style={[
                 styles.row,
@@ -216,7 +269,7 @@ const Profile = () => {
             >
               <UserIcon color={colors.white} size={15} />
               <Typo color={colors.white}>Edit Profile</Typo>
-            </Button>
+            </Button> */}
           </View>
 
           <SettingsGroup
@@ -237,6 +290,19 @@ const Profile = () => {
           />
         </View>
       </ScrollView>
+            <PromptDialog
+              visible={promptVisible}
+              question="Enter Your name"
+              initialValue={user?.name ?? undefined}                 
+              setResponse={(val) => {
+                if (val.trim()) {
+                  setUser({ ...user, name: val.trim(), image: user?.image ?? null });
+                }
+              }}
+              onClose={(val) => {
+                setPromptVisible(false);
+              }}
+            />
     </ScreenWrapper>
   );
 };
@@ -244,6 +310,23 @@ const Profile = () => {
 export default Profile;
 
 const styles = StyleSheet.create({
+    editIcon: {
+    position: "absolute",
+    bottom: spacingY._5,
+    right: spacingY._7,
+    borderRadius: 100,
+    backgroundColor: colors.neutral2,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 2,
+    padding: spacingY._7,
+  },
+    avatarContainer: {
+    position: "relative",
+    alignSelf: "center",
+  },
   settingsContainer: {
     gap: spacingY._20,
   },

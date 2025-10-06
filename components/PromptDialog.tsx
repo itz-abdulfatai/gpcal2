@@ -1,7 +1,7 @@
 // PromptDialog.tsx
 import { colors } from "@/constants/theme";
 import { PromptDialogProps } from "@/types";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Dialog from "react-native-dialog";
 
 const PromptDialog: React.FC<PromptDialogProps> = ({
@@ -9,8 +9,15 @@ const PromptDialog: React.FC<PromptDialogProps> = ({
   question,
   setResponse,
   onClose,
+  initialValue
 }) => {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialValue || "");
+
+   useEffect(() => {
+    if (visible) {
+      setInput(initialValue || "");
+    }
+  }, [initialValue, visible]);
 
   const handleOk = () => {
     if (!input) return; // If input is empty, do nothing

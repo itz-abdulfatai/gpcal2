@@ -48,6 +48,7 @@ export interface PromptDialogProps {
   question: string;
   setResponse: (val: string) => void;
   onClose: (val?: string) => void; // <-- accept optional value
+  initialValue?: string;
 }
 
 export type ScreenWrapperProps = {
