@@ -207,9 +207,15 @@ const Profile = () => {
   try {
     const fileUri = FileSystem.documentDirectory + "profileImage.jpg";
 
+    // Check if file already exists
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    if (fileInfo.exists) {
+      await FileSystem.deleteAsync(fileUri, { idempotent: true });
+    }
+
     await FileSystem.copyAsync({
-      from: uri,    
-      to: fileUri,  
+      from: uri,
+      to: fileUri,
     });
 
     console.log("Image saved at:", fileUri);

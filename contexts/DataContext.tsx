@@ -19,6 +19,7 @@ import { colors } from "@/constants/theme";
 
 import Realm from "realm";
 import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ------------------------------------------------------------------------------------------------
 // realm matters
@@ -235,6 +236,27 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   });
   const [language] = useState("en");
 
+  useEffect(() => {
+  AsyncStorage.getItem("user").then((stored) => {
+    if (stored) {
+      setUser(JSON.parse(stored));
+    } else {
+      setUser({
+        name: "Tap to set name",
+        image: null,
+        createdAt: new Date(),
+        onboarded: false,
+        uid: "user123",
+      });
+    }
+  });
+}, []);
+
+  useEffect(() => {
+  if (user) {
+    AsyncStorage.setItem("user", JSON.stringify(user));
+  }
+}, [user]);
   useEffect(() => {
     getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();

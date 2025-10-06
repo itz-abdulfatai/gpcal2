@@ -1,6 +1,6 @@
 export const getProfileImage = (file: any) => {
   if (file && typeof file === "string") {
-    return file;
+    return `${file}?t=${Date.now()}`;
   }
   if (file && typeof file === "object") {
     return file.uri;
