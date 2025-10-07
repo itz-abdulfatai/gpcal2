@@ -236,6 +236,8 @@ export type DataContextType = {
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;
+  gradingScheme: string;
+  gradeRounding: string;
   // addSemester: (semester: SemesterType) => Promise<void>;
   // updateSemester: (id: string, changes: Partial<SemesterType>) => Promise<void>;
 

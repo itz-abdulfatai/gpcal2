@@ -48,60 +48,20 @@ const openRealm = async () => {
 // ----------------------------------
 // Default Data
 // ----------------------------------
-const academicsSettings: SettingsType[] = [
-  {
-    id: "1",
-    title: "Grading Scheme",
-    subtitle: "Choose how grades are represented",
-    type: "dropdown",
-    iconName: "GraduationCapIcon",
-    options: [
-      "A, B, C, D, E, F (5 point scale)",
-      "A, B, C, D, F (4 point scale)",
-      "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F (4 point scale)",
-      "Percentage",
-    ],
-    selectedOption: "A, B, C, D, E, F (5 point scale)",
-  },
-  // {
-  //   id: "2",
-  //   title: "Pass/Fail Option",
-  //   subtitle: "Allow pass/fail grading for eligible courses",
-  //   type: "toggle",
-  //   iconName: "CheckCircleIcon",
-  //   toggled: false,
-  // },
-  {
-    id: "3",
-    title: "Grade Rounding Rules",
-    subtitle: "Define how decimal grades are rounded",
-    type: "dropdown",
-    iconName: "ArrowClockwiseIcon",
-    options: [
-      "Keep two decimals",
-      "Round to nearest whole number",
-      "Always round up ",
-      "Always round down ",
-    ],
-    selectedOption: "Keep two decimals",
-  },
-];
-
-
 
 
 const siteInfo: AppInfoType[] = [
   {
     id: "1",
-    title: "Send Feedback",
-    Icon: (props) => <ChatCenteredTextIcon {...props} />,
-    route: "/",
+    title: "Send Feedback/ Feature Requests",
+    Icon: (props) => <ChatCenteredTextIcon {...props} /> ,
+    route: "/", // can accept an external link
   },
   {
     id: "2",
     title: "Get Support",
     Icon: (props) => <HeadphonesIcon {...props} />,
-    route: "/",
+    route: "/", 
   },
   {
     id: "3",
@@ -128,9 +88,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   const { colors, theme, setTheme } = useTheme();
   const [sendNotifications, setSendNotifications] = useState<boolean>(false);
   const [language, setLanguage] = useState("English");
+  const [gradingScheme, setGradingScheme] = useState<string>(
+    "A, B, C, D, E, F (5 point scale)"
+  );
+  const [gradeRounding, setGradeRounding] = useState<string>("Keep two decimals");
   const [requireBioMetric, setRequireBioMetric] = useState<boolean>(false);
 
-  const [academicSettings, setAcademicSettings] = useState<SettingsType[]>(academicsSettings);
+
   const [infos, setInfos] = useState<AppInfoType[]>(siteInfo);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
   const [courses] = useState<CourseType[]>([]);
@@ -174,6 +138,46 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     };
     fetchLanguage();
   }, []);
+
+  useEffect(() => {
+    const fetchGradingScheme = async () => {
+      const value = await AsyncStorage.getItem("gradingScheme");
+      setGradingScheme(value || "A, B, C, D, E, F (5 point scale)");
+      try {
+        (async () => {
+          await updateAcademicSetting("1", { selectedOption: value });
+        })();
+      } catch (e) {
+        console.log('failed to update academicSettings for grading scheme', e);
+      }
+    };
+    fetchGradingScheme();
+  }, []);
+
+  const changeGradingScheme = (value: string) => {
+    setGradingScheme(value);
+    AsyncStorage.setItem("gradingScheme", value);
+  };
+
+  useEffect(() => {
+    const fetchGradeRounding = async () => {
+      const value = await AsyncStorage.getItem("gradeRoundingRules");
+      setGradeRounding(value || "Keep two decimals");
+      try {
+        (async () => {
+          await updateAcademicSetting("3", { selectedOption: value });
+        })();
+      } catch (e) {
+        console.log('failed to update academicSettings for grade rounding', e);
+      }
+    };
+    fetchGradeRounding();
+  }, []);
+
+  const changeGradeRounding = (value: string) => {
+    setGradeRounding(value);
+    AsyncStorage.setItem("gradeRoundingRules", value);
+  };
 
   const changeLanguage = (value: string) => {
     setLanguage(value);
@@ -292,7 +296,7 @@ const defaultGeneralSettings: SettingsType[] = [
     iconName: "SunIcon",
     onSelectOption(option) {
       console.log("language changed to (dataContext)", option);
-      setLanguage(option);
+      // setLanguage(option);
       changeLanguage(option);
       try {
         (async () => {
@@ -324,7 +328,71 @@ const defaultGeneralSettings: SettingsType[] = [
   },
 ];
 
+const academicsSettings: SettingsType[] = [
+  {
+    id: "1",
+    title: "Grading Scheme",
+    subtitle: "Choose how grades are represented",
+    type: "dropdown",
+    iconName: "GraduationCapIcon",
+    options: [
+      "A, B, C, D, E, F (5 point scale)",
+      "A, B, C, D, F (4 point scale)",
+      "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F (4 point scale)",
+      "Percentage",
+    ],
+    selectedOption: "A, B, C, D, E, F (5 point scale)",
+    onSelectOption(option) {
+      console.log("Selected grading scheme:", option);
+      changeGradingScheme(option);
+
+      try {
+        (async () => {
+          await updateAcademicSetting("1", { selectedOption: option });
+        })();
+      } catch (error) {
+        console.log("Failed to update academicSettings for grading scheme", error);
+      }
+    },
+  },
+  // {
+  //   id: "2",
+  //   title: "Pass/Fail Option",
+  //   subtitle: "Allow pass/fail grading for eligible courses",
+  //   type: "toggle",
+  //   iconName: "CheckCircleIcon",
+  //   toggled: false,
+  // },
+  {
+    id: "3",
+    title: "Grade Rounding Rules",
+    subtitle: "Define how decimal grades are rounded",
+    type: "dropdown",
+    iconName: "ArrowClockwiseIcon",
+    options: [
+      "Keep two decimals",
+      "Round to nearest whole number",
+      "Always round up ",
+      "Always round down ",
+    ],
+    selectedOption: "Keep two decimals",
+    onSelectOption(option) {
+      console.log("Selected grade rounding:", option);
+      changeGradeRounding(option);
+
+      try {
+        (async () => {
+          await updateAcademicSetting("3", { selectedOption: option });
+        })();
+      } catch (error) {
+        console.log("Failed to update academicSettings for grade rounding", error);
+      }
+    },
+  },
+];
+
   const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(defaultGeneralSettings);
+    const [academicSettings, setAcademicSettings] = useState<SettingsType[]>(academicsSettings);
   const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
 
 // const seedInitialData = async () => {
@@ -718,6 +786,8 @@ const deleteCourse = async (id: string): Promise<ResponseType> => {
     utilities,
     infos,
     language,
+    gradingScheme,
+    gradeRounding,
     updateGeneralSetting,
     updateAcademicSetting,
     addSemester,
