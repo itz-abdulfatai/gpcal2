@@ -56,21 +56,21 @@ const academicsSettings: SettingsType[] = [
     type: "dropdown",
     iconName: "GraduationCapIcon",
     options: [
-      "A, B, C, D, E, F",
-      "A+, A, B+, B, C+, C, D, F",
-      "O, A+, A, B+, B, C (India system)",
+      "A, B, C, D, E, F (5 point scale)",
+      "A, B, C, D, F (4 point scale)",
+      "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F (4 point scale)",
       "Percentage",
     ],
-    selectedOption: "A, B, C, D, E, F",
+    selectedOption: "A, B, C, D, E, F (5 point scale)",
   },
-  {
-    id: "2",
-    title: "Pass/Fail Option",
-    subtitle: "Allow pass/fail grading for eligible courses",
-    type: "toggle",
-    iconName: "CheckCircleIcon",
-    toggled: false,
-  },
+  // {
+  //   id: "2",
+  //   title: "Pass/Fail Option",
+  //   subtitle: "Allow pass/fail grading for eligible courses",
+  //   type: "toggle",
+  //   iconName: "CheckCircleIcon",
+  //   toggled: false,
+  // },
   {
     id: "3",
     title: "Grade Rounding Rules",
@@ -145,20 +145,16 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const fetchSendNotifications = async () => {
-      const value = await AsyncStorage.getItem("sendNotifications");
-      setSendNotifications(value === "true");
-
       try {
-        (async () => {
-          await updateGeneralSetting("2", { toggled: value === "true" });
-        })();
+        const value = await AsyncStorage.getItem("sendNotifications");
+        setSendNotifications(value === "true");
+        await updateGeneralSetting("2", { toggled: value === "true" });
       } catch (error) {
-        console.log('failed to update generalSettings for notifications', error);
+        console.log('failed to load/sync sendNotifications', error);
       }
-    };  
+    };
     fetchSendNotifications();
   }, []);
-
   const changeSendNotifications = (value: boolean) => {
     setSendNotifications(value);
     AsyncStorage.setItem("sendNotifications", JSON.stringify(value));
@@ -186,14 +182,12 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const fetchRequireBioMetric = async () => {
-      const value = await AsyncStorage.getItem("requireBioMetric");
-      setRequireBioMetric(value === "true");
       try {
-        (async () => {
-          await updateGeneralSetting("4", { toggled: value === "true" });
-        })();
+        const value = await AsyncStorage.getItem("requireBioMetric");
+        setRequireBioMetric(value === "true");
+        await updateGeneralSetting("4", { toggled: value === "true" });
       } catch (error) {
-        console.log('failed to update generalSettings for requireBioMetric', error);
+        console.log('failed to load/sync requireBioMetric', error);
       }
     };
     fetchRequireBioMetric();
@@ -263,13 +257,9 @@ const defaultGeneralSettings: SettingsType[] = [
     onToggle(value) {
       console.log('toggle theme tapped (dataContext)', value);
       setTheme(value ? 'dark' : 'light');
-      try {
-        (async () => {
-          await updateGeneralSetting("1", { toggled: value });
-        })();
-      } catch (e) {
+      updateGeneralSetting("1", { toggled: value }).catch(e => {
         console.log('failed to update generalSettings for dark theme', e);
-      }
+      });
     },
 
   },
@@ -337,32 +327,32 @@ const defaultGeneralSettings: SettingsType[] = [
   const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(defaultGeneralSettings);
   const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
 
-const seedInitialData = async () => {
-  // Check if data already exists
-  const [semesters, courses, academicSettings, utilities, generalSettings] =
-    await Promise.all([
-      getData<SemesterType>("semesters"),
-      getData<CourseType>("courses"),
-      getData<SettingsType>("academicSettings"),
-      getData<UtilitiesType>("utilities"),
-      getData<SettingsType>("generalSettings"),
-    ]);
+// const seedInitialData = async () => {
+//   // Check if data already exists
+//   const [semesters, courses, academicSettings, utilities, generalSettings] =
+//     await Promise.all([
+//       getData<SemesterType>("semesters"),
+//       getData<CourseType>("courses"),
+//       getData<SettingsType>("academicSettings"),
+//       getData<UtilitiesType>("utilities"),
+//       getData<SettingsType>("generalSettings"),
+//     ]);
 
-  // Only seed if all are empty
-  if (
-    semesters.length === 0 &&
-    courses.length === 0 &&
-    academicSettings.length === 0 &&
-    utilities.length === 0 &&
-    generalSettings.length === 0
-  ) {
-    await setItem("semesters", []);
-    await setItem("courses", []);
-    await setItem("academicSettings", academicsSettings);
-    await setItem("utilities", defaultUtilities);
-    await setItem("generalSettings", defaultGeneralSettings);
-  }
-};
+//   // Only seed if all are empty
+//   if (
+//     semesters.length === 0 &&
+//     courses.length === 0 &&
+//     academicSettings.length === 0 &&
+//     utilities.length === 0 &&
+//     generalSettings.length === 0
+//   ) {
+//     await setItem("semesters", []);
+//     await setItem("courses", []);
+//     await setItem("academicSettings", academicsSettings);
+//     await setItem("utilities", defaultUtilities);
+//     await setItem("generalSettings", defaultGeneralSettings);
+//   }
+// };
 
 
 
@@ -413,12 +403,16 @@ const seedInitialData = async () => {
     let semesters: Realm.Results<any>;
 
     const setupListener = async () => {
+      try {
       realmInstance = await openRealm();
       semesters = realmInstance.objects<SemesterType>("Semester");
       setSemesters([...semesters]);
       semesters.addListener(() => {
         setSemesters([...semesters]);
       });
+      } catch (error) {
+        console.error("Failed to setup Realm listener: (dataContext)", error);
+      }
     };
 
     setupListener();
