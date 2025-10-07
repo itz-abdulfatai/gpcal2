@@ -3,7 +3,7 @@ import { BackButtonProps } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import { useRouter } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -12,7 +12,7 @@ const BackButton = ({ style, iconSize = 26 }: BackButtonProps) => {
   const router = useRouter();
   const { colors } = useTheme();
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
   button: {
     // backgroundColor: colors.neutral,
     alignSelf: "flex-start",
@@ -22,7 +22,7 @@ const BackButton = ({ style, iconSize = 26 }: BackButtonProps) => {
     borderWidth: 1,
     borderColor: colors.secondary,
   },
-});
+}), [colors]);
 
   return (
     <TouchableOpacity

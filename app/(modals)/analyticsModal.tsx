@@ -121,7 +121,7 @@ const Analytics = () => {
       </ModalWrapper>
     );
 
-    const styles = StyleSheet.create({
+    const styles = useMemo(() => StyleSheet.create({
   keysContainer: {
     flexWrap: "wrap",
     justifyContent: "center",
@@ -214,7 +214,7 @@ const Analytics = () => {
     shadowRadius: 10,
     elevation: 2,
   },
-});
+}), [colors]);
 
   return (
     <ModalWrapper>

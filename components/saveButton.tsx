@@ -3,13 +3,13 @@ import { SaveButtonProps } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import { useRouter } from "expo-router";
 import { FloppyDiskIcon } from "phosphor-react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const SaveButton = ({ style, iconSize = 26, onPress }: SaveButtonProps) => {
     const { colors } = useTheme();
-const styles = StyleSheet.create({
+const styles = useMemo(() => StyleSheet.create({
       button: {
         // backgroundColor: colors.neutral,
         alignSelf: "flex-start",
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: colors.secondary,
       },
-    });
+    }), [colors]);
   
   return (
     <TouchableOpacity

@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import { semesterCardProps, semestersListType, SemesterType } from "@/types";
 import {  radius, spacingX, spacingY } from "@/constants/theme";
 import Typo from "./typo";
@@ -17,7 +17,7 @@ const SemestersList = ({
 }: semestersListType) => {
     const { colors } = useTheme();
 
-    const styles = StyleSheet.create({
+    const styles = useMemo(() => StyleSheet.create({
   headings: {
     fontSize: 20,
     fontWeight: "bold",
@@ -35,7 +35,7 @@ const SemestersList = ({
     alignItems: "center",
     justifyContent: "space-between",
   },
-});
+}), [colors]);
   
   return (
     <View style={styles.semestersContainer}>

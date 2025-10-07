@@ -1,5 +1,5 @@
 import { StyleSheet, Switch, View } from "react-native";
-import React from "react";
+import React, { useMemo } from "react";
 import {  radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { Dropdown } from "react-native-element-dropdown";
@@ -14,7 +14,7 @@ const SettingsGroup = ({
 }: SettingsGroupProps) => {
     const { colors } = useTheme();
   
-    const styles = StyleSheet.create({
+    const styles = useMemo(() => StyleSheet.create({
   settingsContainer: {
     gap: spacingY._20,
   },
@@ -96,14 +96,13 @@ const SettingsGroup = ({
     shadowRadius: 10,
     elevation: 5,
   },
-});
+}), [colors]);
 
   return (
     <View style={styles.sectionContainer}>
       <Typo style={styles.headings}>{title}</Typo>
       <View style={styles.settingsContainer}>
         {settings.map((setting) => {
-          console.log(setting.title + ":", setting);
           
           return (
             <View

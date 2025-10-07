@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { TableProps } from "@/types";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -7,7 +7,7 @@ function Table<T extends object>(props: TableProps<T>) {
   const { headings, data, keys, handleDelete } = props;
   const { colors } = useTheme();
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
   container: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -43,7 +43,7 @@ function Table<T extends object>(props: TableProps<T>) {
     fontWeight: "700",
     fontSize: 16,
   },
-});
+}), [colors]);
 
   return (
     <View style={styles.container}>

@@ -4,6 +4,7 @@ import { verticalScale } from "@/utils/styling";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Loading from "./Loading";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useMemo } from "react";
 
 
 const Button = ({
@@ -13,7 +14,7 @@ const Button = ({
   children,
 }: CustomButtonProps) => {
   const { colors } = useTheme();
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
     button: {
       backgroundColor: colors.primary,
       borderRadius: radius._12,
@@ -22,7 +23,7 @@ const Button = ({
       justifyContent: "center",
       alignItems: "center",
     },
-  });
+  }), [colors]);
   if (loading) {
     return (
       <View style={[styles.button, style, { backgroundColor: "transparent" }]}>

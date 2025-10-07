@@ -5,8 +5,6 @@ export interface FabProps {
   onPress: () => void;
   style?: ViewStyle;
 }
-// If you want to keep it local, use the above. Otherwise, move it to types.ts and export from there.
-// import { FabProps } from "@/types"; // Remove this line if defining locally.
 import { PlusIcon } from "phosphor-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 
