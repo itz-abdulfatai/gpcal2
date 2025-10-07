@@ -115,32 +115,7 @@ const siteInfo: AppInfoType[] = [
  * Seed AsyncStorage with initial app data for first-time users.
  * Only runs if no settings/courses/semesters exist.
  */
-// const seedInitialData = async () => {
-//   // Check if data already exists
-//   const [semesters, courses, academicSettings, utilities, generalSettings] =
-//     await Promise.all([
-//       getData<SemesterType>("semesters"),
-//       getData<CourseType>("courses"),
-//       getData<SettingsType>("academicSettings"),
-//       getData<UtilitiesType>("utilities"),
-//       getData<SettingsType>("generalSettings"),
-//     ]);
 
-//   // Only seed if all are empty
-//   if (
-//     semesters.length === 0 &&
-//     courses.length === 0 &&
-//     academicSettings.length === 0 &&
-//     utilities.length === 0 &&
-//     generalSettings.length === 0
-//   ) {
-//     await setItem("semesters", []);
-//     await setItem("courses", []);
-//     await setItem("academicSettings", academicsSettings);
-//     await setItem("utilities", defaultUtilities);
-//     await setItem("generalSettings", defaultGeneralSettings);
-//   }
-// };
 
 // ----------------------------------
 // Context Setup
@@ -151,6 +126,92 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { colors, theme, setTheme } = useTheme();
+  const [sendNotifications, setSendNotifications] = useState<boolean>(false);
+  const [language, setLanguage] = useState("English");
+  const [requireBioMetric, setRequireBioMetric] = useState<boolean>(false);
+
+  const [academicSettings, setAcademicSettings] = useState<SettingsType[]>(academicsSettings);
+  const [infos, setInfos] = useState<AppInfoType[]>(siteInfo);
+  const [semesters, setSemesters] = useState<SemesterType[]>([]);
+  const [courses] = useState<CourseType[]>([]);
+  const [user, setUser] = useState<UserType>({
+    name: "kamaru Doe",
+    image: null,
+    createdAt: new Date(),
+    onboarded: false,
+    uid: "user123",
+  });
+
+
+  useEffect(() => {
+    const fetchSendNotifications = async () => {
+      const value = await AsyncStorage.getItem("sendNotifications");
+      setSendNotifications(value === "true");
+
+      try {
+        (async () => {
+          await updateGeneralSetting("2", { toggled: value === "true" });
+        })();
+      } catch (error) {
+        console.log('failed to update generalSettings for notifications', error);
+      }
+    };  
+    fetchSendNotifications();
+  }, []);
+
+  const changeSendNotifications = (value: boolean) => {
+    setSendNotifications(value);
+    AsyncStorage.setItem("sendNotifications", JSON.stringify(value));
+  };
+
+  useEffect(() => {
+    const fetchLanguage = async () => {
+      const value = await AsyncStorage.getItem("language");
+      setLanguage(value || "English");
+      try {
+        (async () => {
+          await updateGeneralSetting("3", { selectedOption: value });
+        })();
+      } catch (e) {
+        console.log('failed to update generalSettings for language', e);
+      }
+    };
+    fetchLanguage();
+  }, []);
+
+  const changeLanguage = (value: string) => {
+    setLanguage(value);
+    AsyncStorage.setItem("language", value);
+  };
+
+  useEffect(() => {
+    const fetchRequireBioMetric = async () => {
+      const value = await AsyncStorage.getItem("requireBioMetric");
+      setRequireBioMetric(value === "true");
+      try {
+        (async () => {
+          await updateGeneralSetting("4", { toggled: value === "true" });
+        })();
+      } catch (error) {
+        console.log('failed to update generalSettings for requireBioMetric', error);
+      }
+    };
+    fetchRequireBioMetric();
+  }, []);
+
+  const changeRequireBioMetric = (value: boolean) => {
+    setRequireBioMetric(value);
+    AsyncStorage.setItem("requireBioMetric", JSON.stringify(value));
+  };
+
+  // Update general settings when theme changes
+  useEffect(() => {
+    setGeneralSettings(prev => 
+      prev.map(setting => 
+        setting.id === "1" ? { ...setting, toggled: theme === 'dark' } : setting
+      )
+    );
+  }, [theme]);
   
 const defaultUtilities: UtilitiesType[] = [
   {
@@ -197,9 +258,19 @@ const defaultGeneralSettings: SettingsType[] = [
     title: "Dark Theme",
     subtitle: "Toggle between Light and Dark mode",
     type: "toggle",
-    toggled: false,
+    toggled: theme === 'dark',
     iconName: "SunIcon",
-    onToggle(value) { setTheme(value ? "dark" : "light"); console.log("Theme changed to:", value ? "dark" : "light"); },
+    onToggle(value) {
+      console.log('toggle theme tapped (dataContext)', value);
+      setTheme(value ? 'dark' : 'light');
+      try {
+        (async () => {
+          await updateGeneralSetting("1", { toggled: value });
+        })();
+      } catch (e) {
+        console.log('failed to update generalSettings for dark theme', e);
+      }
+    },
 
   },
   {
@@ -207,8 +278,19 @@ const defaultGeneralSettings: SettingsType[] = [
     title: "Notifications",
     subtitle: "Receive notifications about important academic updates",
     type: "toggle",
-    toggled: true,
+    toggled: sendNotifications,
     iconName: "SunIcon",
+    onToggle(value) {
+      console.log('toggle notifications changed to (dataContext)', value);
+      changeSendNotifications(value);
+      try {
+        (async () => {
+          await updateGeneralSetting("2", { toggled: value });
+        })();
+      } catch (e) {
+        console.log('failed to update generalSettings for notifications', e);
+      }
+    },
   },
   {
     id: "3",
@@ -216,32 +298,74 @@ const defaultGeneralSettings: SettingsType[] = [
     subtitle: "Select your preferred language",
     type: "dropdown",
     options: ["English", "Spanish", "French", "German"],
-    selectedOption: "English",
+    selectedOption: language,
     iconName: "SunIcon",
+    onSelectOption(option) {
+      console.log("language changed to (dataContext)", option);
+      setLanguage(option);
+      changeLanguage(option);
+      try {
+        (async () => {
+          await updateGeneralSetting("3", { selectedOption: option });
+        })();
+      } catch (e) {
+        console.log('failed to update generalSettings for language', e);
+      }
+    },
   },
   {
     id: "4",
     title: "Screen Lock",
     subtitle: "Require PIN or biometric authentication to open the app",
     type: "toggle",
-    toggled: false,
+    toggled: requireBioMetric,
     iconName: "SunIcon",
+    onToggle(value) {
+      console.log('toggle requireBioMetric changed to (dataContext)', value);
+      changeRequireBioMetric(value);
+      try {
+        (async () => {
+          await updateGeneralSetting("4", { toggled: value });
+        })();
+      } catch (e) {
+        console.log('failed to update generalSettings for requireBioMetric', e);
+      }
+    },
   },
 ];
-  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>([]);
-  const [academicSettings, setAcademicSettings] = useState<SettingsType[]>([]);
-  const [utilities, setUtilities] = useState<UtilitiesType[]>([]);
-  const [infos, setInfos] = useState<AppInfoType[]>([]);
-  const [semesters, setSemesters] = useState<SemesterType[]>([]);
-  const [courses] = useState<CourseType[]>([]);
-  const [user, setUser] = useState<UserType>({
-    name: "kamaru Doe",
-    image: null,
-    createdAt: new Date(),
-    onboarded: false,
-    uid: "user123",
-  });
-  const [language] = useState("en");
+
+  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(defaultGeneralSettings);
+  const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
+
+const seedInitialData = async () => {
+  // Check if data already exists
+  const [semesters, courses, academicSettings, utilities, generalSettings] =
+    await Promise.all([
+      getData<SemesterType>("semesters"),
+      getData<CourseType>("courses"),
+      getData<SettingsType>("academicSettings"),
+      getData<UtilitiesType>("utilities"),
+      getData<SettingsType>("generalSettings"),
+    ]);
+
+  // Only seed if all are empty
+  if (
+    semesters.length === 0 &&
+    courses.length === 0 &&
+    academicSettings.length === 0 &&
+    utilities.length === 0 &&
+    generalSettings.length === 0
+  ) {
+    await setItem("semesters", []);
+    await setItem("courses", []);
+    await setItem("academicSettings", academicsSettings);
+    await setItem("utilities", defaultUtilities);
+    await setItem("generalSettings", defaultGeneralSettings);
+  }
+};
+
+
+
 
   useEffect(() => {
   AsyncStorage.getItem("user").then((stored) => {
@@ -268,32 +392,20 @@ const defaultGeneralSettings: SettingsType[] = [
     getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();
 
+  const init = async () => {
+    // await seedInitialData();
+    await loadData();       
+  };
+  init();
+
     const loadData = async () => {
-      try {
-        const academicSettings = await getData<SettingsType>(
-          "academicSettings"
-        );
-        const utilities = await getData<UtilitiesType>("utilities");
-        const generalSettings = await getData<SettingsType>("generalSettings");
-
-        setAcademicSettings(
-          academicSettings.length > 0 ? academicSettings : academicsSettings
-        );
-        setUtilities(utilities.length > 0 ? utilities : defaultUtilities);
-        setGeneralSettings(
-          generalSettings.length > 0 ? generalSettings : defaultGeneralSettings
-        );
-        setInfos(siteInfo);
-      } catch (error) {
-        console.log("an error occured(loadData)", error);
-
+        setGeneralSettings(defaultGeneralSettings);
         setAcademicSettings(academicsSettings);
         setUtilities(defaultUtilities);
-        setGeneralSettings(defaultGeneralSettings);
         setInfos(siteInfo);
-      }
+      // }
     };
-    loadData();
+    
   }, []);
 
   useEffect(() => {
@@ -330,7 +442,7 @@ const defaultGeneralSettings: SettingsType[] = [
     setGeneralSettings((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
     );
-    await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
+    // await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
   };
 
   /**

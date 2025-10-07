@@ -21,7 +21,7 @@ export default function HomeScreen() {
       <Fab onPress={openSemestersModal} />
       <Header title="GPCal" />
       <ScrollView style={styles.container}>
-        <SemestersList data={semesters} emptyListMessage="No Semesters Found" />
+        <SemestersList data={semesters} emptyListMessage="Tap + to add a semester" />
       </ScrollView>
     </ScreenWrapper>
   );

@@ -167,9 +167,11 @@ const SettingsGroup = ({
                         label: option,
                         value: option,
                       }))}
-                      onChange={(val) =>
-                        updateSetting(setting.id, { selectedOption: val.value })
-                      }
+                      onChange={(val) => {
+                        // updateSetting(setting.id, { selectedOption: val.value })
+                        setting.onSelectOption && setting.onSelectOption(val.value); console.log(setting.title + " selected:", val.value);
+                        
+                      }}
                     />
                     // </View>
                   )}
@@ -181,8 +183,9 @@ const SettingsGroup = ({
                 <Switch
                   value={setting.toggled}
                   onValueChange={(val) =>{
-                    updateSetting(setting.id, { toggled: val })
-                    setting.onToggle && setting.onToggle(val);
+                    // updateSetting(setting.id, { toggled: val })
+                    setting.onToggle && setting.onToggle(val); console.log(setting.title + " toggled:", val);
+                    
                   }}
                   trackColor={{
                     false: colors.secondary,

@@ -38,8 +38,15 @@ export const ThemeProvider: FC<{ children: React.ReactNode }> = ({ children }) =
   const [theme, setThemeState] = useState<ThemeType>("light");
 
   useEffect(() => {
+    console.log("Theme changed to: (themeContext)", theme);
+
+  }, [theme])
+
+  useEffect(() => {
     AsyncStorage.getItem("theme").then((stored) => {
-      if (stored === "dark" || stored === "light") setThemeState(stored);
+      if (stored === "dark" || stored === "light"){ setThemeState(stored)} else {
+        setThemeState("light");
+      }
     });
   }, []);
 
