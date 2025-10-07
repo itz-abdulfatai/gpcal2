@@ -210,6 +210,7 @@ const AboutModal = () => {
           </View>
 
           <View style={styles.sectionContainer}>
+            <Typo style={styles.headings}>About the Creator</Typo>
             <View style={[styles.row]}>
               <Image
                 source={require("../../assets/images/myAvatar.jpg")}

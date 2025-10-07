@@ -438,7 +438,8 @@ console.log('actually changing the gpa in db');
       }));
   }, [dbSemesters, linkedIdsSet, semester.id]);
 
-  const styles = StyleSheet.create({
+      const styles = useMemo(() => StyleSheet.create({
+  
   row: { flexDirection: "row", alignItems: "baseline" },
   btw: { justifyContent: "space-between" },
   footerContainer: {
@@ -503,7 +504,8 @@ console.log('actually changing the gpa in db');
     shadowRadius: 10,
     elevation: 5,
   },
-});
+}), [colors]);
+
 
   return (
     <ModalWrapper>

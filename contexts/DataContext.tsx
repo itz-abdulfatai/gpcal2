@@ -67,7 +67,7 @@ const siteInfo: AppInfoType[] = [
     id: "3",
     title: "About this App",
     Icon: (props) => <InfoIcon {...props} />,
-    route: "/",
+    route: "/(modals)/aboutModal",
   },
 ];
 
