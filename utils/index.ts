@@ -1,5 +1,11 @@
 import { Platform, ToastAndroid, Alert } from "react-native";
-import { CourseType, GradeType, ResponseType, SemesterType } from "@/types";
+import {
+  CourseType,
+  GradeType,
+  GradingSystem,
+  ResponseType,
+  SemesterType,
+} from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getRandomColor = () =>
@@ -243,34 +249,96 @@ export const alert = (message: string): void => {
   }
 };
 
-export const gradeMap: Record<Exclude<GradeType, null>, number> = {
-  A: 5,
-  B: 4,
-  C: 3,
-  D: 2,
-  E: 1,
-  F: 0,
+const gradingMaps: Record<GradingSystem, Record<string, number>> = {
+  "A, B, C, D, E, F": {
+    A: 5,
+    B: 4,
+    C: 3,
+    D: 2,
+    E: 1,
+    F: 0,
+  },
+  "A, B, C, D, F": {
+    A: 4,
+    B: 3,
+    C: 2,
+    D: 1,
+    F: 0,
+  },
+  "A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F": {
+    "A+": 4.0,
+    A: 3.9,
+    "A-": 3.7,
+    "B+": 3.3,
+    B: 3.0,
+    "B-": 2.7,
+    "C+": 2.3,
+    C: 2.0,
+    "C-": 1.7,
+    "D+": 1.3,
+    D: 1.0,
+    "D-": 0.7,
+    F: 0,
+  },
+  Percentage: {}, // handled dynamically
 };
-export const gradeToPoint = (grade: GradeType) => {
+const gradeToPoint = (
+  grade: GradeType,
+  gradingSystem: GradingSystem
+): number => {
   if (grade === null) return 0;
-  return gradeMap[grade];
+
+  if (gradingSystem === "Percentage") {
+    const pct = Number(grade);
+    if (isNaN(pct)) return 0;
+
+    // Convert to 4-point scale (customizable)
+    if (pct >= 70) return 4;
+    if (pct >= 60) return 3;
+    if (pct >= 50) return 2;
+    if (pct >= 45) return 1;
+    return 0;
+  }
+
+  const map = gradingMaps[gradingSystem];
+  const normalized = String(grade).trim().toUpperCase();
+  return map[normalized] ?? 0;
 };
 
-export const computeGPA = (courses: CourseType[]) => {
-  console.log("calculating gpa");
+export const computeGPA = (
+  courses: CourseType[],
+  gradingSystem: GradingSystem
+) => {
+  const map = gradingMaps[gradingSystem];
 
-  const filtered = courses.filter((c) => c.creditUnit && c.gradePoint);
+  const filtered = courses.filter((c) => c.creditUnit && c.gradePoint != null);
+
   let totalCredits = 0;
   let totalWeighted = 0;
+
   for (const c of filtered) {
-    const gp =
-      typeof c.gradePoint === "string"
-        ? gradeToPoint(c.gradePoint)
-        : Number(c.gradePoint);
-    const credits = Number(c.creditUnit ?? 0);
+    let gp: number;
+
+    if (gradingSystem === "Percentage") {
+      // assume gradePoint is numeric (0–100)
+      const pct = Number(c.gradePoint);
+      if (isNaN(pct)) continue;
+
+      // convert to 4.0 scale (customize if you prefer 5.0)
+      if (pct >= 70) gp = 4;
+      else if (pct >= 60) gp = 3;
+      else if (pct >= 50) gp = 2;
+      else if (pct >= 45) gp = 1;
+      else gp = 0;
+    } else {
+      gp = map[String(c.gradePoint).toUpperCase()] ?? 0;
+    }
+
+    const credits = Number(c.creditUnit);
     totalCredits += credits;
     totalWeighted += gp * credits;
   }
+
   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };
 // without linked semester fallback
@@ -300,57 +368,52 @@ export const computeGPA = (courses: CourseType[]) => {
 //   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 // };
 
-
 // with linked semester fallback
-export const computeCGPAWeighted = (semesters: SemesterType[]) => {
+export const computeCGPAWeighted = (
+  semesters: SemesterType[]
+): number | null => {
   console.log("calculating cgpa (weighted + fallback)");
 
   let totalCredits = 0;
   let totalWeighted = 0;
 
-  // Step 1: collect course-based credits + weights
+  // Step 1: Collect course-based credits + weights
   for (const semester of semesters) {
     const filtered = semester.courses.filter(
-      (c) => c.creditUnit && c.gradePoint
+      (c) => c.creditUnit && c.gradePoint != null
     );
 
-    if (filtered.length > 0) {
-      for (const c of filtered) {
-        const gp =
-          typeof c.gradePoint === "string"
-            ? gradeToPoint(c.gradePoint)
-            : Number(c.gradePoint);
-
-        const credits = Number(c.creditUnit ?? 0);
-        totalCredits += credits;
-        totalWeighted += gp * credits;
-      }
+    for (const c of filtered) {
+      const gp = gradeToPoint(c.gradePoint, semester.gradingSystem);
+      const credits = Number(c.creditUnit ?? 0);
+      totalCredits += credits;
+      totalWeighted += gp * credits;
     }
   }
 
-  // Step 2: estimate an "average semester load" from actual course data
+  // Step 2: Estimate average semester load from existing data
   const semesterLoads = semesters.map((s) =>
     s.courses.reduce((sum, c) => sum + (c.creditUnit ?? 0), 0)
   );
+  const validLoads = semesterLoads.filter((x) => x > 0);
   const avgLoad =
-    semesterLoads.filter((x) => x > 0).reduce((a, b) => a + b, 0) /
-    Math.max(1, semesterLoads.filter((x) => x > 0).length);
+    validLoads.reduce((a, b) => a + b, 0) / Math.max(1, validLoads.length);
 
-  // Step 3: handle GPA-only semesters (no courses, but gpa != null)
+  // Step 3: Handle GPA-only semesters (no courses, but GPA exists)
   for (const semester of semesters) {
     const hasCourses = semester.courses.some(
-      (c) => c.creditUnit && c.gradePoint
+      (c) => c.creditUnit && c.gradePoint != null
     );
     if (!hasCourses && semester.gpa != null) {
-      const assumedCredits = avgLoad || 1; // fallback to 1 if nothing else
+      const assumedCredits = avgLoad || 1;
       totalCredits += assumedCredits;
       totalWeighted += semester.gpa * assumedCredits;
     }
   }
 
+  // Step 4: Final CGPA computation
   return totalCredits === 0 ? null : +(totalWeighted / totalCredits).toFixed(2);
 };
-
 
 // export const computeCGPAAverage = (semesters: SemesterType[]) => {
 //   console.log("calculating cgpa (average)");
@@ -362,3 +425,10 @@ export const computeCGPAWeighted = (semesters: SemesterType[]) => {
 //   const sum = valid.reduce((acc, s) => acc + (s.gpa ?? 0), 0);
 //   return +(sum / valid.length).toFixed(2);
 // };
+
+export function createPercentageArray() {
+  return Array.from({ length: 101 }, (_, i) => ({
+    label: `${i}%`,
+    value: `${i}`,
+  }));
+}

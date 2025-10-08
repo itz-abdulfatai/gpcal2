@@ -23,5 +23,6 @@ export const SemesterSchema = {
     uid: "string",
     courses: "Course[]",
     linkedSemesters: "uuid[]",
+    gradingSystem: "string",
   },
 };

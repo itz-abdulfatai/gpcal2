@@ -7,8 +7,9 @@ import {
   AppInfoType,
   UserType,
   ResponseType,
+  GradingSystem,
 } from "@/types";
-import { getData, setItem, updateSettingInStorage } from "@/utils";
+import { updateSettingInStorage } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
   ChatCenteredTextIcon,
@@ -28,7 +29,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const realmConfig = {
   schema: [SemesterSchema, CourseSchema],
-  schemaVersion: 5,
+  schemaVersion: 6,
   deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
 };
 
@@ -49,19 +50,18 @@ const openRealm = async () => {
 // Default Data
 // ----------------------------------
 
-
 const siteInfo: AppInfoType[] = [
   {
     id: "1",
     title: "Send Feedback/ Feature Requests",
-    Icon: (props) => <ChatCenteredTextIcon {...props} /> ,
+    Icon: (props) => <ChatCenteredTextIcon {...props} />,
     route: "/", // can accept an external link
   },
   {
     id: "2",
     title: "Get Support",
     Icon: (props) => <HeadphonesIcon {...props} />,
-    route: "/", 
+    route: "/",
   },
   {
     id: "3",
@@ -76,7 +76,6 @@ const siteInfo: AppInfoType[] = [
  * Only runs if no settings/courses/semesters exist.
  */
 
-
 // ----------------------------------
 // Context Setup
 // ----------------------------------
@@ -88,12 +87,11 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   const { colors, theme, setTheme } = useTheme();
   const [sendNotifications, setSendNotifications] = useState<boolean>(false);
   const [language, setLanguage] = useState("English");
-  const [gradingScheme, setGradingScheme] = useState<string>(
-    "A, B, C, D, E, F (5 point scale)"
-  );
-  const [gradeRounding, setGradeRounding] = useState<string>("Keep two decimals");
+  const [gradingScheme, setGradingScheme] =
+    useState<GradingSystem>("A, B, C, D, E, F");
+  const [gradeRounding, setGradeRounding] =
+    useState<string>("Keep two decimals");
   const [requireBioMetric, setRequireBioMetric] = useState<boolean>(false);
-
 
   const [infos, setInfos] = useState<AppInfoType[]>(siteInfo);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
@@ -106,7 +104,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     uid: "user123",
   });
 
-
   useEffect(() => {
     const fetchSendNotifications = async () => {
       try {
@@ -114,7 +111,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         setSendNotifications(value === "true");
         await updateGeneralSetting("2", { toggled: value === "true" });
       } catch (error) {
-        console.log('failed to load/sync sendNotifications', error);
+        console.log("failed to load/sync sendNotifications", error);
       }
     };
     fetchSendNotifications();
@@ -133,7 +130,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           await updateGeneralSetting("3", { selectedOption: value });
         })();
       } catch (e) {
-        console.log('failed to update generalSettings for language', e);
+        console.log("failed to update generalSettings for language", e);
       }
     };
     fetchLanguage();
@@ -142,20 +139,20 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const fetchGradingScheme = async () => {
       const value = await AsyncStorage.getItem("gradingScheme");
-      setGradingScheme(value || "A, B, C, D, E, F (5 point scale)");
+      setGradingScheme((value as GradingSystem) || "A, B, C, D, E, F");
       try {
         (async () => {
           await updateAcademicSetting("1", { selectedOption: value });
         })();
       } catch (e) {
-        console.log('failed to update academicSettings for grading scheme', e);
+        console.log("failed to update academicSettings for grading scheme", e);
       }
     };
     fetchGradingScheme();
   }, []);
 
   const changeGradingScheme = (value: string) => {
-    setGradingScheme(value);
+    setGradingScheme(value as GradingSystem);
     AsyncStorage.setItem("gradingScheme", value);
   };
 
@@ -168,7 +165,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           await updateAcademicSetting("3", { selectedOption: value });
         })();
       } catch (e) {
-        console.log('failed to update academicSettings for grade rounding', e);
+        console.log("failed to update academicSettings for grade rounding", e);
       }
     };
     fetchGradeRounding();
@@ -191,7 +188,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         setRequireBioMetric(value === "true");
         await updateGeneralSetting("4", { toggled: value === "true" });
       } catch (error) {
-        console.log('failed to load/sync requireBioMetric', error);
+        console.log("failed to load/sync requireBioMetric", error);
       }
     };
     fetchRequireBioMetric();
@@ -204,266 +201,276 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   // Update general settings when theme changes
   useEffect(() => {
-    setGeneralSettings(prev => 
-      prev.map(setting => 
-        setting.id === "1" ? { ...setting, toggled: theme === 'dark' } : setting
+    setGeneralSettings((prev) =>
+      prev.map((setting) =>
+        setting.id === "1" ? { ...setting, toggled: theme === "dark" } : setting
       )
     );
   }, [theme]);
-  
-const defaultUtilities: UtilitiesType[] = [
-  {
-    id: "1",
-    title: "Export Data",
-    subtitle: "Download a backup of your academic data",
-    color: colors.white,
-    onTap() {
-      console.log("export data tapped");
-    },
-    iconName: "ExportIcon",
-    buttonText: "Export",
-    textColor: colors.black,
-  },
-  {
-    id: "2",
-    title: "Import Data",
-    subtitle: "Import a previously exported data file",
-    color: colors.white,
-    onTap() {
-      console.log("import data tapped");
-    },
-    iconName: "ExportIcon",
-    buttonText: "Import",
-    textColor: colors.black,
-  },
-  {
-    id: "3",
-    title: "Reset All Data",
-    subtitle: "Permanently delete all your application data",
-    color: colors.rose,
-    onTap() {
-      console.log("reset data tapped");
-    },
-    iconName: "TrashIcon",
-    buttonText: "Reset",
-    textColor: colors.white,
-  },
-];
 
-const defaultGeneralSettings: SettingsType[] = [
-  {
-    id: "1",
-    title: "Dark Theme",
-    subtitle: "Toggle between Light and Dark mode",
-    type: "toggle",
-    toggled: theme === 'dark',
-    iconName: "SunIcon",
-    onToggle(value) {
-      console.log('toggle theme tapped (dataContext)', value);
-      setTheme(value ? 'dark' : 'light');
-      updateGeneralSetting("1", { toggled: value }).catch(e => {
-        console.log('failed to update generalSettings for dark theme', e);
-      });
+  const defaultUtilities: UtilitiesType[] = [
+    {
+      id: "1",
+      title: "Export Data",
+      subtitle: "Download a backup of your academic data",
+      color: colors.white,
+      onTap() {
+        // TODO: Implement export data functionality
+        console.log("export data tapped");
+      },
+      iconName: "ExportIcon",
+      buttonText: "Export",
+      textColor: colors.black,
     },
+    {
+      id: "2",
+      title: "Import Data",
+      subtitle: "Import a previously exported data file",
+      color: colors.white,
+      onTap() {
+        // TODO: Implement export data functionality
+        console.log("import data tapped");
+      },
+      iconName: "ExportIcon",
+      buttonText: "Import",
+      textColor: colors.black,
+    },
+    {
+      id: "3",
+      title: "Reset All Data",
+      subtitle: "Permanently delete all your application data",
+      color: colors.rose,
+      onTap() {
+        // TODO: Implement export data functionality
+        console.log("reset data tapped");
+      },
+      iconName: "TrashIcon",
+      buttonText: "Reset",
+      textColor: colors.white,
+    },
+  ];
 
-  },
-  {
-    id: "2",
-    title: "Notifications",
-    subtitle: "Receive notifications about important academic updates",
-    type: "toggle",
-    toggled: sendNotifications,
-    iconName: "SunIcon",
-    onToggle(value) {
-      console.log('toggle notifications changed to (dataContext)', value);
-      changeSendNotifications(value);
-      try {
-        (async () => {
-          await updateGeneralSetting("2", { toggled: value });
-        })();
-      } catch (e) {
-        console.log('failed to update generalSettings for notifications', e);
-      }
+  const defaultGeneralSettings: SettingsType[] = [
+    {
+      id: "1",
+      title: "Dark Theme",
+      subtitle: "Toggle between Light and Dark mode",
+      type: "toggle",
+      toggled: theme === "dark",
+      iconName: "MoonIcon",
+      onToggle(value) {
+        console.log("toggle theme tapped (dataContext)", value);
+        setTheme(value ? "dark" : "light");
+        updateGeneralSetting("1", { toggled: value }).catch((e) => {
+          console.log("failed to update generalSettings for dark theme", e);
+        });
+      },
     },
-  },
-  {
-    id: "3",
-    title: "Language",
-    subtitle: "Select your preferred language",
-    type: "dropdown",
-    options: ["English", "Spanish", "French", "German"],
-    selectedOption: language,
-    iconName: "SunIcon",
-    onSelectOption(option) {
-      console.log("language changed to (dataContext)", option);
-      // setLanguage(option);
-      changeLanguage(option);
-      try {
-        (async () => {
-          await updateGeneralSetting("3", { selectedOption: option });
-        })();
-      } catch (e) {
-        console.log('failed to update generalSettings for language', e);
-      }
+    {
+      id: "2",
+      title: "Notifications",
+      subtitle: "Receive notifications about important academic updates",
+      type: "toggle",
+      toggled: sendNotifications,
+      iconName: "BellIcon",
+      onToggle(value) {
+        console.log("toggle notifications changed to (dataContext)", value);
+        changeSendNotifications(value);
+        try {
+          (async () => {
+            await updateGeneralSetting("2", { toggled: value });
+          })();
+        } catch (e) {
+          console.log("failed to update generalSettings for notifications", e);
+        }
+      },
     },
-  },
-  {
-    id: "4",
-    title: "Screen Lock",
-    subtitle: "Require PIN or biometric authentication to open the app",
-    type: "toggle",
-    toggled: requireBioMetric,
-    iconName: "SunIcon",
-    onToggle(value) {
-      console.log('toggle requireBioMetric changed to (dataContext)', value);
-      changeRequireBioMetric(value);
-      try {
-        (async () => {
-          await updateGeneralSetting("4", { toggled: value });
-        })();
-      } catch (e) {
-        console.log('failed to update generalSettings for requireBioMetric', e);
-      }
+    {
+      id: "3",
+      title: "Language",
+      subtitle: "Select your preferred language",
+      type: "dropdown",
+      options: ["English", "Spanish", "French", "German"],
+      selectedOption: language,
+      iconName: "GlobeHemisphereWestIcon",
+      onSelectOption(option) {
+        console.log("language changed to (dataContext)", option);
+        // setLanguage(option);
+        changeLanguage(option);
+        try {
+          (async () => {
+            await updateGeneralSetting("3", { selectedOption: option });
+          })();
+        } catch (e) {
+          console.log("failed to update generalSettings for language", e);
+        }
+      },
     },
-  },
-];
+    {
+      id: "4",
+      title: "Screen Lock",
+      subtitle: "Require PIN or biometric authentication to open the app",
+      type: "toggle",
+      toggled: requireBioMetric,
+      iconName: "SunIcon",
+      onToggle(value) {
+        console.log("toggle requireBioMetric changed to (dataContext)", value);
+        changeRequireBioMetric(value);
+        try {
+          (async () => {
+            await updateGeneralSetting("4", { toggled: value });
+          })();
+        } catch (e) {
+          console.log(
+            "failed to update generalSettings for requireBioMetric",
+            e
+          );
+        }
+      },
+    },
+  ];
 
-const academicsSettings: SettingsType[] = [
-  {
-    id: "1",
-    title: "Grading Scheme",
-    subtitle: "Choose how grades are represented",
-    type: "dropdown",
-    iconName: "GraduationCapIcon",
-    options: [
-      "A, B, C, D, E, F (5 point scale)",
-      "A, B, C, D, F (4 point scale)",
-      "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F (4 point scale)",
-      "Percentage",
-    ],
-    selectedOption: "A, B, C, D, E, F (5 point scale)",
-    onSelectOption(option) {
-      console.log("Selected grading scheme:", option);
-      changeGradingScheme(option);
+  const academicsSettings: SettingsType[] = [
+    {
+      id: "1",
+      title: "Grading Scheme",
+      subtitle: "Choose how grades are represented",
+      type: "dropdown",
+      iconName: "GraduationCapIcon",
+      options: [
+        "A, B, C, D, E, F",
+        "A, B, C, D, F",
+        "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F",
+        "Percentage",
+      ],
+      selectedOption: "A, B, C, D, E, F",
+      onSelectOption(option) {
+        console.log("Selected grading scheme:", option);
+        changeGradingScheme(option);
 
-      try {
-        (async () => {
-          await updateAcademicSetting("1", { selectedOption: option });
-        })();
-      } catch (error) {
-        console.log("Failed to update academicSettings for grading scheme", error);
-      }
+        try {
+          (async () => {
+            await updateAcademicSetting("1", { selectedOption: option });
+          })();
+        } catch (error) {
+          console.log(
+            "Failed to update academicSettings for grading scheme",
+            error
+          );
+        }
+      },
     },
-  },
-  // {
-  //   id: "2",
-  //   title: "Pass/Fail Option",
-  //   subtitle: "Allow pass/fail grading for eligible courses",
-  //   type: "toggle",
-  //   iconName: "CheckCircleIcon",
-  //   toggled: false,
-  // },
-  {
-    id: "3",
-    title: "Grade Rounding Rules",
-    subtitle: "Define how decimal grades are rounded",
-    type: "dropdown",
-    iconName: "ArrowClockwiseIcon",
-    options: [
-      "Keep two decimals",
-      "Round to nearest whole number",
-      "Always round up ",
-      "Always round down ",
-    ],
-    selectedOption: "Keep two decimals",
-    onSelectOption(option) {
-      console.log("Selected grade rounding:", option);
-      changeGradeRounding(option);
+    // {
+    //   id: "2",
+    //   title: "Pass/Fail Option",
+    //   subtitle: "Allow pass/fail grading for eligible courses",
+    //   type: "toggle",
+    //   iconName: "CheckCircleIcon",
+    //   toggled: false,
+    // },
+    {
+      id: "3",
+      title: "Grade Rounding Rules",
+      subtitle: "Define how decimal grades are rounded",
+      type: "dropdown",
+      iconName: "ArrowClockwiseIcon",
+      options: [
+        "Keep two decimals",
+        "Round to nearest whole number",
+        "Always round up ",
+        "Always round down ",
+      ],
+      selectedOption: "Keep two decimals",
+      onSelectOption(option) {
+        console.log("Selected grade rounding:", option);
+        changeGradeRounding(option);
 
-      try {
-        (async () => {
-          await updateAcademicSetting("3", { selectedOption: option });
-        })();
-      } catch (error) {
-        console.log("Failed to update academicSettings for grade rounding", error);
-      }
+        try {
+          (async () => {
+            await updateAcademicSetting("3", { selectedOption: option });
+          })();
+        } catch (error) {
+          console.log(
+            "Failed to update academicSettings for grade rounding",
+            error
+          );
+        }
+      },
     },
-  },
-];
+  ];
 
-  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(defaultGeneralSettings);
-    const [academicSettings, setAcademicSettings] = useState<SettingsType[]>(academicsSettings);
+  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
+    defaultGeneralSettings
+  );
+  const [academicSettings, setAcademicSettings] =
+    useState<SettingsType[]>(academicsSettings);
   const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
 
-// const seedInitialData = async () => {
-//   // Check if data already exists
-//   const [semesters, courses, academicSettings, utilities, generalSettings] =
-//     await Promise.all([
-//       getData<SemesterType>("semesters"),
-//       getData<CourseType>("courses"),
-//       getData<SettingsType>("academicSettings"),
-//       getData<UtilitiesType>("utilities"),
-//       getData<SettingsType>("generalSettings"),
-//     ]);
+  // const seedInitialData = async () => {
+  //   // Check if data already exists
+  //   const [semesters, courses, academicSettings, utilities, generalSettings] =
+  //     await Promise.all([
+  //       getData<SemesterType>("semesters"),
+  //       getData<CourseType>("courses"),
+  //       getData<SettingsType>("academicSettings"),
+  //       getData<UtilitiesType>("utilities"),
+  //       getData<SettingsType>("generalSettings"),
+  //     ]);
 
-//   // Only seed if all are empty
-//   if (
-//     semesters.length === 0 &&
-//     courses.length === 0 &&
-//     academicSettings.length === 0 &&
-//     utilities.length === 0 &&
-//     generalSettings.length === 0
-//   ) {
-//     await setItem("semesters", []);
-//     await setItem("courses", []);
-//     await setItem("academicSettings", academicsSettings);
-//     await setItem("utilities", defaultUtilities);
-//     await setItem("generalSettings", defaultGeneralSettings);
-//   }
-// };
-
-
-
+  //   // Only seed if all are empty
+  //   if (
+  //     semesters.length === 0 &&
+  //     courses.length === 0 &&
+  //     academicSettings.length === 0 &&
+  //     utilities.length === 0 &&
+  //     generalSettings.length === 0
+  //   ) {
+  //     await setItem("semesters", []);
+  //     await setItem("courses", []);
+  //     await setItem("academicSettings", academicsSettings);
+  //     await setItem("utilities", defaultUtilities);
+  //     await setItem("generalSettings", defaultGeneralSettings);
+  //   }
+  // };
 
   useEffect(() => {
-  AsyncStorage.getItem("user").then((stored) => {
-    if (stored) {
-      setUser(JSON.parse(stored));
-    } else {
-      setUser({
-        name: "Tap to set name",
-        image: null,
-        createdAt: new Date(),
-        onboarded: false,
-        uid: "user123",
-      });
+    AsyncStorage.getItem("user").then((stored) => {
+      if (stored) {
+        setUser(JSON.parse(stored));
+      } else {
+        setUser({
+          name: "Tap to set name",
+          image: null,
+          createdAt: new Date(),
+          onboarded: false,
+          uid: "user123",
+        });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      AsyncStorage.setItem("user", JSON.stringify(user));
     }
-  });
-}, []);
-
-  useEffect(() => {
-  if (user) {
-    AsyncStorage.setItem("user", JSON.stringify(user));
-  }
-}, [user]);
+  }, [user]);
   useEffect(() => {
     getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();
 
-  const init = async () => {
-    // await seedInitialData();
-    await loadData();       
-  };
-  init();
+    const init = async () => {
+      // await seedInitialData();
+      await loadData();
+    };
+    init();
 
     const loadData = async () => {
-        setGeneralSettings(defaultGeneralSettings);
-        setAcademicSettings(academicsSettings);
-        setUtilities(defaultUtilities);
-        setInfos(siteInfo);
+      setGeneralSettings(defaultGeneralSettings);
+      setAcademicSettings(academicsSettings);
+      setUtilities(defaultUtilities);
+      setInfos(siteInfo);
       // }
     };
-    
   }, []);
 
   useEffect(() => {
@@ -472,12 +479,12 @@ const academicsSettings: SettingsType[] = [
 
     const setupListener = async () => {
       try {
-      realmInstance = await openRealm();
-      semesters = realmInstance.objects<SemesterType>("Semester");
-      setSemesters([...semesters]);
-      semesters.addListener(() => {
+        realmInstance = await openRealm();
+        semesters = realmInstance.objects<SemesterType>("Semester");
         setSemesters([...semesters]);
-      });
+        semesters.addListener(() => {
+          setSemesters([...semesters]);
+        });
       } catch (error) {
         console.error("Failed to setup Realm listener: (dataContext)", error);
       }
@@ -521,23 +528,22 @@ const academicsSettings: SettingsType[] = [
   };
 
   // CREATE
-const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
-  try {
-    const realm = await openRealm();
+  const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
 
-    const created = realm.write(() => {
-      return realm.create("Semester", semester);
-    });
+      const created = realm.write(() => {
+        return realm.create("Semester", semester);
+      });
 
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
 
-    return { success: true, data: { ...created } };
-  } catch (error: any) {
-    console.log("error occured (addSemester)", error);
-    return { success: false, msg: error.message };
-  }
-};
-
+      return { success: true, data: { ...created } };
+    } catch (error: any) {
+      console.log("error occured (addSemester)", error);
+      return { success: false, msg: error.message };
+    }
+  };
 
   const addCourse = async (
     course: CourseType,
@@ -728,53 +734,52 @@ const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
   };
 
   // DELETE
-const deleteSemester = async (id: string): Promise<ResponseType> => {
-  try {
-    const realm = await openRealm();
-    realm.write(() => {
-      const semester = realm.objectForPrimaryKey(
-        "Semester",
-        new Realm.BSON.UUID(id)
-      ) as any;
+  const deleteSemester = async (id: string): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const semester = realm.objectForPrimaryKey(
+          "Semester",
+          new Realm.BSON.UUID(id)
+        ) as any;
 
-      if (semester) {
-        if (semester.courses && semester.courses.length > 0) {
-          realm.delete(semester.courses);
+        if (semester) {
+          if (semester.courses && semester.courses.length > 0) {
+            realm.delete(semester.courses);
+          }
+
+          realm.delete(semester);
         }
+      });
 
-        realm.delete(semester);
-      }
-    });
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (deleteSemester)", error);
+      return { success: false, msg: error.message };
+    }
+  };
 
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
-    return { success: true };
-  } catch (error: any) {
-    console.log("error occured (deleteSemester)", error);
-    return { success: false, msg: error.message };
-  }
-};
+  const deleteCourse = async (id: string): Promise<ResponseType> => {
+    try {
+      const realm = await openRealm();
+      realm.write(() => {
+        const uuid = new Realm.BSON.UUID(id);
+        const course = realm.objectForPrimaryKey("Course", uuid);
+        if (course) {
+          realm.delete(course);
+        }
+      });
 
-const deleteCourse = async (id: string): Promise<ResponseType> => {
-  try {
-    const realm = await openRealm();
-    realm.write(() => {
-      const uuid = new Realm.BSON.UUID(id);
-      const course = realm.objectForPrimaryKey("Course", uuid);
-      if (course) {
-        realm.delete(course);
-      }
-    });
+      // Refresh semesters so UI reflects changes
+      setSemesters([...realm.objects<SemesterType>("Semester")]);
 
-    // Refresh semesters so UI reflects changes
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
-
-    return { success: true };
-  } catch (error: any) {
-    console.log("error occured (deleteCourse)", error);
-    return { success: false, msg: error.message };
-  }
-};
-
+      return { success: true };
+    } catch (error: any) {
+      console.log("error occured (deleteCourse)", error);
+      return { success: false, msg: error.message };
+    }
+  };
 
   const contextValue: DataContextType = {
     user,

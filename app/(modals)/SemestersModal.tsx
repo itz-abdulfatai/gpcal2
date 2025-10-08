@@ -16,12 +16,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {  radius, spacingX, spacingY } from "@/constants/theme";
 import Input from "@/components/Input";
 import { Dropdown } from "react-native-element-dropdown";
-import { CourseType, SemesterType } from "@/types";
+import { CourseType, GradeType, SemesterType } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import Button from "@/components/Button";
 import Table from "@/components/Table";
 import { ChartPieSliceIcon, PlusIcon } from "phosphor-react-native";
-import { alert, computeGPA } from "@/utils";
+import { alert, computeGPA, createPercentageArray } from "@/utils";
 import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
 import DeleteButton from "@/components/DeleteButton";
@@ -33,15 +33,7 @@ const { UUID } = BSON;
 const SemestersModal = () => {
     const { colors } = useTheme();
   
-  const [semester, setSemester] = useState<SemesterType>({
-    id: new UUID(),
-    gpa: null,
-    name: "",
-    uid: "",
-    courses: [],
-    lastUpdated: new Date(),
-    linkedSemesters: [],
-  });
+
   const { id } = useLocalSearchParams();
   const dropdownRef = useRef<any>(null);
   const {
@@ -54,9 +46,22 @@ const SemestersModal = () => {
     deleteSemester: deleteSemesterFromDb,
     unlinkSemester,
     deleteCourse,
+    gradingScheme
   } = useData();
+    const [semester, setSemester] = useState<SemesterType>({
+    id: new UUID(),
+    gpa: null,
+    name: "",
+    uid: "",
+    courses: [],
+    lastUpdated: new Date(),
+    linkedSemesters: [],
+    gradingSystem: gradingScheme
+  });
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
+  console.log(gradingScheme);
+  
 
   const idToStr = (id: any): string =>
     typeof id === "string"
@@ -151,14 +156,10 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grades = [
-    { label: "A", value: "A" },
-    { label: "B", value: "B" },
-    { label: "C", value: "C" },
-    { label: "D", value: "D" },
-    { label: "E", value: "E" },
-    { label: "F", value: "F" },
-  ];
+  const grades = semester.gradingSystem === 'Percentage' ? createPercentageArray() : semester.gradingSystem.split(", ").map((grade) => ({
+    label: grade.trim(),
+    value: grade.trim(),
+  }));
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
@@ -171,6 +172,7 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     courses: [],
     lastUpdated: new Date(),
     linkedSemesters: [],
+    gradingSystem: semester.gradingSystem
   });
   const [course, setCourse] = useState<CourseType>({
     id: new UUID(),
@@ -245,6 +247,7 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
       courses: [],
       lastUpdated: new Date(),
       linkedSemesters: [],
+      gradingSystem: semester.gradingSystem
     });
   };
 
@@ -282,6 +285,7 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     let parsedCourse = {
       ...course,
       semesterId: semester.id,
+      gradePoint: course.gradePoint?.toString() as GradeType,
     };
 
     if (!parsedCourse.name || !parsedCourse.creditUnit)
@@ -360,6 +364,7 @@ setCoursesVersion((v) => v + 1);
       courses: [],
       lastUpdated: new Date(),
       linkedSemesters: [],
+      gradingSystem: gradingScheme
     });
 
     router.back();
@@ -379,7 +384,7 @@ useEffect(() => {
   const run = async () => {
     if (semester.courses.length > 0) {
       const coursesArray: CourseType[] = Array.from(semester.courses ?? []);
-      const gpa = computeGPA(coursesArray);
+      const gpa = computeGPA(coursesArray, semester.gradingSystem);
 
       if (gpa === semester.gpa) return;
 console.log('actually changing the gpa in db');

@@ -115,7 +115,12 @@ export type SaveButtonProps = {
   iconSize?: number;
 };
 
-export type GradeType = "A" | "B" | "C" | "D" | "E" | "F" | null;
+export type GradeType = string | number | null;
+export type GradingSystem =
+  | "A, B, C, D, E, F"
+  | "A, B, C, D, F"
+  | "A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F"
+  | "Percentage";
 
 export type CourseType = {
   id: BSON.UUID;
@@ -193,6 +198,7 @@ export type SemesterType = {
   uid: string;
   courses: CourseType[];
   linkedSemesters: BSON.UUID[];
+  gradingSystem: GradingSystem;
 };
 
 export type semestersListType = {
@@ -236,7 +242,7 @@ export type DataContextType = {
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;
-  gradingScheme: string;
+  gradingScheme: GradingSystem;
   gradeRounding: string;
   // addSemester: (semester: SemesterType) => Promise<void>;
   // updateSemester: (id: string, changes: Partial<SemesterType>) => Promise<void>;
