@@ -1,13 +1,14 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import Typo from "../components/typo";
+import ScreenWrapper from "@/components/ScreenWrapper";
 
 const Index = () => {
   return (
-    <View style={styles.container}>
+    <ScreenWrapper style={styles.container}>
       <Typo>home</Typo>
       {/* <Image resizeMode="contain" style={styles.logo} source={} /> */}
-    </View>
+    </ScreenWrapper>
   );
 };
 

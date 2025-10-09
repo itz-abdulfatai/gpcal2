@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { applyCustomFont } from "@/providers/FontProvider";
 import { DataContextProvider } from "@/contexts/DataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { getBiometricSettingFromStorage } from "@/utils/biometricSettings";
 function StackLayout() {
   const [fontsLoaded] = useFonts({
     ManropeLight: require("@/assets/fonts/Manrope-Light.ttf"),
@@ -17,14 +18,19 @@ function StackLayout() {
 
   const router = useRouter();
   useEffect(() => {
-    SplashScreen.preventAutoHideAsync();
-    if (fontsLoaded) {
-      applyCustomFont();
-      console.log("✅ Manrope fonts loaded!");
-      SplashScreen.hideAsync();
-      router.replace("/(tabs)");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const bootstrap = async () => {
+      await SplashScreen.preventAutoHideAsync();
+
+      if (fontsLoaded) {
+        applyCustomFont();
+
+        const useBiometric = await getBiometricSettingFromStorage();
+        SplashScreen.hideAsync();
+        if (useBiometric) router.replace("/(auth)/BiometricLogin");
+        else router.replace("/(tabs)");
+      }
+    };
+    bootstrap();
   }, [fontsLoaded]);
   if (!fontsLoaded) return null;
   return (
@@ -37,7 +43,7 @@ function StackLayout() {
         name="(modals)/analyticsModal"
         options={{ presentation: "modal" }}
       ></Stack.Screen>
-       <Stack.Screen
+      <Stack.Screen
         name="(modals)/aboutModal"
         options={{ presentation: "modal" }}
       ></Stack.Screen>

@@ -60,37 +60,36 @@ const Analytics = () => {
   );
 
   const { id } = useLocalSearchParams();
+const { getSemesterById, semesters: dbSemesters } = useData();
+useEffect(() => {
   if (!id) {
     alert("Please select a semester from the Home page.");
     router.back();
   }
-  const { getSemesterById, semesters: dbSemesters } = useData();
-  useEffect(() => {
-    // Fetch or calculate analytics data here based on semester
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const semester = await getSemesterById(id.toString());
+  // Fetch or calculate analytics data here based on semester
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const semester = await getSemesterById(id.toString());
 
-        if (!semester) return router.back();
-        setSemester(semester);
-        setCourses(semester.courses);
+      if (!semester) return router.back();
+      setSemester(semester);
+      setCourses(semester.courses);
+    } catch (error: any) {
+      console.log(
+        "an error occured while fetching data (analyticsModal)",
+        error
+      );
 
-      } catch (error: any) {
-        console.log(
-          "an error occured while fetching data (analyticsModal)",
-          error
-        );
-
-        alert("Failed to load analytics data. Please try again.");
-        router.back();
-      } finally {
-        setLoading(false)
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+      alert("Failed to load analytics data. Please try again.");
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id]);
   const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
   const linkedSemestersData = useMemo(() => {
     const mapById = new Map(

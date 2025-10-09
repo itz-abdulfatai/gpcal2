@@ -410,6 +410,7 @@ const Profile = () => {
         setResponse={(val) => {
           if (val.trim()) {
             setUser({ ...user, name: val.trim(), image: user?.image ?? null });
+            AsyncStorage.setItem("user", JSON.stringify(user));
           }
         }}
         onClose={(val) => {

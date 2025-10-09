@@ -7,43 +7,47 @@ function Table<T extends object>(props: TableProps<T>) {
   const { headings, data, keys, handleDelete } = props;
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.secondary2,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    alignItems: "center",
-  },
-  cell: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.black,
-  },
-  headerText: {
-    fontWeight: "bold",
-    fontSize: 15,
-  },
-  actionCell: {
-    width: 40, // reserve space for the delete column in header
-  },
-  deleteButton: {
-    width: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deleteText: {
-    color: "red",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-}), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          backgroundColor: colors.white,
+          borderRadius: 12,
+          overflow: "hidden",
+        },
+        row: {
+          flexDirection: "row",
+          borderBottomWidth: 1,
+          borderBottomColor: colors.secondary2,
+          paddingVertical: 12,
+          paddingHorizontal: 8,
+          alignItems: "center",
+        },
+        cell: {
+          flex: 1,
+          fontSize: 14,
+          color: colors.black,
+        },
+        headerText: {
+          fontWeight: "bold",
+          fontSize: 15,
+        },
+        actionCell: {
+          width: 40, // reserve space for the delete column in header
+        },
+        deleteButton: {
+          width: 40,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        deleteText: {
+          color: "red",
+          fontWeight: "700",
+          fontSize: 16,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

@@ -22,6 +22,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import Realm from "realm";
 import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BIOMETRIC_KEY, toggleBiometric } from "@/utils/biometricSettings";
 
 // ------------------------------------------------------------------------------------------------
 // realm matters
@@ -184,7 +185,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const fetchRequireBioMetric = async () => {
       try {
-        const value = await AsyncStorage.getItem("requireBioMetric");
+        const value = await AsyncStorage.getItem(BIOMETRIC_KEY);
         setRequireBioMetric(value === "true");
         await updateGeneralSetting("4", { toggled: value === "true" });
       } catch (error) {
@@ -196,7 +197,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   const changeRequireBioMetric = (value: boolean) => {
     setRequireBioMetric(value);
-    AsyncStorage.setItem("requireBioMetric", JSON.stringify(value));
+    AsyncStorage.setItem(BIOMETRIC_KEY, JSON.stringify(value));
   };
 
   // Update general settings when theme changes
@@ -423,12 +424,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      AsyncStorage.setItem("user", JSON.stringify(user));
-    }
-  }, [user]);
+  // let firstLoad = true;
+  // useEffect(() => {
+  //   if (user && !firstLoad) {
+  //     AsyncStorage.setItem("user", JSON.stringify(user));
+  //     firstLoad = false;
+  //   }
+  // }, [user]);
   useEffect(() => {
     getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();
