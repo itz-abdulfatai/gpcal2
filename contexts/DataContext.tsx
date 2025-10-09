@@ -214,27 +214,27 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       id: "1",
       title: "Export Data",
       subtitle: "Download a backup of your academic data",
-      color: colors.white,
+      color: "#ffffff",
       onTap() {
         // TODO: Implement export data functionality
         console.log("export data tapped");
       },
       iconName: "ExportIcon",
       buttonText: "Export",
-      textColor: colors.black,
+      textColor: "#000000",
     },
     {
       id: "2",
       title: "Import Data",
       subtitle: "Import a previously exported data file",
-      color: colors.white,
+      color: "#ffffff",
       onTap() {
         // TODO: Implement export data functionality
         console.log("import data tapped");
       },
       iconName: "ImportIcon",
       buttonText: "Import",
-      textColor: colors.black,
+      textColor: "#000000",
     },
     {
       id: "3",

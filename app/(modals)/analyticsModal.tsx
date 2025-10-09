@@ -3,14 +3,14 @@ import Header from "@/components/header";
 import Typo from "@/components/typo";
 import {  radius, spacingX, spacingY } from "@/constants/theme";
 import { CourseType, GradingSystem, SemesterType } from "@/types";
-import { computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
+import { alert, computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
 import {
   ChartBarIcon,
   ChartPieSliceIcon,
   ExportIcon,
 } from "phosphor-react-native";
-import React, { JSX, useEffect, useMemo, useState } from "react";
+import React, { JSX, useEffect, useMemo, useState, useRef } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { BarChart, PieChart } from "react-native-gifted-charts";
@@ -23,9 +23,14 @@ import BackButton from "@/components/BackButton";
 import Loading from "@/components/Loading";
 import { useTheme } from "@/contexts/ThemeContext";
 
+import { captureRef } from "react-native-view-shot";
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
+
 const Analytics = () => {
   const { colors } = useTheme();
   const [semester, setSemester] = useState<SemesterType | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [loading, setLoading] = useState(false);
   const chartOptions: { value: "piechart" | "barchart"; icon: JSX.Element }[] =
     [
@@ -110,10 +115,49 @@ const Analytics = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const exportData = () => {
-    // Function to handle data export
-    // This could involve generating a PDF, CSV, or sharing data via other means
-    console.log("Exporting data...");
+  const exportRef = useRef<View>(null);
+
+  const exportData = async () => {
+    try {
+      setIsCapturing(true);
+      await new Promise((r) => setTimeout(r, 100)); // wait for re-render
+      if (!exportRef.current) return alert("Nothing to export");
+
+      // Request permission to save to gallery
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission to access media library is required!");
+        return;
+      }
+
+      // Capture image
+      const uri = await captureRef(exportRef, {
+        format: "png",
+        quality: 1,
+        result: "tmpfile",
+      });
+
+      // Move to permanent file
+      const filename = `Gpcal_Analytics_Export_${Date.now()}.png`;
+      const dest = `${FileSystem.cacheDirectory}${filename}`;
+      await FileSystem.moveAsync({ from: uri, to: dest });
+
+      // Save to gallery inside gpcal album
+      const asset = await MediaLibrary.createAssetAsync(dest);
+      let album = await MediaLibrary.getAlbumAsync("gpcal");
+      if (!album) {
+        album = await MediaLibrary.createAlbumAsync("gpcal", asset, false);
+      } else {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      }
+
+      alert("Analytics image exported");
+    } catch (err) {
+      console.error("Export failed: (analyticsModal)", err);
+      alert("Failed to export image.");
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
   const styles = useMemo(
@@ -170,6 +214,7 @@ const Analytics = () => {
           paddingTop: spacingY._10,
           paddingBottom: spacingY._20,
           gap: spacingY._20,
+          backgroundColor: colors.white,
         },
         headings: {
           fontSize: 20,
@@ -232,14 +277,14 @@ const Analytics = () => {
         <Header title={semester?.name} leftIcon={<BackButton />} />
       </View>
       <ScrollView>
-        <View style={styles.container}>
+        <View style={styles.container} ref={exportRef} collapsable={false}>
           <Typo style={styles.headings}>Results Summary</Typo>
           <View style={styles.cardscontainer}>
-            <View style={[styles.card, { backgroundColor: "#f0f9ff" }]}>
+            <View style={[styles.card, { backgroundColor: colors.sky }]}>
               <Typo style={styles.cardTitle}>Semester GPA</Typo>
               <Typo style={styles.cardValue}>{semester?.gpa}</Typo>
             </View>
-            <View style={[styles.card, { backgroundColor: "#dcefe1" }]}>
+            <View style={[styles.card, { backgroundColor: colors.lightGreen }]}>
               <Typo style={styles.cardTitle}>Cumulative GPA</Typo>
               <Typo style={styles.cardValue}>{cgpa}</Typo>
             </View>
@@ -309,6 +354,7 @@ const Analytics = () => {
                       donut
                       radius={scale(100)}
                       innerRadius={scale(80)}
+                      innerCircleColor={colors.white}
                       // showText
                       textColor={colors.black}
                       textSize={13}
@@ -388,37 +434,39 @@ const Analytics = () => {
               </View>
             )}
           </View>
+          {!isCapturing && (
+            <>
+              <Typo style={styles.headings}>Ai Analysis & Insights</Typo>
 
-          <Typo style={styles.headings}>Ai Analysis & Insights</Typo>
-
-          <View style={styles.sectionContainer}>
-            <Typo style={[styles.headings, { fontSize: 18 }]}>
-              Actionable Recommendations
-            </Typo>
-            <Typo>
-              This section will contain AI-generated insights based on your
-              academic performance, study habits, and course selections. Stay
-              tuned for personalized recommendations to help you excel in your
-              studies!
-            </Typo>
-          </View>
-
-          <Button
-            onPress={exportData}
-            style={{
-              flexDirection: "row",
-              gap: spacingX._10,
-              alignItems: "center",
-              backgroundColor: colors.white,
-              borderWidth: 1,
-              borderColor: colors.primary,
-            }}
-          >
-            <ExportIcon size={15} color={colors.primary} />
-            <Typo color={colors.primary} fontWeight={"bold"}>
-              Export Data
-            </Typo>
-          </Button>
+              <View style={styles.sectionContainer}>
+                <Typo style={[styles.headings, { fontSize: 18 }]}>
+                  Actionable Recommendations
+                </Typo>
+                <Typo>
+                  This section will contain AI-generated insights based on your
+                  academic performance, study habits, and course selections.
+                  Stay tuned for personalized recommendations to help you excel
+                  in your studies!
+                </Typo>
+              </View>
+              <Button
+                onPress={exportData}
+                style={{
+                  flexDirection: "row",
+                  gap: spacingX._10,
+                  alignItems: "center",
+                  backgroundColor: colors.white,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                }}
+              >
+                <ExportIcon size={15} color={colors.primary} />
+                <Typo color={colors.primary} fontWeight={"bold"}>
+                  Export Data
+                </Typo>
+              </Button>
+            </>
+          )}
         </View>
       </ScrollView>
     </ModalWrapper>

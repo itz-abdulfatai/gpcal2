@@ -31,8 +31,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 const { UUID } = BSON;
 
 const SemestersModal = () => {
-    const { colors } = useTheme();
-  
+  const { colors } = useTheme();
 
   const { id } = useLocalSearchParams();
   const dropdownRef = useRef<any>(null);
@@ -46,9 +45,9 @@ const SemestersModal = () => {
     deleteSemester: deleteSemesterFromDb,
     unlinkSemester,
     deleteCourse,
-    gradingScheme
+    gradingScheme,
   } = useData();
-    const [semester, setSemester] = useState<SemesterType>({
+  const [semester, setSemester] = useState<SemesterType>({
     id: new UUID(),
     gpa: null,
     name: "",
@@ -56,11 +55,10 @@ const SemestersModal = () => {
     courses: [],
     lastUpdated: new Date(),
     linkedSemesters: [],
-    gradingSystem: gradingScheme
+    gradingSystem: gradingScheme,
   });
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
-  
 
   const idToStr = (id: any): string =>
     typeof id === "string"
@@ -112,8 +110,8 @@ const SemestersModal = () => {
 
     if (!success) return alert(msg!);
 
-     coursesVersionRef.current += 1;
-  setCoursesVersion((v) => v + 1);
+    coursesVersionRef.current += 1;
+    setCoursesVersion((v) => v + 1);
 
     console.log("deleted course with id: " + id);
   };
@@ -125,10 +123,9 @@ const SemestersModal = () => {
     );
 
     if (!success) return alert(msg!);
-setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
+    setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
 
-    console.log('unlinked semester: ' + id);
-    
+    console.log("unlinked semester: " + id);
   };
 
   const handleSelectPastSemester = () => {
@@ -155,10 +152,15 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grades = semester.gradingSystem === 'Percentage' ? createPercentageArray() : semester.gradingSystem.split(", ").map((grade) => ({
-    label: grade.trim(),
-    value: grade.trim(),
-  }));
+  const grades =
+    semester.gradingSystem === "Percentage"
+      ? createPercentageArray()
+      : semester.gradingSystem.split(", ").map((grade) => ({
+          label: grade.trim(),
+          value: grade,
+        }));
+  console.log(grades);
+
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
@@ -171,7 +173,7 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
     courses: [],
     lastUpdated: new Date(),
     linkedSemesters: [],
-    gradingSystem: semester.gradingSystem
+    gradingSystem: semester.gradingSystem,
   });
   const [course, setCourse] = useState<CourseType>({
     id: new UUID(),
@@ -246,7 +248,7 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
       courses: [],
       lastUpdated: new Date(),
       linkedSemesters: [],
-      gradingSystem: semester.gradingSystem
+      gradingSystem: semester.gradingSystem,
     });
   };
 
@@ -315,8 +317,8 @@ setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
       gradePoint: null,
     });
 
-   coursesVersionRef.current += 1;
-setCoursesVersion((v) => v + 1);
+    coursesVersionRef.current += 1;
+    setCoursesVersion((v) => v + 1);
   };
 
   const deleteSemester = () => {
@@ -363,58 +365,55 @@ setCoursesVersion((v) => v + 1);
       courses: [],
       lastUpdated: new Date(),
       linkedSemesters: [],
-      gradingSystem: gradingScheme
+      gradingSystem: gradingScheme,
     });
 
     router.back();
   };
 
-
   const coursesVersionRef = useRef(0);
   const [coursesVersion, setCoursesVersion] = useState(0);
-  
 
-useEffect(() => {
-  if (!semester || !semester.courses) return;
-  if (!semesterSaved) return;
+  useEffect(() => {
+    if (!semester || !semester.courses) return;
+    if (!semesterSaved) return;
 
-  let cancelled = false;
+    let cancelled = false;
 
-  const run = async () => {
-    if (semester.courses.length > 0) {
-      const coursesArray: CourseType[] = Array.from(semester.courses ?? []);
-      const gpa = computeGPA(coursesArray, semester.gradingSystem);
+    const run = async () => {
+      if (semester.courses.length > 0) {
+        const coursesArray: CourseType[] = Array.from(semester.courses ?? []);
+        const gpa = computeGPA(coursesArray, semester.gradingSystem);
 
-      if (gpa === semester.gpa) return;
-console.log('actually changing the gpa in db');
+        if (gpa === semester.gpa) return;
+        console.log("actually changing the gpa in db");
 
-      try {
-        const { success, msg } = await updateSemester(
-          semester.id.toHexString(),
-          { gpa }
-        );
+        try {
+          const { success, msg } = await updateSemester(
+            semester.id.toHexString(),
+            { gpa }
+          );
 
-        if (cancelled) return;
+          if (cancelled) return;
 
-        if (!success) {
-          alert(msg!);
-        } else {
-          setSemester((prev) => ({ ...prev, gpa }));
+          if (!success) {
+            alert(msg!);
+          } else {
+            setSemester((prev) => ({ ...prev, gpa }));
+          }
+        } catch (err) {
+          if (!cancelled) console.error("Error updating GPA:", err);
         }
-      } catch (err) {
-        if (!cancelled) console.error("Error updating GPA:", err);
       }
-    }
-  };
+    };
 
-  run();
+    run();
 
-  return () => {
-    cancelled = true;
-  };
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [coursesVersion, semesterSaved]); 
-
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coursesVersion, semesterSaved]);
 
   const analyse = () => {
     if (semester.courses.length === 0) {
@@ -442,74 +441,76 @@ console.log('actually changing the gpa in db');
       }));
   }, [dbSemesters, linkedIdsSet, semester.id]);
 
-      const styles = useMemo(() => StyleSheet.create({
-  
-  row: { flexDirection: "row", alignItems: "baseline" },
-  btw: { justifyContent: "space-between" },
-  footerContainer: {
-    paddingHorizontal: spacingX._20,
-    paddingVertical: spacingY._5,
-  },
-  tableContainer: {},
-  container: {
-    flex: 1,
-    padding: spacingX._20,
-    gap: spacingX._20,
-  },
-  sectionContainer: {
-    padding: spacingX._10,
-    gap: spacingX._20,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: radius._10,
-  },
-  headings: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  pastSemesterTtl: {
-    marginTop: verticalScale(-20),
-    fontWeight: "light",
-    color: colors.neutral2,
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._15,
-    height: verticalScale(54),
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-  },
-  dropdownPlaceholder: {
-    color: colors.secondary2,
-  },
-  dropdownSelectedText: {
-    color: colors.black,
-  },
-  dropdownIcon: {
-    height: verticalScale(30),
-    tintColor: colors.secondary2,
-  },
-  dropdownItemText: { color: colors.black },
-  dropdownItemContainer: {
-    borderRadius: radius._10,
-    marginHorizontal: spacingX._7,
-  },
-  dropdownListContainer: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-    paddingVertical: spacingY._7,
-    top: 5,
-    borderColor: colors.secondary2,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-}), [colors]);
-
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: { flexDirection: "row", alignItems: "baseline" },
+        btw: { justifyContent: "space-between" },
+        footerContainer: {
+          paddingHorizontal: spacingX._20,
+          paddingVertical: spacingY._5,
+        },
+        tableContainer: {},
+        container: {
+          flex: 1,
+          padding: spacingX._20,
+          gap: spacingX._20,
+        },
+        sectionContainer: {
+          padding: spacingX._10,
+          gap: spacingX._20,
+          borderWidth: 1,
+          borderColor: colors.secondary,
+          borderRadius: radius._10,
+        },
+        headings: {
+          fontSize: 20,
+          fontWeight: "bold",
+        },
+        pastSemesterTtl: {
+          marginTop: verticalScale(-20),
+          fontWeight: "light",
+          color: colors.neutral2,
+        },
+        dropdownContainer: {
+          borderWidth: 1,
+          borderColor: colors.secondary2,
+          paddingHorizontal: spacingX._15,
+          height: verticalScale(54),
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+        },
+        dropdownPlaceholder: {
+          color: colors.secondary2,
+        },
+        dropdownSelectedText: {
+          color: colors.black,
+        },
+        dropdownIcon: {
+          height: verticalScale(30),
+          tintColor: colors.secondary2,
+        },
+        dropdownItemText: { color: colors.black },
+        dropdownItemContainer: {
+          borderRadius: radius._10,
+          marginHorizontal: spacingX._7,
+        },
+        dropdownListContainer: {
+          backgroundColor: colors.secondary,
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+          paddingVertical: spacingY._7,
+          top: 5,
+          borderColor: colors.secondary2,
+          shadowColor: colors.black,
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 1,
+          shadowRadius: 10,
+          elevation: 5,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <ModalWrapper>
@@ -587,7 +588,7 @@ console.log('actually changing the gpa in db');
                   />
 
                   <Button
-                  disabled={!course.name || !course.creditUnit}
+                    disabled={!course.name || !course.creditUnit}
                     onPress={() => {
                       addCourse(course);
                     }}
