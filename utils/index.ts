@@ -13,28 +13,60 @@ export const getRandomColor = () =>
     .toString(16)
     .padStart(6, "0")}`;
 
-export const gradeScale: Record<string, number> = {
-  A: 5,
-  B: 4,
-  C: 3,
-  D: 2,
-  E: 1,
-  F: 0,
-};
+// export const gradeScale: Record<string, number> = {
+//   A: 5,
+//   B: 4,
+//   C: 3,
+//   D: 2,
+//   E: 1,
+//   F: 0,
+// };
 
-export const formatCoursesForDonut = (courses: CourseType[]) => {
-  console.log("formatCoursesForDonut");
+export const formatCoursesForDonut = (
+  courses: CourseType[],
+  gradingSystem: GradingSystem
+) => {
+  // keep only courses with creditUnit and gradePoint present
+  const filtered = courses.filter((c) => c.creditUnit && c.gradePoint != null);
 
-  return courses.map((course) => {
-    const gradeValue = gradeScale[course.gradePoint!] ?? 0;
-    const weightedValue = course.creditUnit! * gradeValue;
+  if (filtered.length === 0) return [];
 
-    return {
-      value: weightedValue,
-      color: getRandomColor(),
-      text: `${course.name}`, // can be course.name, GradePoint, or whatever
-    };
+  // compute weighted contribution (gradePoint * credits) for each course
+  const items = filtered.map((c) => {
+    const credits = Number(c.creditUnit ?? 0);
+    const gp = gradeToPoint(c.gradePoint, gradingSystem);
+    const weighted = gp * credits;
+    return { course: c, credits, gp, weighted };
   });
+
+  const totalWeighted = items.reduce((s, it) => s + it.weighted, 0);
+  const totalCredits = items.reduce((s, it) => s + it.credits, 0);
+
+  // Decide basis: weighted (preferred) or credits (fallback if all weighted are zero)
+  const rawPercents =
+    totalWeighted > 0
+      ? items.map((it) => (it.weighted / totalWeighted) * 100)
+      : totalCredits > 0
+      ? items.map((it) => (it.credits / totalCredits) * 100)
+      : items.map(() => 0);
+
+  // round to 2 decimals and fix rounding error so sum is exactly 100.00
+  const rounded = rawPercents.map((p) => Number(p.toFixed(2)));
+  const sumRounded = rounded.reduce((a, b) => a + b, 0);
+  const diff = Number((100 - sumRounded).toFixed(2));
+
+  if (Math.abs(diff) >= 0.01) {
+    // Add the small rounding difference to the largest contributor (keeps visuals sensible)
+    const maxIdx = rawPercents.indexOf(Math.max(...rawPercents));
+    rounded[maxIdx] = Number((rounded[maxIdx] + diff).toFixed(2));
+  }
+
+  // return chart-friendly objects: value = percent, color, and text "name (xx.xx%)"
+  return items.map((it, i) => ({
+    value: rounded[i],
+    color: getRandomColor(),
+    text: `${it.course.name} (${rounded[i]}%)`,
+  }));
 };
 
 /**
@@ -430,5 +462,5 @@ export function createPercentageArray() {
   return Array.from({ length: 101 }, (_, i) => ({
     label: `${i}%`,
     value: `${i}`,
-  }));
+  })).reverse();
 }

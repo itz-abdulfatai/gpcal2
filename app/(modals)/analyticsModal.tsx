@@ -2,7 +2,7 @@ import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
 import {  radius, spacingX, spacingY } from "@/constants/theme";
-import { CourseType, SemesterType } from "@/types";
+import { CourseType, GradingSystem, SemesterType } from "@/types";
 import { computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
 import {
@@ -31,11 +31,11 @@ const Analytics = () => {
     [
       {
         value: "piechart",
-        icon: <ChartPieSliceIcon size={20} />,
+        icon: <ChartPieSliceIcon size={20} color={colors.primary} />,
       },
       {
         value: "barchart",
-        icon: <ChartBarIcon size={20} />,
+        icon: <ChartBarIcon size={20} color={colors.primary} />,
       },
     ];
   const [mode, setMode] = useState<"piechart" | "barchart">(
@@ -58,39 +58,17 @@ const Analytics = () => {
   const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
     semester ? (semester.linkedSemesters ?? []).map(idToStr) : []
   );
-
+  const { getSemesterById, semesters: dbSemesters } = useData();
   const { id } = useLocalSearchParams();
-const { getSemesterById, semesters: dbSemesters } = useData();
-useEffect(() => {
-  if (!id) {
-    alert("Please select a semester from the Home page.");
-    router.back();
-  }
-  // Fetch or calculate analytics data here based on semester
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const semester = await getSemesterById(id.toString());
-
-      if (!semester) return router.back();
-      setSemester(semester);
-      setCourses(semester.courses);
-    } catch (error: any) {
-      console.log(
-        "an error occured while fetching data (analyticsModal)",
-        error
-      );
-
-      alert("Failed to load analytics data. Please try again.");
-      router.back();
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [id]);
-  const chartData = useMemo(() => formatCoursesForDonut(courses), [courses]);
+  const DEFAULT_GRADING_SYSTEM: GradingSystem = "A, B, C, D, E, F";
+  const chartData = useMemo(
+    () =>
+      formatCoursesForDonut(
+        courses,
+        (semester?.gradingSystem as GradingSystem) ?? DEFAULT_GRADING_SYSTEM
+      ),
+    [courses]
+  );
   const linkedSemestersData = useMemo(() => {
     const mapById = new Map(
       dbSemesters.map((s) => [idToStr((s as any).id), s])
@@ -102,12 +80,140 @@ useEffect(() => {
   const cgpa = semester
     ? computeCGPAWeighted([semester, ...linkedSemestersData])
     : 0.0;
+  useEffect(() => {
+    if (!id) {
+      alert("Please select a semester from the Home page.");
+      return router.back();
+    }
+    // Fetch or calculate analytics data here based on semester
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const semester = await getSemesterById(id.toString());
+
+        if (!semester) return router.back();
+        setSemester(semester);
+        setCourses(semester.courses);
+      } catch (error: any) {
+        console.log(
+          "an error occured while fetching data (analyticsModal)",
+          error
+        );
+
+        alert("Failed to load analytics data. Please try again.");
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const exportData = () => {
     // Function to handle data export
     // This could involve generating a PDF, CSV, or sharing data via other means
     console.log("Exporting data...");
   };
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        keysContainer: {
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: spacingX._10,
+          marginTop: spacingY._10,
+        },
+        row: {
+          flexDirection: "row",
+          alignItems: "center",
+        },
+        btw: {
+          justifyContent: "space-between",
+        },
+        sectionContainer: {
+          padding: spacingX._10,
+          gap: spacingX._20,
+          borderWidth: 1,
+          borderColor: colors.secondary,
+          borderRadius: radius._10,
+        },
+        cardTitle: {
+          fontSize: 20,
+          color: colors.neutral,
+          textAlign: "center",
+        },
+        cardValue: {
+          fontSize: 50,
+          fontWeight: "bold",
+          color: colors.black,
+        },
+        cardscontainer: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          gap: spacingX._15,
+          // marginTop: spacingX._20,
+        },
+        card: {
+          flex: 1,
+          padding: spacingX._20,
+          alignItems: "center",
+          justifyContent: "center",
+          gap: spacingX._10,
+          borderRadius: radius._10,
+          // elevation: 2,
+        },
+        container: {
+          flex: 1,
+          paddingHorizontal: spacingX._20,
+          paddingTop: spacingY._10,
+          paddingBottom: spacingY._20,
+          gap: spacingY._20,
+        },
+        headings: {
+          fontSize: 20,
+          fontWeight: "bold",
+        },
+        dropdownContainer: {
+          borderWidth: 1,
+          borderColor: colors.secondary2,
+          paddingHorizontal: spacingX._5,
+          height: verticalScale(35),
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+        },
+        dropdownPlaceholder: {
+          color: colors.secondary2,
+        },
+        dropdownSelectedText: {
+          color: colors.black,
+        },
+        dropdownIcon: {
+          height: verticalScale(25),
+          tintColor: colors.secondary2,
+        },
+        dropdownItemText: { color: colors.black },
+        dropdownItemContainer: {
+          borderRadius: radius._10,
+          marginHorizontal: spacingX._7,
+        },
+        dropdownListContainer: {
+          backgroundColor: colors.secondary,
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+          paddingVertical: spacingY._5,
+          top: 5,
+          borderColor: colors.secondary2,
+          shadowColor: colors.black,
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 1,
+          shadowRadius: 10,
+          elevation: 2,
+        },
+      }),
+    [colors]
+  );
 
   if (loading)
     return (
@@ -119,101 +225,6 @@ useEffect(() => {
         </View>
       </ModalWrapper>
     );
-
-    const styles = useMemo(() => StyleSheet.create({
-  keysContainer: {
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: spacingX._10,
-    marginTop: spacingY._10,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  btw: {
-    justifyContent: "space-between",
-  },
-  sectionContainer: {
-    padding: spacingX._10,
-    gap: spacingX._20,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: radius._10,
-  },
-  cardTitle: {
-    fontSize: 20,
-    color: colors.neutral,
-    textAlign: "center",
-  },
-  cardValue: {
-    fontSize: 50,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  cardscontainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: spacingX._15,
-    // marginTop: spacingX._20,
-  },
-  card: {
-    flex: 1,
-    padding: spacingX._20,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacingX._10,
-    borderRadius: radius._10,
-    // elevation: 2,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: spacingX._20,
-    paddingTop: spacingY._10,
-    paddingBottom: spacingY._20,
-    gap: spacingY._20,
-  },
-  headings: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._5,
-    height: verticalScale(35),
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-  },
-  dropdownPlaceholder: {
-    color: colors.secondary2,
-  },
-  dropdownSelectedText: {
-    color: colors.black,
-  },
-  dropdownIcon: {
-    height: verticalScale(25),
-    tintColor: colors.secondary2,
-  },
-  dropdownItemText: { color: colors.black },
-  dropdownItemContainer: {
-    borderRadius: radius._10,
-    marginHorizontal: spacingX._7,
-  },
-  dropdownListContainer: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-    paddingVertical: spacingY._5,
-    top: 5,
-    borderColor: colors.secondary2,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-}), [colors]);
 
   return (
     <ModalWrapper>
@@ -301,6 +312,13 @@ useEffect(() => {
                       // showText
                       textColor={colors.black}
                       textSize={13}
+                      showTooltip
+                      persistTooltip
+                      tooltipBackgroundColor={colors.secondary}
+                      // tooltipComponent={(value: string) => {
+                      //   <Typo color={colors.white}>{value}</Typo>;
+                      // }}
+
                       // isAnimated={true}
                       // animationDuration={1000}
                       // animationType="easeInOut"
@@ -405,8 +423,6 @@ useEffect(() => {
       </ScrollView>
     </ModalWrapper>
   );
-
-  
 };
 
 export default Analytics;
