@@ -119,7 +119,7 @@ export type GradeType = string | number | null;
 export type GradingSystem =
   | "A, B, C, D, E, F"
   | "A, B, C, D, F"
-  | "A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F"
+  | "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F"
   | "Percentage";
 
 export type CourseType = {

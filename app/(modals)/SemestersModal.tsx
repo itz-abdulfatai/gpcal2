@@ -13,7 +13,7 @@ import Header from "@/components/header";
 import BackButton from "@/components/BackButton";
 import PromptDialog from "@/components/PromptDialog";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {  radius, spacingX, spacingY } from "@/constants/theme";
+import { radius, spacingX, spacingY } from "@/constants/theme";
 import Input from "@/components/Input";
 import { Dropdown } from "react-native-element-dropdown";
 import { CourseType, GradeType, SemesterType } from "@/types";
@@ -26,7 +26,6 @@ import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
 import DeleteButton from "@/components/DeleteButton";
 import { useTheme } from "@/contexts/ThemeContext";
-
 
 const { UUID } = BSON;
 
@@ -157,9 +156,9 @@ const SemestersModal = () => {
       ? createPercentageArray()
       : semester.gradingSystem.split(", ").map((grade) => ({
           label: grade.trim(),
-          value: grade,
+          value: grade.trim(),
         }));
-  console.log(grades);
+  // console.log(grades);
 
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
@@ -765,5 +764,3 @@ const SemestersModal = () => {
 };
 
 export default SemestersModal;
-
-
