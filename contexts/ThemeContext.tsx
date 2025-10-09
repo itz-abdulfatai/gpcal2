@@ -12,6 +12,8 @@ const lightColors = {
   neutral2: "#42799EFF",
   green: "#16a34a",
   rose: "#ef4444",
+  sky: "#f0f9ff",
+  lightGreen: "#dcefe1",
 };
 const darkColors = {
   primary: "#2577B1",        // Keep same for brand color
@@ -24,7 +26,9 @@ const darkColors = {
   neutral2: "#42799E",       // Slightly lighter blue for accents
   green: "#22c55e",          // Brighter green for visibility
   rose: "#f87171",           // Softer rose for dark backgrounds
-}
+  sky: "#0d1b22",
+  lightGreen: "#1b2a1f",
+};
 
 
 
