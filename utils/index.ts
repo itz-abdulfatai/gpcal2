@@ -8,11 +8,138 @@ import {
 } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const getRandomColor = () =>
-  `#${Math.floor(Math.random() * 16777215)
-    .toString(16)
-    .padStart(6, "0")}`;
 
+// ------------------------------------------------------------------
+// Color helpers for distinct, stable donut-chart colors
+// ------------------------------------------------------------------
+
+/**
+ * Simple string -> int hash (djb2 variant). Stable across runs.
+ */
+export const hashStringToInt = (str: string): number => {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 33) ^ str.charCodeAt(i);
+  }
+  return Math.abs(h >>> 0);
+};
+
+/**
+ * Convert HSL to hex color string.
+ * h: 0-360, s: 0-100, l: 0-100
+ */
+export const hslToHex = (h: number, s: number, l: number): string => {
+  s /= 100;
+  l /= 100;
+
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hh = h / 60;
+  const x = c * (1 - Math.abs((hh % 2) - 1));
+  let r = 0,
+    g = 0,
+    b = 0;
+
+  if (hh >= 0 && hh < 1) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (hh >= 1 && hh < 2) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (hh >= 2 && hh < 3) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (hh >= 3 && hh < 4) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (hh >= 4 && hh < 5) {
+    r = x;
+    g = 0;
+    b = c;
+  } else {
+    r = c;
+    g = 0;
+    b = x;
+  }
+
+  const m = l - c / 2;
+  const to255 = (v: number) => Math.round((v + m) * 255);
+
+  const R = to255(r);
+  const G = to255(g);
+  const B = to255(b);
+
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${toHex(R)}${toHex(G)}${toHex(B)}`;
+};
+
+/**
+ * Return a stable, distinct hex color for a course.
+ *
+ * @param idOrName - unique string (course.id or course.name)
+ * @param index - optional index of the course (0-based)
+ * @param total - optional total number of courses (used to space hues)
+ *
+ * Strategy:
+ *  - Use hash of idOrName as base hue.
+ *  - If total > 1, offset base hue by (index * 360 / total) to ensure spacing.
+ *  - Use fixed saturation / lightness for good contrast.
+ */
+export const getColorForCourse = (
+  idOrName: string | number,
+  index?: number,
+  total?: number
+): string => {
+  const key = String(idOrName ?? "");
+  const seed = hashStringToInt(key);
+
+  // baseHue in range 0-359
+  const baseHue = seed % 360;
+
+  let hue = baseHue;
+  if (typeof index === "number" && typeof total === "number" && total > 1) {
+    // space colors evenly based on index so adjacent slices differ
+    const offset = Math.round((index * 360) / total);
+    hue = (baseHue + offset) % 360;
+  } else {
+    // tiny golden ratio offset to reduce collisions
+    const golden = 137.50776405003785; // golden angle (degrees)
+    hue = Math.round((baseHue + (seed % 1000) * golden) % 360);
+  }
+
+  const saturation = 66; // 0-100
+  const lightness = 54; // 0-100
+
+  return hslToHex(hue, saturation, lightness);
+};
+
+/**
+ * Optional: given a hex background color, returns '#000' or '#fff' for readable text.
+ */
+export const getContrastColor = (hex: string): "#000" | "#fff" => {
+  // normalize hex
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+
+  // relative luminance (sRGB)
+  const srgb = [r, g, b].map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+
+  const lum = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+  // WCAG-like threshold
+  return lum > 0.5 ? "#000" : "#fff";
+};
+
+// Backwards-compatible alias if you still call getRandomColor elsewhere:
+export const getRandomColor = (): string =>
+  getColorForCourse(Math.random().toString(36).slice(2));
 // export const gradeScale: Record<string, number> = {
 //   A: 5,
 //   B: 4,

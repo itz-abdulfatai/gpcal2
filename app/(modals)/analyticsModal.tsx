@@ -315,9 +315,9 @@ const Analytics = () => {
                       showTooltip
                       persistTooltip
                       tooltipBackgroundColor={colors.secondary}
-                      // tooltipComponent={(value: string) => {
-                      //   <Typo color={colors.white}>{value}</Typo>;
-                      // }}
+                      // tooltipComponent={(value: string) => (
+                      //   <Typo color={colors.white}>{value}</Typo>
+                      // )}
 
                       // isAnimated={true}
                       // animationDuration={1000}
