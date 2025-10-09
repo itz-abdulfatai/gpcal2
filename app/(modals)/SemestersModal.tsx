@@ -60,7 +60,6 @@ const SemestersModal = () => {
   });
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
-  console.log(gradingScheme);
   
 
   const idToStr = (id: any): string =>

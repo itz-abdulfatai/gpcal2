@@ -12,6 +12,9 @@ import {
   ChatCenteredTextIcon,
   HeadphonesIcon,
   InfoIcon,
+  MoonIcon,
+  BellIcon,
+  FingerprintSimpleIcon,
 } from "phosphor-react-native";
 
 type SettingsIconProps = {
@@ -46,6 +49,15 @@ const SettingsIcon: React.FC<SettingsIconProps> = ({
       return <ArrowClockwiseIcon color={color} weight={weight} size={size} />;
     case "ExportIcon":
       return <ExportIcon color={color} weight={weight} size={size} />;
+    case "ImportIcon":
+      return (
+        <ExportIcon
+          color={color}
+          weight={weight}
+          size={size}
+          style={{ transform: [{ rotate: "180deg" }] }}
+        />
+      );
     case "TrashIcon":
       return <TrashIcon color={color} weight={weight} size={size} />;
     case "ChatCenteredTextIcon":
@@ -54,6 +66,14 @@ const SettingsIcon: React.FC<SettingsIconProps> = ({
       return <HeadphonesIcon color={color} weight={weight} size={size} />;
     case "InfoIcon":
       return <InfoIcon color={color} weight={weight} size={size} />;
+    case "MoonIcon":
+      return <MoonIcon color={color} weight={weight} size={size} />;
+    case "BellIcon":
+      return <BellIcon color={color} weight={weight} size={size} />;
+    case "FingerprintSimpleIcon":
+      return (
+        <FingerprintSimpleIcon color={color} weight={weight} size={size} />
+      );
     default:
       return null;
   }

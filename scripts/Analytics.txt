@@ -376,3 +376,31 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 });
+
+
+ // const seedInitialData = async () => {
+  //   // Check if data already exists
+  //   const [semesters, courses, academicSettings, utilities, generalSettings] =
+  //     await Promise.all([
+  //       getData<SemesterType>("semesters"),
+  //       getData<CourseType>("courses"),
+  //       getData<SettingsType>("academicSettings"),
+  //       getData<UtilitiesType>("utilities"),
+  //       getData<SettingsType>("generalSettings"),
+  //     ]);
+
+  //   // Only seed if all are empty
+  //   if (
+  //     semesters.length === 0 &&
+  //     courses.length === 0 &&
+  //     academicSettings.length === 0 &&
+  //     utilities.length === 0 &&
+  //     generalSettings.length === 0
+  //   ) {
+  //     await setItem("semesters", []);
+  //     await setItem("courses", []);
+  //     await setItem("academicSettings", academicsSettings);
+  //     await setItem("utilities", defaultUtilities);
+  //     await setItem("generalSettings", defaultGeneralSettings);
+  //   }
+  // };

@@ -151,7 +151,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     fetchGradingScheme();
   }, []);
 
-  const changeGradingScheme = (value: string) => {
+  const changeGradingScheme = (value: GradingSystem) => {
     setGradingScheme(value as GradingSystem);
     AsyncStorage.setItem("gradingScheme", value);
   };
@@ -231,7 +231,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         // TODO: Implement export data functionality
         console.log("import data tapped");
       },
-      iconName: "ExportIcon",
+      iconName: "ImportIcon",
       buttonText: "Import",
       textColor: colors.black,
     },
@@ -285,37 +285,38 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         }
       },
     },
-    {
-      id: "3",
-      title: "Language",
-      subtitle: "Select your preferred language",
-      type: "dropdown",
-      options: ["English", "Spanish", "French", "German"],
-      selectedOption: language,
-      iconName: "GlobeHemisphereWestIcon",
-      onSelectOption(option) {
-        console.log("language changed to (dataContext)", option);
-        // setLanguage(option);
-        changeLanguage(option);
-        try {
-          (async () => {
-            await updateGeneralSetting("3", { selectedOption: option });
-          })();
-        } catch (e) {
-          console.log("failed to update generalSettings for language", e);
-        }
-      },
-    },
+    // {
+    //   id: "3",
+    //   title: "Language",
+    //   subtitle: "Select your preferred language",
+    //   type: "dropdown",
+    //   options: ["English", "Spanish", "French", "German"],
+    //   selectedOption: language,
+    //   iconName: "GlobeHemisphereWestIcon",
+    //   onSelectOption(option) {
+    //     console.log("language changed to (dataContext)", option);
+    //     // setLanguage(option);
+    //     changeLanguage(option);
+    //     try {
+    //       (async () => {
+    //         await updateGeneralSetting("3", { selectedOption: option });
+    //       })();
+    //     } catch (e) {
+    //       console.log("failed to update generalSettings for language", e);
+    //     }
+    //   },
+    // },
     {
       id: "4",
       title: "Screen Lock",
-      subtitle: "Require PIN or biometric authentication to open the app",
+      subtitle: "Require biometric authentication to open the app",
       type: "toggle",
       toggled: requireBioMetric,
-      iconName: "SunIcon",
+      iconName: "FingerprintSimpleIcon",
       onToggle(value) {
         console.log("toggle requireBioMetric changed to (dataContext)", value);
         changeRequireBioMetric(value);
+        toggleBiometric(value);
         try {
           (async () => {
             await updateGeneralSetting("4", { toggled: value });
@@ -346,7 +347,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       selectedOption: "A, B, C, D, E, F",
       onSelectOption(option) {
         console.log("Selected grading scheme:", option);
-        changeGradingScheme(option);
+        changeGradingScheme(option as GradingSystem);
 
         try {
           (async () => {
@@ -368,35 +369,35 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     //   iconName: "CheckCircleIcon",
     //   toggled: false,
     // },
-    {
-      id: "3",
-      title: "Grade Rounding Rules",
-      subtitle: "Define how decimal grades are rounded",
-      type: "dropdown",
-      iconName: "ArrowClockwiseIcon",
-      options: [
-        "Keep two decimals",
-        "Round to nearest whole number",
-        "Always round up ",
-        "Always round down ",
-      ],
-      selectedOption: "Keep two decimals",
-      onSelectOption(option) {
-        console.log("Selected grade rounding:", option);
-        changeGradeRounding(option);
+    // {
+    //   id: "3",
+    //   title: "Grade Rounding Rules",
+    //   subtitle: "Define how decimal grades are rounded",
+    //   type: "dropdown",
+    //   iconName: "ArrowClockwiseIcon",
+    //   options: [
+    //     "Keep two decimals",
+    //     "Round to nearest whole number",
+    //     "Always round up ",
+    //     "Always round down ",
+    //   ],
+    //   selectedOption: "Keep two decimals",
+    //   onSelectOption(option) {
+    //     console.log("Selected grade rounding:", option);
+    //     changeGradeRounding(option);
 
-        try {
-          (async () => {
-            await updateAcademicSetting("3", { selectedOption: option });
-          })();
-        } catch (error) {
-          console.log(
-            "Failed to update academicSettings for grade rounding",
-            error
-          );
-        }
-      },
-    },
+    //     try {
+    //       (async () => {
+    //         await updateAcademicSetting("3", { selectedOption: option });
+    //       })();
+    //     } catch (error) {
+    //       console.log(
+    //         "Failed to update academicSettings for grade rounding",
+    //         error
+    //       );
+    //     }
+    //   },
+    // },
   ];
 
   const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
@@ -406,36 +407,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     useState<SettingsType[]>(academicsSettings);
   const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
 
-  // const seedInitialData = async () => {
-  //   // Check if data already exists
-  //   const [semesters, courses, academicSettings, utilities, generalSettings] =
-  //     await Promise.all([
-  //       getData<SemesterType>("semesters"),
-  //       getData<CourseType>("courses"),
-  //       getData<SettingsType>("academicSettings"),
-  //       getData<UtilitiesType>("utilities"),
-  //       getData<SettingsType>("generalSettings"),
-  //     ]);
-
-  //   // Only seed if all are empty
-  //   if (
-  //     semesters.length === 0 &&
-  //     courses.length === 0 &&
-  //     academicSettings.length === 0 &&
-  //     utilities.length === 0 &&
-  //     generalSettings.length === 0
-  //   ) {
-  //     await setItem("semesters", []);
-  //     await setItem("courses", []);
-  //     await setItem("academicSettings", academicsSettings);
-  //     await setItem("utilities", defaultUtilities);
-  //     await setItem("generalSettings", defaultGeneralSettings);
-  //   }
-  // };
-
   useEffect(() => {
     AsyncStorage.getItem("user").then((stored) => {
       if (stored) {
+        console.log("User loaded from AsyncStorage: (dataContext)", stored);
         setUser(JSON.parse(stored));
       } else {
         setUser({
