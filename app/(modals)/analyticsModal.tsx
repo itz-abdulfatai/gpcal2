@@ -1,7 +1,7 @@
 import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
-import {  radius, spacingX, spacingY } from "@/constants/theme";
+import { radius, spacingX, spacingY } from "@/constants/theme";
 import { CourseType, GradingSystem, SemesterType } from "@/types";
 import { alert, computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
@@ -119,8 +119,12 @@ const Analytics = () => {
 
   const exportData = async () => {
     try {
-      setIsCapturing(true);
-      await new Promise((r) => setTimeout(r, 100)); // wait for re-render
+      await new Promise((resolve) => {
+        setIsCapturing(true);
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 0);
+        });
+      });
       if (!exportRef.current) return alert("Nothing to export");
 
       // Request permission to save to gallery
@@ -144,9 +148,9 @@ const Analytics = () => {
 
       // Save to gallery inside gpcal album
       const asset = await MediaLibrary.createAssetAsync(dest);
-      let album = await MediaLibrary.getAlbumAsync("gpcal");
+      let album = await MediaLibrary.getAlbumAsync("Gpcal");
       if (!album) {
-        album = await MediaLibrary.createAlbumAsync("gpcal", asset, false);
+        album = await MediaLibrary.createAlbumAsync("Gpcal", asset, false);
       } else {
         await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
       }
@@ -474,5 +478,3 @@ const Analytics = () => {
 };
 
 export default Analytics;
-
-
