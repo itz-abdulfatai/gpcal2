@@ -9,7 +9,7 @@ import {
   ResponseType,
   GradingSystem,
 } from "@/types";
-import { updateSettingInStorage } from "@/utils";
+import { alert, updateSettingInStorage } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
 import {
   ChatCenteredTextIcon,
@@ -20,29 +20,21 @@ import {
 import { useTheme } from "@/contexts/ThemeContext";
 
 import Realm from "realm";
-import { SemesterSchema, CourseSchema } from "@/models/realmSchemas";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BIOMETRIC_KEY, toggleBiometric } from "@/utils/biometricSettings";
+import { exportUserData } from "@/utils/exportFunction";
+import { importUserData } from "@/utils/importFunction";
+import { openRealm } from "@/models/db";
+import { eraseAllUserData } from "@/utils/eraseFunction";
+import { Alert, DevSettings } from "react-native";
+// import * as Updates from "expo-updates";
 
 // ------------------------------------------------------------------------------------------------
 // realm matters
 // ------------------------------------------------------------------------------------------------
 
-const realmConfig = {
-  schema: [SemesterSchema, CourseSchema],
-  schemaVersion: 6,
-  deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
-};
-
 let realm: Realm | null = null;
 
-const openRealm = async () => {
-  if (!realm) {
-    realm = await Realm.open(realmConfig);
-  }
-  // console.log("Realm file path:", realm.path);
-  return realm;
-};
 // ------------------------------------------------------------------------------------------------
 // realm matters
 // ------------------------------------------------------------------------------------------------
@@ -215,9 +207,12 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       title: "Export Data",
       subtitle: "Download a backup of your academic data",
       color: "#ffffff",
-      onTap() {
-        // TODO: Implement export data functionality
-        console.log("export data tapped");
+      async onTap() {
+        const { success, data, msg } = await exportUserData();
+
+        if (!success) return alert(msg!);
+
+        alert("Data exported successfully");
       },
       iconName: "ExportIcon",
       buttonText: "Export",
@@ -226,11 +221,24 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     {
       id: "2",
       title: "Import Data",
-      subtitle: "Import a previously exported data file",
+      subtitle:
+        "Import a previously exported data file (this will erase your existing data)",
       color: "#ffffff",
-      onTap() {
-        // TODO: Implement export data functionality
-        console.log("import data tapped");
+      async onTap() {
+        const { success, data, msg } = await importUserData();
+        if (!success) return alert(msg!);
+
+        alert("Data imported Successfully");
+
+        try {
+          // Expo reload (works in dev + prod)
+          // await Updates.reloadAsync();
+
+          DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+        } catch {
+          // Fallback for bare RN or if Updates unavailable
+          DevSettings.reload();
+        }
       },
       iconName: "ImportIcon",
       buttonText: "Import",
@@ -241,9 +249,38 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       title: "Reset All Data",
       subtitle: "Permanently delete all your application data",
       color: colors.rose,
-      onTap() {
-        // TODO: Implement export data functionality
-        console.log("reset data tapped");
+      async onTap() {
+        Alert.alert(
+          "Reset All Data",
+          "Are you sure you want to reset all your application data?",
+          [
+            {
+              text: "No",
+              style: "cancel",
+            },
+            {
+              text: "Yes",
+              style: "destructive",
+              onPress: async () => {
+                const { success, data, msg } = await eraseAllUserData();
+
+                if (!success) return alert(msg!);
+
+                alert("All data deleted successfully");
+
+                try {
+                  // Expo reload (works in dev + prod)
+                  // await Updates.reloadAsync();
+
+                  DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+                } catch {
+                  // Fallback for bare RN or if Updates unavailable
+                  DevSettings.reload();
+                }
+              },
+            },
+          ]
+        );
       },
       iconName: "TrashIcon",
       buttonText: "Reset",
