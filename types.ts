@@ -190,7 +190,12 @@ export type ResponseType<T = any> = {
   msg?: string;
 };
 
-export type SemesterType = {
+export type AiInsightType = {
+  reply: string;
+  suggested_improvement?: string;
+};
+
+export interface SemesterType {
   id: BSON.UUID;
   name: string;
   gpa: number | null;
@@ -199,7 +204,8 @@ export type SemesterType = {
   courses: CourseType[];
   linkedSemesters: BSON.UUID[];
   gradingSystem: GradingSystem;
-};
+  aiInsight?: AiInsightType | null;
+}
 
 export type semestersListType = {
   data: SemesterType[];
@@ -272,17 +278,29 @@ export type DataContextType = {
     semesterId: string,
     linkedSemesterId: string
   ) => Promise<ResponseType>;
+
+  getAiInsight: (
+    payload: BackendPayloadType
+  ) => Promise<ResponseType<AiInsightType>>;
 };
 
-
 export interface ThemeColors {
-    [key: string]: string;
+  [key: string]: string;
 }
 
 export type ThemeType = "light" | "dark";
 
 export interface ThemeContextType {
-    colors: ThemeColors;
-    theme: ThemeType;
-    setTheme: (theme: ThemeType) => void;
+  colors: ThemeColors;
+  theme: ThemeType;
+  setTheme: (theme: ThemeType) => void;
 }
+
+export type BackendPayloadType = {
+  input: string;
+  semester: BackendSemester;
+};
+
+export interface BackendSemester extends SemesterType {
+  cgpa: number;
+} 

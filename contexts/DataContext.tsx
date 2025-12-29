@@ -8,6 +8,7 @@ import {
   UserType,
   ResponseType,
   GradingSystem,
+  BackendPayloadType,
 } from "@/types";
 import { alert, updateSettingInStorage } from "@/utils";
 import { createContext, FC, useContext, useState, useEffect } from "react";
@@ -48,13 +49,13 @@ const siteInfo: AppInfoType[] = [
     id: "1",
     title: "Send Feedback/ Feature Requests",
     Icon: (props) => <ChatCenteredTextIcon {...props} />,
-    route: "/", // can accept an external link
+    route: "https://abdul-portfolio-lw7s.onrender.com/contact", // can accept an external link
   },
   {
     id: "2",
     title: "Get Support",
     Icon: (props) => <HeadphonesIcon {...props} />,
-    route: "/",
+    route: "https://abdul-portfolio-lw7s.onrender.com/contact",
   },
   {
     id: "3",
@@ -795,6 +796,37 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const getAiInsight = async (
+    payload: BackendPayloadType
+  ): Promise<ResponseType> => {
+    try {
+      const res = await fetch(
+        "https://pgftxzgnqsmqoqzmkwrc.supabase.co/functions/v1/gpcal-ai",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      console.log("api response ", res);
+
+      if (!res.ok) return { success: false, msg: "an Error occured." };
+
+      const data = await res.json();
+
+      if (!data) return { success: false, msg: "an Error occured." };
+      console.log("data (datacontext): ", data);
+      if (data.msg) return { success: false, msg: data.msg };
+
+      return { success: true, data };
+    } catch (error: any) {
+      console.log("error occured (getAiInsight) ", error);
+      return { success: false, msg: error.message };
+    }
+  };
+
   const contextValue: DataContextType = {
     user,
     setUser,
@@ -822,6 +854,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     deleteCourse,
     linkSemester,
     unlinkSemester,
+
+    getAiInsight,
   };
 
   if (!generalSettings.length || !academicSettings.length) {

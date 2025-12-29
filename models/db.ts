@@ -1,12 +1,12 @@
-import { CourseSchema, SemesterSchema } from "./realmSchemas";
+import { CourseSchema, SemesterSchema, AiInsightSchema } from "./realmSchemas";
 import Realm from "realm";
 
 let realm: Realm | null = null;
 
 const realmConfig = {
-  schema: [SemesterSchema, CourseSchema],
-  schemaVersion: 6,
-  deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
+  schema: [SemesterSchema, CourseSchema, AiInsightSchema],
+  schemaVersion: 8,
+  // deleteRealmIfMigrationNeeded: true, // ⚠️ this clears old data
 };
 
 export const openRealm = async () => {

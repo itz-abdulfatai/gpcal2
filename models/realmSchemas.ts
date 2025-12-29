@@ -12,6 +12,16 @@ export const CourseSchema = {
   },
 };
 
+
+export const AiInsightSchema = {
+  name: "AiInsight",
+  embedded: true,
+  properties: {
+    reply: "string",
+    suggested_improvement: "string?",
+  },
+};
+
 export const SemesterSchema = {
   name: "Semester",
   primaryKey: "id",
@@ -24,5 +34,6 @@ export const SemesterSchema = {
     courses: "Course[]",
     linkedSemesters: "uuid[]",
     gradingSystem: "string",
+    aiInsight: "AiInsight?",
   },
 };

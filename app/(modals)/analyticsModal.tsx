@@ -2,7 +2,7 @@ import Table from "@/components/Table";
 import Header from "@/components/header";
 import Typo from "@/components/typo";
 import { radius, spacingX, spacingY } from "@/constants/theme";
-import { CourseType, GradingSystem, SemesterType } from "@/types";
+import { BackendPayloadType, CourseType, GradingSystem, SemesterType } from "@/types";
 import { alert, computeCGPAWeighted, formatCoursesForDonut } from "@/utils";
 import { scale, verticalScale } from "@/utils/styling";
 import {
@@ -32,6 +32,7 @@ const Analytics = () => {
   const [semester, setSemester] = useState<SemesterType | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [insightLoading, setInsightLoading] = useState(false);
   const chartOptions: { value: "piechart" | "barchart"; icon: JSX.Element }[] =
     [
       {
@@ -63,7 +64,7 @@ const Analytics = () => {
   const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
     semester ? (semester.linkedSemesters ?? []).map(idToStr) : []
   );
-  const { getSemesterById, semesters: dbSemesters } = useData();
+  const { getSemesterById, semesters: dbSemesters, getAiInsight, updateSemester } = useData();
   const { id } = useLocalSearchParams();
   const DEFAULT_GRADING_SYSTEM: GradingSystem = "A, B, C, D, E, F";
   const chartData = useMemo(
@@ -82,9 +83,45 @@ const Analytics = () => {
       .map((lid) => mapById.get(lid))
       .filter(Boolean) as SemesterType[];
   }, [dbSemesters, linkedSemesterIds]);
-  const cgpa = semester
-    ? computeCGPAWeighted([semester, ...linkedSemestersData])
-    : 0.0;
+
+const cgpa: number = useMemo(
+  () => {
+    const value = semester ? computeCGPAWeighted([semester, ...linkedSemestersData]) : 0.0;
+    return value ?? 0.0; // fallback if computeCGPAWeighted returns null
+  },
+  [semester, linkedSemestersData]
+);
+
+const aiPayload: BackendPayloadType | undefined = useMemo(() => {
+  if (!semester) return undefined;
+  return {
+    input: 'Give me valuable insight based on my projected semester performance',
+    semester: {
+      ...semester,
+      cgpa
+    }
+  }
+
+}, [semester])
+const fetchAiInsight = async () => {
+  if (!aiPayload) return
+  setInsightLoading(true)
+
+  const {success, data, msg} = await getAiInsight(aiPayload);
+  setInsightLoading(false)
+  
+  if (!success) return alert(msg!)
+    
+    console.log("data: (analyticsModal)", data);
+    
+    updateSemester(semester!.id.toString(), {aiInsight: data})
+   setSemester((prev) => ({
+  ...prev!,
+  aiInsight: data
+}));
+    
+}
+
   useEffect(() => {
     if (!id) {
       alert("Please select a semester from the Home page.");
@@ -264,6 +301,8 @@ const Analytics = () => {
     [colors]
   );
 
+
+
   if (loading)
     return (
       <ModalWrapper>
@@ -438,21 +477,54 @@ const Analytics = () => {
               </View>
             )}
           </View>
-          {!isCapturing && (
+          { (semester?.aiInsight || !isCapturing) && (
             <>
               <Typo style={styles.headings}>Ai Analysis & Insights</Typo>
-
+{
+  semester?.aiInsight ? (
               <View style={styles.sectionContainer}>
+                <View>
                 <Typo style={[styles.headings, { fontSize: 18 }]}>
-                  Actionable Recommendations
+                  Ai Overview
                 </Typo>
-                <Typo>
-                  This section will contain AI-generated insights based on your
-                  academic performance, study habits, and course selections.
-                  Stay tuned for personalized recommendations to help you excel
-                  in your studies!
+                {/* reply
+                suggested_improvement */}
+                <Typo>{semester.aiInsight?.reply}</Typo>
+
+                </View>
+                {
+                  semester.aiInsight?.suggested_improvement && 
+                <View>
+                <Typo style={[styles.headings, { fontSize: 18 }]}>
+                  Suggested improvements
                 </Typo>
+                {/* reply
+                suggested_improvement */}
+                <Typo>{semester.aiInsight?.suggested_improvement}</Typo>
+
+                </View>
+                }
               </View>
+
+  ) : (
+    <Button onPress={fetchAiInsight}  style={{
+                  flexDirection: "row",
+                  gap: spacingX._10,
+                  alignItems: "center",
+                  backgroundColor: colors.white,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                }}>
+                  {
+                    insightLoading? <Loading/> : 
+      <Typo color={colors.primary} fontWeight={"bold"}>Get Ai Insight</Typo>
+                  }
+    </Button>
+  )
+}
+
+{
+  !isCapturing && 
               <Button
                 onPress={exportData}
                 style={{
@@ -469,6 +541,7 @@ const Analytics = () => {
                   Export Data
                 </Typo>
               </Button>
+}
             </>
           )}
         </View>
@@ -478,3 +551,8 @@ const Analytics = () => {
 };
 
 export default Analytics;
+
+// This section will contain AI-generated insights based on your
+//                   academic performance, study habits, and course selections.
+//                   Stay tuned for personalized recommendations to help you excel
+//                   in your studies!
