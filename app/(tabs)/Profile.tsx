@@ -233,7 +233,7 @@ const Profile = () => {
     generalSettings: settings,
     infos: siteInfo,
     academicSettings: academicsSettings,
-    updateGeneralSetting,
+    // updateGeneralSetting,
     updateAcademicSetting,
     utilities,
     user,
@@ -388,12 +388,12 @@ const Profile = () => {
           <SettingsGroup
             title="General Settings"
             settings={settings}
-            updateSetting={updateGeneralSetting}
+            // updateSetting={updateGeneralSetting}
           />
           <SettingsGroup
             title="Academic Settings"
             settings={academicsSettings}
-            updateSetting={updateAcademicSetting}
+            // updateSetting={updateAcademicSetting}
           />
 
           <UtilitiesGroup

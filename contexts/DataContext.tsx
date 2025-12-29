@@ -118,13 +118,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         setRequireBioMetric(bioMetricValue === "true");
 
         // Update backend settings in parallel (fire-and-forget)
-        updateGeneralSetting("2", {
-          toggled: sendNotificationsValue === "true",
-        });
-        updateGeneralSetting("3", { selectedOption: languageValue });
+        // updateGeneralSetting("2", {
+        //   toggled: sendNotificationsValue === "true",
+        // });
+        // updateGeneralSetting("3", { selectedOption: languageValue });
         updateAcademicSetting("1", { selectedOption: gradingSchemeValue });
         updateAcademicSetting("3", { selectedOption: gradeRoundingValue });
-        updateGeneralSetting("4", { toggled: bioMetricValue === "true" });
+        // updateGeneralSetting("4", { toggled: bioMetricValue === "true" });
       } catch (error) {
         console.log("Failed to load/sync settings", error);
       }
@@ -229,13 +229,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   };
 
   // Update general settings when theme changes
-  useEffect(() => {
-    setGeneralSettings((prev) =>
-      prev.map((setting) =>
-        setting.id === "1" ? { ...setting, toggled: theme === "dark" } : setting
-      )
-    );
-  }, [theme]);
+  // useEffect(() => {
+  //   setGeneralSettings((prev) =>
+  //     prev.map((setting) =>
+  //       setting.id === "1" ? { ...setting, toggled: theme === "dark" } : setting
+  //     )
+  //   );
+  // }, [theme]);
 
   const defaultUtilities: UtilitiesType[] = [
     {
@@ -324,86 +324,86 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     },
   ];
 
-  const defaultGeneralSettings: SettingsType[] = [
-    {
-      id: "1",
-      title: "Dark Theme",
-      subtitle: "Toggle between Light and Dark mode",
-      type: "toggle",
-      toggled: theme === "dark",
-      iconName: "MoonIcon",
-      onToggle(value) {
-        console.log("toggle theme tapped (dataContext)", value);
-        setTheme(value ? "dark" : "light");
-        updateGeneralSetting("1", { toggled: value }).catch((e) => {
-          console.log("failed to update generalSettings for dark theme", e);
-        });
-      },
-    },
-    {
-      id: "2",
-      title: "Notifications",
-      subtitle: "Receive notifications about important academic updates",
-      type: "toggle",
-      toggled: sendNotifications,
-      iconName: "BellIcon",
-      onToggle(value) {
-        console.log("toggle notifications changed to (dataContext)", value);
-        changeSendNotifications(value);
-        try {
-          (async () => {
-            await updateGeneralSetting("2", { toggled: value });
-          })();
-        } catch (e) {
-          console.log("failed to update generalSettings for notifications", e);
-        }
-      },
-    },
-    // {
-    //   id: "3",
-    //   title: "Language",
-    //   subtitle: "Select your preferred language",
-    //   type: "dropdown",
-    //   options: ["English", "Spanish", "French", "German"],
-    //   selectedOption: language,
-    //   iconName: "GlobeHemisphereWestIcon",
-    //   onSelectOption(option) {
-    //     console.log("language changed to (dataContext)", option);
-    //     // setLanguage(option);
-    //     changeLanguage(option);
-    //     try {
-    //       (async () => {
-    //         await updateGeneralSetting("3", { selectedOption: option });
-    //       })();
-    //     } catch (e) {
-    //       console.log("failed to update generalSettings for language", e);
-    //     }
-    //   },
-    // },
-    {
-      id: "4",
-      title: "Screen Lock",
-      subtitle: "Require biometric authentication to open the app",
-      type: "toggle",
-      toggled: requireBioMetric,
-      iconName: "FingerprintSimpleIcon",
-      onToggle(value) {
-        console.log("toggle requireBioMetric changed to (dataContext)", value);
-        changeRequireBioMetric(value);
-        toggleBiometric(value);
-        try {
-          (async () => {
-            await updateGeneralSetting("4", { toggled: value });
-          })();
-        } catch (e) {
-          console.log(
-            "failed to update generalSettings for requireBioMetric",
-            e
-          );
-        }
-      },
-    },
-  ];
+  // const defaultGeneralSettings: SettingsType[] = [
+  //   {
+  //     id: "1",
+  //     title: "Dark Theme",
+  //     subtitle: "Toggle between Light and Dark mode",
+  //     type: "toggle",
+  //     toggled: theme === "dark",
+  //     iconName: "MoonIcon",
+  //     onToggle(value) {
+  //       console.log("toggle theme tapped (dataContext)", value);
+  //       setTheme(value ? "dark" : "light");
+  //       updateGeneralSetting("1", { toggled: value }).catch((e) => {
+  //         console.log("failed to update generalSettings for dark theme", e);
+  //       });
+  //     },
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Notifications",
+  //     subtitle: "Receive notifications about important academic updates",
+  //     type: "toggle",
+  //     toggled: sendNotifications,
+  //     iconName: "BellIcon",
+  //     onToggle(value) {
+  //       console.log("toggle notifications changed to (dataContext)", value);
+  //       changeSendNotifications(value);
+  //       try {
+  //         (async () => {
+  //           await updateGeneralSetting("2", { toggled: value });
+  //         })();
+  //       } catch (e) {
+  //         console.log("failed to update generalSettings for notifications", e);
+  //       }
+  //     },
+  //   },
+  //   // {
+  //   //   id: "3",
+  //   //   title: "Language",
+  //   //   subtitle: "Select your preferred language",
+  //   //   type: "dropdown",
+  //   //   options: ["English", "Spanish", "French", "German"],
+  //   //   selectedOption: language,
+  //   //   iconName: "GlobeHemisphereWestIcon",
+  //   //   onSelectOption(option) {
+  //   //     console.log("language changed to (dataContext)", option);
+  //   //     // setLanguage(option);
+  //   //     changeLanguage(option);
+  //   //     try {
+  //   //       (async () => {
+  //   //         await updateGeneralSetting("3", { selectedOption: option });
+  //   //       })();
+  //   //     } catch (e) {
+  //   //       console.log("failed to update generalSettings for language", e);
+  //   //     }
+  //   //   },
+  //   // },
+  //   {
+  //     id: "4",
+  //     title: "Screen Lock",
+  //     subtitle: "Require biometric authentication to open the app",
+  //     type: "toggle",
+  //     toggled: requireBioMetric,
+  //     iconName: "FingerprintSimpleIcon",
+  //     onToggle(value) {
+  //       console.log("toggle requireBioMetric changed to (dataContext)", value);
+  //       changeRequireBioMetric(value);
+  //       toggleBiometric(value);
+  //       try {
+  //         (async () => {
+  //           await updateGeneralSetting("4", { toggled: value });
+  //         })();
+  //       } catch (e) {
+  //         console.log(
+  //           "failed to update generalSettings for requireBioMetric",
+  //           e
+  //         );
+  //       }
+  //     },
+  //   },
+  // ];
 
   const academicsSettings: SettingsType[] = [
     {
@@ -474,9 +474,102 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     // },
   ];
 
-  const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
-    defaultGeneralSettings
+  // const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
+  //   defaultGeneralSettings
+  // );
+
+  const generalSettings: SettingsType[] = useMemo(
+    () => [
+      {
+        id: "1",
+        title: "Dark Theme",
+        subtitle: "Toggle between Light and Dark mode",
+        type: "toggle",
+        toggled: theme === "dark",
+        iconName: "MoonIcon",
+        onToggle(value: any) {
+          console.log("toggle theme tapped (dataContext)", value);
+          setTheme(value ? "dark" : "light");
+          // updateGeneralSetting("1", { toggled: value }).catch((e) => {
+          //   console.log("failed to update generalSettings for dark theme", e);
+          // });
+        },
+      },
+      {
+        id: "2",
+        title: "Notifications",
+        subtitle: "Receive notifications about important academic updates",
+        type: "toggle",
+        toggled: sendNotifications,
+        iconName: "BellIcon",
+        onToggle(value: any) {
+          console.log("toggle notifications changed to (dataContext)", value);
+          changeSendNotifications(value);
+          try {
+            (async () => {
+              // await updateGeneralSetting("2", { toggled: value });
+              setSendNotifications(value);
+            })();
+          } catch (e) {
+            console.log(
+              "failed to update generalSettings for notifications",
+              e
+            );
+          }
+        },
+      },
+      // {
+      //   id: "3",
+      //   title: "Language",
+      //   subtitle: "Select your preferred language",
+      //   type: "dropdown",
+      //   options: ["English", "Spanish", "French", "German"],
+      //   selectedOption: language,
+      //   iconName: "GlobeHemisphereWestIcon",
+      //   onSelectOption(option) {
+      //     console.log("language changed to (dataContext)", option);
+      //     // setLanguage(option);
+      //     changeLanguage(option);
+      //     try {
+      //       (async () => {
+      //         await updateGeneralSetting("3", { selectedOption: option });
+      //       })();
+      //     } catch (e) {
+      //       console.log("failed to update generalSettings for language", e);
+      //     }
+      //   },
+      // },
+      {
+        id: "4",
+        title: "Screen Lock",
+        subtitle: "Require biometric authentication to open the app",
+        type: "toggle",
+        toggled: requireBioMetric,
+        iconName: "FingerprintSimpleIcon",
+        onToggle(value: any) {
+          console.log(
+            "toggle requireBioMetric changed to (dataContext)",
+            value
+          );
+          changeRequireBioMetric(value);
+          toggleBiometric(value);
+          try {
+            (async () => {
+              // await updateGeneralSetting("4", { toggled: value });
+              setRequireBioMetric(value);
+            })();
+          } catch (e) {
+            console.log(
+              "failed to update generalSettings for requireBioMetric",
+              e
+            );
+          }
+        },
+      },
+    ],
+    [theme, sendNotifications, requireBioMetric]
   );
+
   const [academicSettings, setAcademicSettings] =
     useState<SettingsType[]>(academicsSettings);
   const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
@@ -516,7 +609,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     init();
 
     const loadData = async () => {
-      setGeneralSettings(defaultGeneralSettings);
+      // setGeneralSettings(defaultGeneralSettings);
       setAcademicSettings(academicsSettings);
       setUtilities(defaultUtilities);
       setInfos(siteInfo);
@@ -569,15 +662,15 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   /**
    * Update a general setting by id, persist to AsyncStorage and update state.
    */
-  const updateGeneralSetting = async (
-    id: string,
-    changes: Partial<SettingsType>
-  ) => {
-    setGeneralSettings((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-    );
-    // await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
-  };
+  // const updateGeneralSetting = async (
+  //   id: string,
+  //   changes: Partial<SettingsType>
+  // ) => {
+  //   setGeneralSettings((prev) =>
+  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+  //   );
+  //   // await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
+  // };
 
   /**
    * Update an academic setting by id, persist to AsyncStorage and update state.
@@ -894,7 +987,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       language,
       gradingScheme,
       gradeRounding,
-      updateGeneralSetting,
+      // updateGeneralSetting,
       updateAcademicSetting,
       addSemester,
       updateSemester,

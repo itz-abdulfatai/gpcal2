@@ -12,11 +12,12 @@ import {
   ViewStyle,
 } from "react-native";
 
+export type TDType = "toggle" | "dropdown";
 export type SettingsType = {
   id: string;
   title: string;
   subtitle: string;
-  type: "toggle" | "dropdown";
+  type: TDType;
   toggled?: boolean;
   options?: string[];
   selectedOption?: string | null;
@@ -221,7 +222,7 @@ export type semesterCardProps = {
 export type SettingsGroupProps = {
   title: string;
   settings: SettingsType[];
-  updateSetting: (id: string, changes: Partial<SettingsType>) => void;
+  // updateSetting: (id: string, changes: Partial<SettingsType>) => void;
 };
 
 export type UtilitiesGroupProps = {
@@ -237,10 +238,10 @@ export type DataContextType = {
   courses: CourseType[];
   generalSettings: SettingsType[];
   academicSettings: SettingsType[];
-  updateGeneralSetting: (
-    id: string,
-    changes: Partial<SettingsType>
-  ) => Promise<void>;
+  // updateGeneralSetting: (
+  //   id: string,
+  //   changes: Partial<SettingsType>
+  // ) => Promise<void>;
   updateAcademicSetting: (
     id: string,
     changes: Partial<SettingsType>
