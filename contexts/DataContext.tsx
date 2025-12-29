@@ -99,71 +99,112 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   });
 
   useEffect(() => {
-    const fetchSendNotifications = async () => {
+    const fetchSettings = async () => {
       try {
-        const value = await AsyncStorage.getItem("sendNotifications");
-        setSendNotifications(value === "true");
-        await updateGeneralSetting("2", { toggled: value === "true" });
+        const [
+          sendNotificationsValue,
+          languageValue,
+          gradingSchemeValue,
+          gradeRoundingValue,
+          bioMetricValue,
+        ] = await Promise.all([
+          AsyncStorage.getItem("sendNotifications"),
+          AsyncStorage.getItem("language"),
+          AsyncStorage.getItem("gradingScheme"),
+          AsyncStorage.getItem("gradeRoundingRules"),
+          AsyncStorage.getItem(BIOMETRIC_KEY),
+        ]);
+
+        setSendNotifications(sendNotificationsValue === "true");
+        setLanguage(languageValue || "English");
+        setGradingScheme(
+          (gradingSchemeValue as GradingSystem) || "A, B, C, D, E, F"
+        );
+        setGradeRounding(gradeRoundingValue || "Keep two decimals");
+        setRequireBioMetric(bioMetricValue === "true");
+
+        // Update backend settings in parallel (fire-and-forget)
+        updateGeneralSetting("2", {
+          toggled: sendNotificationsValue === "true",
+        });
+        updateGeneralSetting("3", { selectedOption: languageValue });
+        updateAcademicSetting("1", { selectedOption: gradingSchemeValue });
+        updateAcademicSetting("3", { selectedOption: gradeRoundingValue });
+        updateGeneralSetting("4", { toggled: bioMetricValue === "true" });
       } catch (error) {
-        console.log("failed to load/sync sendNotifications", error);
+        console.log("Failed to load/sync settings", error);
       }
     };
-    fetchSendNotifications();
+
+    fetchSettings();
   }, []);
+
+  // useEffect(() => {
+  //   const fetchSendNotifications = async () => {
+  //     try {
+  //       const value = await AsyncStorage.getItem("sendNotifications");
+  //       setSendNotifications(value === "true");
+  //       await updateGeneralSetting("2", { toggled: value === "true" });
+  //     } catch (error) {
+  //       console.log("failed to load/sync sendNotifications", error);
+  //     }
+  //   };
+  //   fetchSendNotifications();
+  // }, []);
   const changeSendNotifications = (value: boolean) => {
     setSendNotifications(value);
     AsyncStorage.setItem("sendNotifications", JSON.stringify(value));
   };
 
-  useEffect(() => {
-    const fetchLanguage = async () => {
-      const value = await AsyncStorage.getItem("language");
-      setLanguage(value || "English");
-      try {
-        (async () => {
-          await updateGeneralSetting("3", { selectedOption: value });
-        })();
-      } catch (e) {
-        console.log("failed to update generalSettings for language", e);
-      }
-    };
-    fetchLanguage();
-  }, []);
+  // useEffect(() => {
+  //   const fetchLanguage = async () => {
+  //     const value = await AsyncStorage.getItem("language");
+  //     setLanguage(value || "English");
+  //     try {
+  //       (async () => {
+  //         await updateGeneralSetting("3", { selectedOption: value });
+  //       })();
+  //     } catch (e) {
+  //       console.log("failed to update generalSettings for language", e);
+  //     }
+  //   };
+  //   fetchLanguage();
+  // }, []);
 
-  useEffect(() => {
-    const fetchGradingScheme = async () => {
-      const value = await AsyncStorage.getItem("gradingScheme");
-      setGradingScheme((value as GradingSystem) || "A, B, C, D, E, F");
-      try {
-        (async () => {
-          await updateAcademicSetting("1", { selectedOption: value });
-        })();
-      } catch (e) {
-        console.log("failed to update academicSettings for grading scheme", e);
-      }
-    };
-    fetchGradingScheme();
-  }, []);
+  // useEffect(() => {
+  //   const fetchGradingScheme = async () => {
+  //     const value = await AsyncStorage.getItem("gradingScheme");
+  //     setGradingScheme((value as GradingSystem) || "A, B, C, D, E, F");
+  //     try {
+  //       (async () => {
+  //         await updateAcademicSetting("1", { selectedOption: value });
+  //       })();
+  //     } catch (e) {
+  //       console.log("failed to update academicSettings for grading scheme", e);
+  //     }
+  //   };
+  //   fetchGradingScheme();
+  // }, []);
 
   const changeGradingScheme = (value: GradingSystem) => {
     setGradingScheme(value as GradingSystem);
     AsyncStorage.setItem("gradingScheme", value);
   };
 
-  useEffect(() => {
-    const fetchGradeRounding = async () => {
-      const value = await AsyncStorage.getItem("gradeRoundingRules");
-      setGradeRounding(value || "Keep two decimals");
-      try {
-        (async () => {
-          await updateAcademicSetting("3", { selectedOption: value });
-        })();
-      } catch (e) {
-        console.log("failed to update academicSettings for grade rounding", e);
-      }
-    };
-    fetchGradeRounding();
-  }, []);
+  // useEffect(() => {
+  //   const fetchGradeRounding = async () => {
+  //     const value = await AsyncStorage.getItem("gradeRoundingRules");
+  //     setGradeRounding(value || "Keep two decimals");
+  //     try {
+  //       (async () => {
+  //         await updateAcademicSetting("3", { selectedOption: value });
+  //       })();
+  //     } catch (e) {
+  //       console.log("failed to update academicSettings for grade rounding", e);
+  //     }
+  //   };
+  //   fetchGradeRounding();
+  // }, []);
 
   const changeGradeRounding = (value: string) => {
     setGradeRounding(value);
@@ -175,18 +216,18 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     AsyncStorage.setItem("language", value);
   };
 
-  useEffect(() => {
-    const fetchRequireBioMetric = async () => {
-      try {
-        const value = await AsyncStorage.getItem(BIOMETRIC_KEY);
-        setRequireBioMetric(value === "true");
-        await updateGeneralSetting("4", { toggled: value === "true" });
-      } catch (error) {
-        console.log("failed to load/sync requireBioMetric", error);
-      }
-    };
-    fetchRequireBioMetric();
-  }, []);
+  // useEffect(() => {
+  //   const fetchRequireBioMetric = async () => {
+  //     try {
+  //       const value = await AsyncStorage.getItem(BIOMETRIC_KEY);
+  //       setRequireBioMetric(value === "true");
+  //       await updateGeneralSetting("4", { toggled: value === "true" });
+  //     } catch (error) {
+  //       console.log("failed to load/sync requireBioMetric", error);
+  //     }
+  //   };
+  //   fetchRequireBioMetric();
+  // }, []);
 
   const changeRequireBioMetric = (value: boolean) => {
     setRequireBioMetric(value);
@@ -462,13 +503,14 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       }
     });
   }, []);
-  // let firstLoad = true;
-  // useEffect(() => {
-  //   if (user && !firstLoad) {
-  //     AsyncStorage.setItem("user", JSON.stringify(user));
-  //     firstLoad = false;
-  //   }
-  // }, [user]);
+  let firstLoad = true;
+  useEffect(() => {
+    if (user && !firstLoad) {
+      AsyncStorage.setItem("user", JSON.stringify(user));
+      firstLoad = false;
+    }
+  }, [user]);
+
   useEffect(() => {
     getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();
@@ -490,16 +532,32 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let realmInstance: Realm;
-    let semesters: Realm.Results<any>;
+    let semesters: Realm.Results<SemesterType>;
+    let listener: Realm.CollectionChangeCallback<SemesterType>;
 
     const setupListener = async () => {
       try {
         realmInstance = await openRealm();
-        semesters = realmInstance.objects<SemesterType>("Semester");
-        setSemesters([...semesters]);
-        semesters.addListener(() => {
-          setSemesters([...semesters]);
+
+        // Typecast to TS-friendly type
+        semesters = realmInstance.objects<SemesterType>(
+          "Semester"
+        ) as unknown as Realm.Results<SemesterType>;
+
+        // initial load
+        setSemesters((prev) => {
+          const next = [...semesters];
+          return prev.length === next.length ? prev : next;
         });
+
+        listener = () => {
+          setSemesters((prev) => {
+            const next = [...semesters];
+            return prev.length === next.length ? prev : next;
+          });
+        };
+
+        semesters.addListener(listener);
       } catch (error) {
         console.error("Failed to setup Realm listener: (dataContext)", error);
       }
@@ -508,13 +566,13 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     setupListener();
 
     return () => {
-      semesters?.removeAllListeners();
-      // if (realmInstance && !realmInstance.isClosed) {
-      //   realmInstance.close();
-      // }
-      realm = null;
+      if (semesters && listener) {
+        semesters.removeListener(listener);
+      }
     };
   }, []);
+
+
 
   /**
    * Update a general setting by id, persist to AsyncStorage and update state.
