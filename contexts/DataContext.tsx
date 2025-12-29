@@ -11,7 +11,14 @@ import {
   BackendPayloadType,
 } from "@/types";
 import { alert, updateSettingInStorage } from "@/utils";
-import { createContext, FC, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  FC,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   ChatCenteredTextIcon,
   HeadphonesIcon,
@@ -30,20 +37,7 @@ import { eraseAllUserData } from "@/utils/eraseFunction";
 import { Alert, DevSettings } from "react-native";
 // import * as Updates from "expo-updates";
 
-// ------------------------------------------------------------------------------------------------
-// realm matters
-// ------------------------------------------------------------------------------------------------
-
 let realm: Realm | null = null;
-
-// ------------------------------------------------------------------------------------------------
-// realm matters
-// ------------------------------------------------------------------------------------------------
-
-// ----------------------------------
-// Default Data
-// ----------------------------------
-
 const siteInfo: AppInfoType[] = [
   {
     id: "1",
@@ -572,8 +566,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
-
-
   /**
    * Update a general setting by id, persist to AsyncStorage and update state.
    */
@@ -609,7 +601,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         return realm.create("Semester", semester);
       });
 
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
 
       return { success: true, data: { ...created } };
     } catch (error: any) {
@@ -638,7 +630,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           throw new Error(`Semester courses array is not initialized`);
         }
       });
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
       console.log("error occured (addCourse)", error);
@@ -724,7 +716,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
       console.log("error occured (linkSemester)", error);
@@ -763,7 +755,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         ) as any;
       });
 
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
       console.log("error occured (unlinkSemester)", error);
@@ -787,7 +779,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           Object.assign(semester, changes);
         }
       });
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
       console.log("error occured (updateSemester)", error);
@@ -803,7 +795,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         Object.assign(course, changes);
       }
     });
-    setSemesters([...realm.objects<SemesterType>("Semester")]);
+    // setSemesters([...realm.objects<SemesterType>("Semester")]);
   };
 
   // DELETE
@@ -825,7 +817,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
       return { success: true };
     } catch (error: any) {
       console.log("error occured (deleteSemester)", error);
@@ -845,7 +837,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       });
 
       // Refresh semesters so UI reflects changes
-      setSemesters([...realm.objects<SemesterType>("Semester")]);
+      // setSemesters([...realm.objects<SemesterType>("Semester")]);
 
       return { success: true };
     } catch (error: any) {
@@ -889,36 +881,51 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const contextValue: DataContextType = {
-    user,
-    setUser,
-    semesters,
-    courses,
-    generalSettings,
-    academicSettings,
-    utilities,
-    infos,
-    language,
-    gradingScheme,
-    gradeRounding,
-    updateGeneralSetting,
-    updateAcademicSetting,
-    addSemester,
-    updateSemester,
+  const contextValue: DataContextType = useMemo(
+    () => ({
+      user,
+      setUser,
+      semesters,
+      courses,
+      generalSettings,
+      academicSettings,
+      utilities,
+      infos,
+      language,
+      gradingScheme,
+      gradeRounding,
+      updateGeneralSetting,
+      updateAcademicSetting,
+      addSemester,
+      updateSemester,
 
-    addCourse,
-    getSemesters,
-    getSemesterById,
-    getCourses,
+      addCourse,
+      getSemesters,
+      getSemesterById,
+      getCourses,
 
-    updateCourse,
-    deleteSemester,
-    deleteCourse,
-    linkSemester,
-    unlinkSemester,
+      updateCourse,
+      deleteSemester,
+      deleteCourse,
+      linkSemester,
+      unlinkSemester,
 
-    getAiInsight,
-  };
+      getAiInsight,
+    }),
+    [
+      user,
+      semesters,
+      courses,
+      generalSettings,
+      academicSettings,
+      utilities,
+      infos,
+      language,
+      gradingScheme,
+      gradeRounding,
+      infos,
+    ]
+  );
 
   if (!generalSettings.length || !academicSettings.length) {
     return null; // or a loading spinner
