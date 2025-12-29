@@ -16,7 +16,7 @@ export async function eraseAllUserData(): Promise<ResponseType> {
     // 3. Clear async storage
     await AsyncStorage.clear();
 
-    // 3. Clear FileSystem document + cache directories
+    // 4. Clear FileSystem document + cache directories
     await FileSystem.deleteAsync(FileSystem.documentDirectory!, {
       idempotent: true,
     });

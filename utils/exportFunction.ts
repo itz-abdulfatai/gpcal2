@@ -62,7 +62,14 @@ export async function exportUserData(): Promise<ResponseType> {
     const permission = await MediaLibrary.requestPermissionsAsync();
     if (permission.status === "granted") {
       const asset = await MediaLibrary.createAssetAsync(fileUri);
-      await MediaLibrary.createAlbumAsync("Download", asset, false);
+      try {
+        await MediaLibrary.createAlbumAsync("Download", asset, false);
+      } catch (e) {
+        // Album likely exists; add asset to existing album
+        const album = await MediaLibrary.getAlbumAsync("Download");
+        if (album)
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      }
     }
     // TODO: Save to permanent storage
 

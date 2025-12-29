@@ -800,6 +800,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     payload: BackendPayloadType
   ): Promise<ResponseType> => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 40000); // 30 second timeout
       const res = await fetch(
         "https://pgftxzgnqsmqoqzmkwrc.supabase.co/functions/v1/gpcal-ai",
         {
@@ -808,8 +810,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
+          signal: controller.signal,
         }
       );
+      clearTimeout(timeoutId);
       console.log("api response ", res);
 
       if (!res.ok) return { success: false, msg: "an Error occured." };
