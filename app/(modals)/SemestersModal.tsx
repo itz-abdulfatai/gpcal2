@@ -5,7 +5,13 @@ import {
   View,
   Alert,
 } from "react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import ModalWrapper from "@/components/ModalWrapper";
 
 import Typo from "@/components/typo";
@@ -26,11 +32,21 @@ import { BSON } from "realm";
 import { useData } from "@/contexts/DataContext";
 import DeleteButton from "@/components/DeleteButton";
 import { useTheme } from "@/contexts/ThemeContext";
+import AddCourseForm from "@/components/addCourseForm";
+import AddLinkedSemesterForm from "@/components/AddLinkedSemesterForm";
 
 const { UUID } = BSON;
 
+export const idToStr = (id: any): string =>
+  typeof id === "string"
+    ? id
+    : typeof id?.toHexString === "function"
+    ? id.toHexString()
+    : String(id);
+
 const SemestersModal = () => {
   const { colors } = useTheme();
+  console.log("semesrer modal rendereed");
 
   const { id } = useLocalSearchParams();
   const dropdownRef = useRef<any>(null);
@@ -59,20 +75,9 @@ const SemestersModal = () => {
   let oldSemester: SemesterType | null;
   const [selectingPastSemesters, setSelectingPastSemesters] = useState(false);
 
-  const idToStr = (id: any): string =>
-    typeof id === "string"
-      ? id
-      : typeof id?.toHexString === "function"
-      ? id.toHexString()
-      : String(id);
-
   const [linkedSemesterIds, setLinkedSemesterIds] = useState<string[]>(() =>
     (semester.linkedSemesters ?? []).map(idToStr)
   );
-
-  useEffect(() => {
-    setCourse((prev) => ({ ...prev, semesterId: semester.id }));
-  }, [semester.id]);
 
   useEffect(() => {
     if (selectingPastSemesters) {
@@ -104,28 +109,36 @@ const SemestersModal = () => {
     }, 10);
   };
 
-  const handleDelete = async (id: string) => {
-    const { success, msg } = await deleteCourse(id);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      const { success, msg } = await deleteCourse(id);
 
-    if (!success) return alert(msg!);
+      if (!success) return alert(msg!);
 
-    coursesVersionRef.current += 1;
-    setCoursesVersion((v) => v + 1);
+      console.log("deleted course with id: " + id);
 
-    console.log("deleted course with id: " + id);
-  };
+      const remainingCourses = (semester.courses || []).filter(
+        (c) => (typeof c.id === "string" ? c.id : c.id.toHexString()) !== id
+      );
+      await updateSemesterGpa(remainingCourses);
+    },
+    [deleteCourse, semester.courses, semester.gradingSystem, semester.id]
+  );
 
-  const handleUnlinkSemester = async (id: string) => {
-    const { success, msg } = await unlinkSemester(
-      semester.id.toHexString(),
-      id
-    );
+  const handleUnlinkSemester = useCallback(
+    async (id: string) => {
+      const { success, msg } = await unlinkSemester(
+        semester.id.toHexString(),
+        id
+      );
 
-    if (!success) return alert(msg!);
-    setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
+      if (!success) return alert(msg!);
+      setLinkedSemesterIds(semester.linkedSemesters.map(idToStr));
 
-    console.log("unlinked semester: " + id);
-  };
+      console.log("unlinked semester: " + id);
+    },
+    [unlinkSemester, semester.id]
+  );
 
   const handleSelectPastSemester = () => {
     setSelectingPastSemesters(true);
@@ -151,37 +164,20 @@ const SemestersModal = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const grades =
-    semester.gradingSystem === "Percentage"
-      ? createPercentageArray()
-      : semester.gradingSystem.split(", ").map((grade) => ({
-          label: grade.trim(),
-          value: grade.trim(),
-        }));
-  // console.log(grades);
+  const grades = useMemo(
+    () =>
+      semester.gradingSystem === "Percentage"
+        ? createPercentageArray()
+        : semester.gradingSystem.split(", ").map((grade) => ({
+            label: grade.trim(),
+            value: grade.trim(),
+          })),
+    [semester.gradingSystem]
+  );
 
   const router = useRouter();
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
-
-  const [semesterTyped, setSemesterTyped] = useState<SemesterType>({
-    id: new UUID(),
-    gpa: null,
-    name: "",
-    uid: "",
-    courses: [],
-    lastUpdated: new Date(),
-    linkedSemesters: [],
-    gradingSystem: semester.gradingSystem,
-  });
-  const [course, setCourse] = useState<CourseType>({
-    id: new UUID(),
-    uid: "",
-    semesterId: semester.id,
-    name: "",
-    creditUnit: null,
-    gradePoint: null,
-  });
 
   const [semesterTitle, setSemesterTitle] = useState<string>(
     semester ? semester.name : ""
@@ -206,49 +202,6 @@ const SemestersModal = () => {
 
     setLinkedSemesterIds((prev) => [...prev, idStr]);
     setSelectingPastSemesters(false);
-  };
-
-  const handleAddLinkedSemester = async () => {
-    if (!semesterTyped.name || semesterTyped.gpa == null) return;
-
-    // If semester hasn’t been saved yet, save it first
-    if (!semesterSaved) {
-      const { success, msg, data } = await addSemester(semester);
-      if (!success) return alert(msg!);
-
-      setSemester(data);
-
-      setSemesterSaved(true);
-    }
-    const res = await addSemester(semesterTyped);
-    if (!res.success) return alert(res.msg ?? "Failed to add semester");
-
-    try {
-      await linkSemester(
-        semester.id.toHexString(),
-        semesterTyped.id.toHexString()
-      );
-    } catch (error: any) {
-      console.log("error linking semester (handleAddLinkedSemester)", error);
-    }
-
-    // addSemester wrote into realm and semesterTyped.id is a BSON.UUID. Convert to string for UI:
-    const idStr = idToStr(semesterTyped.id);
-    setLinkedSemesterIds((prev) => {
-      if (prev.includes(idStr)) return prev;
-      return [...prev, idStr];
-    });
-
-    setSemesterTyped({
-      id: new UUID(),
-      gpa: null,
-      name: "",
-      uid: "",
-      courses: [],
-      lastUpdated: new Date(),
-      linkedSemesters: [],
-      gradingSystem: semester.gradingSystem,
-    });
   };
 
   const linkedSemestersData = useMemo(() => {
@@ -281,44 +234,47 @@ const SemestersModal = () => {
     }));
   };
 
-  const addCourse = async (course: CourseType) => {
-    let parsedCourse = {
-      ...course,
-      semesterId: semester.id,
-      gradePoint: course.gradePoint?.toString() as GradeType,
-    };
+  const addCourse = useCallback(
+    async (course: CourseType) => {
+      let parsedCourse = {
+        ...course,
+        semesterId: semester.id,
+        gradePoint: course.gradePoint?.toString() as GradeType,
+      };
 
-    if (!parsedCourse.name || !parsedCourse.creditUnit)
-      return alert("invalid course name or credit unit");
+      if (!parsedCourse.name || !parsedCourse.creditUnit)
+        return alert("invalid course name or credit unit");
 
-    // If semester hasn’t been saved yet, save it first
-    if (!semesterSaved) {
-      const { success, msg, data } = await addSemester(semester);
-      if (!success) return alert(msg!);
+      // If semester hasn’t been saved yet, save it first
+      if (!semesterSaved) {
+        const { success, msg, data } = await addSemester(semester);
+        if (!success) return alert(msg!);
 
-      setSemester(data);
+        setSemester(data);
 
-      setSemesterSaved(true);
-    }
+        setSemesterSaved(true);
+      }
 
-    // Now always try to add course
-    const { success: addCourseSuccess, msg: addCourseMsg } =
-      await addCourseToSemester(parsedCourse, semester.id);
+      // Now always try to add course
+      const { success: addCourseSuccess, msg: addCourseMsg } =
+        await addCourseToSemester(parsedCourse, semester.id);
 
-    if (!addCourseSuccess) return alert(addCourseMsg!);
+      if (!addCourseSuccess) return alert(addCourseMsg!);
 
-    setCourse({
-      id: new UUID(),
-      uid: "",
-      semesterId: semester.id,
-      name: "",
-      creditUnit: null,
-      gradePoint: null,
-    });
+      // setCourse({
+      //   id: new UUID(),
+      //   uid: "",
+      //   semesterId: semester.id,
+      //   name: "",
+      //   creditUnit: null,
+      //   gradePoint: null,
+      // });
 
-    coursesVersionRef.current += 1;
-    setCoursesVersion((v) => v + 1);
-  };
+      const newCourseList = [...(semester.courses || []), parsedCourse];
+      await updateSemesterGpa(newCourseList);
+    },
+    [semester.id, semesterSaved, addSemester, addCourseToSemester]
+  );
 
   const deleteSemester = () => {
     Alert.alert(
@@ -370,49 +326,24 @@ const SemestersModal = () => {
     router.back();
   };
 
-  const coursesVersionRef = useRef(0);
-  const [coursesVersion, setCoursesVersion] = useState(0);
+  const updateSemesterGpa = async (currentCourses: CourseType[]) => {
+    console.log("test");
 
-  useEffect(() => {
-    if (!semester || !semester.courses) return;
-    if (!semesterSaved) return;
+    const gpa = computeGPA(currentCourses, semester.gradingSystem);
+    console.log("gpa is ", gpa);
 
-    let cancelled = false;
+    // Only update if GPA actually changed to save DB writes
+    if (gpa === semester.gpa) return;
 
-    const run = async () => {
-      if (semester.courses.length > 0) {
-        const coursesArray: CourseType[] = Array.from(semester.courses ?? []);
-        const gpa = computeGPA(coursesArray, semester.gradingSystem);
-
-        if (gpa === semester.gpa) return;
-        console.log("actually changing the gpa in db");
-
-        try {
-          const { success, msg } = await updateSemester(
-            semester.id.toHexString(),
-            { gpa }
-          );
-
-          if (cancelled) return;
-
-          if (!success) {
-            alert(msg!);
-          } else {
-            setSemester((prev) => ({ ...prev, gpa }));
-          }
-        } catch (err) {
-          if (!cancelled) console.error("Error updating GPA:", err);
-        }
-      }
-    };
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coursesVersion, semesterSaved]);
+    const { success, msg } = await updateSemester(semester.id.toHexString(), {
+      gpa,
+    });
+    if (success) {
+      setSemester((prev) => ({ ...prev, gpa }));
+    } else {
+      alert(msg!);
+    }
+  };
 
   const analyse = () => {
     if (semester.courses.length === 0) {
@@ -530,79 +461,11 @@ const SemestersModal = () => {
           >
             <View style={styles.container}>
               <View style={{ gap: spacingX._20 }}>
-                <View style={styles.sectionContainer}>
-                  <Typo style={styles.headings}>Add New Course</Typo>
-
-                  {/* 🔑 Input saves value directly into ref */}
-                  <Input
-                    value={course?.name}
-                    placeholder="Course Name (e.g. Math 101)"
-                    onChangeText={(text) =>
-                      setCourse((course) => ({ ...course, name: text }))
-                    }
-                  />
-                  <Input
-                    value={
-                      course?.creditUnit ? course.creditUnit.toString() : ""
-                    }
-                    placeholder="Credit Unit (e.g. 3)"
-                    inputMode="numeric"
-                    onChangeText={(text) =>
-                      setCourse((course) => {
-                        const t = text.trim();
-                        if (!t) {
-                          // empty input → clear the field
-                          return { ...course, creditUnit: null };
-                        }
-                        const n = Number.parseInt(t, 10);
-                        // invalid number → clear; otherwise set parsed int
-                        return {
-                          ...course,
-                          creditUnit: Number.isNaN(n) ? null : n,
-                        };
-                      })
-                    }
-                  />
-                  <Dropdown
-                    data={grades}
-                    value={course.gradePoint}
-                    placeholder="Grade Point"
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    onChange={(item) => {
-                      setCourse((course) => ({
-                        ...course,
-                        gradePoint: item.value,
-                      }));
-                    }}
-                    style={styles.dropdownContainer}
-                    placeholderStyle={styles.dropdownPlaceholder}
-                    selectedTextStyle={styles.dropdownSelectedText}
-                    iconStyle={styles.dropdownIcon}
-                    itemTextStyle={styles.dropdownItemText}
-                    itemContainerStyle={styles.dropdownItemContainer}
-                    containerStyle={styles.dropdownListContainer}
-                    activeColor={colors.primary}
-                  />
-
-                  <Button
-                    disabled={!course.name || !course.creditUnit}
-                    onPress={() => {
-                      addCourse(course);
-                    }}
-                    style={{
-                      flexDirection: "row",
-                      gap: spacingX._10,
-                      alignItems: "center",
-                    }}
-                  >
-                    <PlusIcon size={15} color={colors.white} />
-                    <Typo color={colors.white} fontWeight={"bold"}>
-                      Add Course
-                    </Typo>
-                  </Button>
-                </View>
+                <AddCourseForm
+                  onAdd={addCourse}
+                  grades={grades}
+                  colors={colors}
+                />
 
                 {semester.courses.length > 0 && (
                   <View style={styles.sectionContainer}>
@@ -662,51 +525,13 @@ const SemestersModal = () => {
                     />
                   )}
 
-                  {/* 🔑 Input saves value directly into ref */}
-                  <Input
-                    value={semesterTyped?.name}
-                    placeholder="Semester"
-                    onChangeText={(text) =>
-                      setSemesterTyped((semester) => ({
-                        ...semester,
-                        name: text,
-                      }))
-                    }
+                  <AddLinkedSemesterForm
+                    semester={semester}
+                    semesterSaved={semesterSaved}
+                    setLinkedSemesterIds={setLinkedSemesterIds}
+                    setSemester={setSemester}
+                    setSemesterSaved={setSemesterSaved}
                   />
-                  <Input
-                    value={
-                      semesterTyped?.gpa ? semesterTyped?.gpa.toString() : ""
-                    }
-                    placeholder="GPA (e.g. 3.25)"
-                    inputMode="numeric"
-                    onChangeText={(text) =>
-                      setSemesterTyped((semester) => {
-                        const t = text.trim();
-                        if (!t) return { ...semester, gpa: null };
-                        const n = Number.parseFloat(t);
-                        if (Number.isNaN(n)) return { ...semester, gpa: null };
-                        const clamped = Math.max(0, Math.min(5, n)); // adjust max if needed
-                        return { ...semester, gpa: clamped };
-                      })
-                    }
-                  />
-
-                  <Button
-                    onPress={handleAddLinkedSemester}
-                    style={{
-                      flexDirection: "row",
-                      gap: spacingX._10,
-                      alignItems: "center",
-                      backgroundColor: colors.white,
-                      borderWidth: 1,
-                      borderColor: colors.primary,
-                    }}
-                  >
-                    <PlusIcon size={15} color={colors.primary} />
-                    <Typo color={colors.primary} fontWeight={"bold"}>
-                      Add Past Semester
-                    </Typo>
-                  </Button>
                 </View>
 
                 {linkedSemestersData.length > 0 && (
