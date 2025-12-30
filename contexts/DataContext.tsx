@@ -18,6 +18,7 @@ import {
   useState,
   useEffect,
   useMemo,
+  useCallback,
 } from "react";
 import {
   ChatCenteredTextIcon,
@@ -183,10 +184,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   //   fetchGradingScheme();
   // }, []);
 
-  const changeGradingScheme = (value: GradingSystem) => {
-    setGradingScheme(value as GradingSystem);
+  const changeGradingScheme = useCallback((value: GradingSystem) => {
+    setGradingScheme(value);
     AsyncStorage.setItem("gradingScheme", value);
-  };
+  }, []);
 
   // useEffect(() => {
   //   const fetchGradeRounding = async () => {
@@ -203,15 +204,15 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   //   fetchGradeRounding();
   // }, []);
 
-  const changeGradeRounding = (value: string) => {
+  const changeGradeRounding = useCallback((value: string) => {
     setGradeRounding(value);
     AsyncStorage.setItem("gradeRoundingRules", value);
-  };
+  }, []);
 
-  const changeLanguage = (value: string) => {
+  const changeLanguage = useCallback((value: string) => {
     setLanguage(value);
     AsyncStorage.setItem("language", value);
-  };
+  }, []);
 
   // useEffect(() => {
   //   const fetchRequireBioMetric = async () => {
@@ -226,10 +227,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   //   fetchRequireBioMetric();
   // }, []);
 
-  const changeRequireBioMetric = (value: boolean) => {
+  const changeRequireBioMetric = useCallback((value: boolean) => {
     setRequireBioMetric(value);
     AsyncStorage.setItem(BIOMETRIC_KEY, JSON.stringify(value));
-  };
+  }, []);
 
   // Update general settings when theme changes
   // useEffect(() => {
@@ -801,6 +802,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         setSemesters((prev) => {
           const next = [...semesters];
           return prev.length === next.length ? prev : next;
+
+          // change to the below when i create semester rename logic
+          // setSemesters([...semesters]);
         });
 
         listener = () => {
@@ -852,52 +856,58 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   // };
 
   // CREATE
-  const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
+  const addSemester = useCallback(
+    async (semester: SemesterType): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
 
-      const created = realm.write(() => {
-        return realm.create("Semester", semester);
-      });
+        const created = realm.write(() => {
+          return realm.create("Semester", semester);
+        });
 
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
 
-      return { success: true, data: { ...created } };
-    } catch (error: any) {
-      console.log("error occured (addSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+        return { success: true, data: { ...created } };
+      } catch (error: any) {
+        console.log("error occured (addSemester)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
 
-  const addCourse = async (
-    course: CourseType,
-    semesterId: Realm.BSON.UUID
-  ): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey(
-          "Semester",
-          semesterId
-        ) as any;
-        if (!semester) {
-          throw new Error(`Semester with id ${semesterId} not found`);
-        }
-        if (semester.courses) {
-          semester.courses.push(course);
-        } else {
-          throw new Error(`Semester courses array is not initialized`);
-        }
-      });
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (addCourse)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+  const addCourse = useCallback(
+    async (
+      course: CourseType,
+      semesterId: Realm.BSON.UUID
+    ): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const semester = realm.objectForPrimaryKey(
+            "Semester",
+            semesterId
+          ) as any;
+          if (!semester) {
+            throw new Error(`Semester with id ${semesterId} not found`);
+          }
+          if (semester.courses) {
+            semester.courses.push(course);
+          } else {
+            throw new Error(`Semester courses array is not initialized`);
+          }
+        });
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (addCourse)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
   // READ
-  const getSemesters = async (): Promise<ResponseType> => {
+  const getSemesters = useCallback(async (): Promise<ResponseType> => {
     try {
       const realm = await openRealm();
       const semesters = realm.objects<SemesterType>("Semester");
@@ -908,237 +918,262 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       console.log("error occured (getSemesters)", error);
       return { success: false, msg: error.message };
     }
-  };
+  }, []);
 
-  const getSemesterById = async (
-    id: Realm.BSON.UUID | string
-  ): Promise<SemesterType | null> => {
-    try {
-      const realm = await openRealm();
+  const getSemesterById = useCallback(
+    async (id: Realm.BSON.UUID | string): Promise<SemesterType | null> => {
+      try {
+        const realm = await openRealm();
 
-      // Convert string to UUID if needed
-      const uuid = typeof id === "string" ? new Realm.BSON.UUID(id) : id;
+        // Convert string to UUID if needed
+        const uuid = typeof id === "string" ? new Realm.BSON.UUID(id) : id;
 
-      const semester = realm.objectForPrimaryKey<SemesterType>(
-        "Semester",
-        uuid
-      );
-      return semester ? { ...semester } : null;
-    } catch (error: any) {
-      console.log("error occured (getSemesterById)", error);
-      throw new Error(error.message);
-    }
-  };
+        const semester = realm.objectForPrimaryKey<SemesterType>(
+          "Semester",
+          uuid
+        );
+        return semester ? { ...semester } : null;
+      } catch (error: any) {
+        console.log("error occured (getSemesterById)", error);
+        throw new Error(error.message);
+      }
+    },
+    []
+  );
 
-  const getCourses = async (semesterId: string) => {
+  const getCourses = useCallback(async (semesterId: string) => {
     const realm = await openRealm();
     const semester = realm.objectForPrimaryKey("Semester", semesterId) as any;
     return semester ? (Array.from(semester.courses) as CourseType[]) : [];
-  };
+  }, []);
 
-  const linkSemester = async (
-    semesterId: string,
-    linkedSemesterId: string
-  ): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey<SemesterType>(
-          "Semester",
-          new Realm.BSON.UUID(semesterId)
-        );
-        const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
-          "Semester",
-          new Realm.BSON.UUID(linkedSemesterId)
-        );
+  const linkSemester = useCallback(
+    async (
+      semesterId: string,
+      linkedSemesterId: string
+    ): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const semester = realm.objectForPrimaryKey<SemesterType>(
+            "Semester",
+            new Realm.BSON.UUID(semesterId)
+          );
+          const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
+            "Semester",
+            new Realm.BSON.UUID(linkedSemesterId)
+          );
 
-        if (!semester || !linkedSemester) {
-          throw new Error("Semester not found");
-        }
-
-        // Add linkedSemesterId to semester.linkedSemesters
-        if (
-          !semester.linkedSemesters.some((id) =>
-            id.equals(new Realm.BSON.UUID(linkedSemesterId))
-          )
-        ) {
-          semester.linkedSemesters.push(new Realm.BSON.UUID(linkedSemesterId));
-        }
-
-        // Add semesterId to linkedSemester.linkedSemesters
-        if (
-          !linkedSemester.linkedSemesters.some((id) =>
-            id.equals(new Realm.BSON.UUID(semesterId))
-          )
-        ) {
-          linkedSemester.linkedSemesters.push(new Realm.BSON.UUID(semesterId));
-        }
-      });
-
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (linkSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
-
-  const unlinkSemester = async (
-    semesterId: string,
-    linkedSemesterId: string
-  ): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey<SemesterType>(
-          "Semester",
-          new Realm.BSON.UUID(semesterId)
-        );
-        const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
-          "Semester",
-          new Realm.BSON.UUID(linkedSemesterId)
-        );
-
-        if (!semester || !linkedSemester) {
-          throw new Error("Semester not found");
-        }
-
-        // Remove linkedSemesterId from semester.linkedSemesters
-        semester.linkedSemesters = semester.linkedSemesters.filter(
-          (id) => !id.equals(new Realm.BSON.UUID(linkedSemesterId))
-        ) as any;
-
-        // Remove semesterId from linkedSemester.linkedSemesters
-        linkedSemester.linkedSemesters = linkedSemester.linkedSemesters.filter(
-          (id) => !id.equals(new Realm.BSON.UUID(semesterId))
-        ) as any;
-      });
-
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (unlinkSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
-
-  // UPDATE
-  const updateSemester = async (
-    id: string,
-    changes: Partial<SemesterType>
-  ): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey(
-          "Semester",
-          new Realm.BSON.UUID(id)
-        );
-        if (semester) {
-          Object.assign(semester, changes);
-        }
-      });
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (updateSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
-
-  const updateCourse = async (id: string, changes: Partial<CourseType>) => {
-    const realm = await openRealm();
-    realm.write(() => {
-      const course = realm.objectForPrimaryKey("Course", id);
-      if (course) {
-        Object.assign(course, changes);
-      }
-    });
-    // setSemesters([...realm.objects<SemesterType>("Semester")]);
-  };
-
-  // DELETE
-  const deleteSemester = async (id: string): Promise<ResponseType> => {
-    try {
-      const realm = await openRealm();
-      realm.write(() => {
-        const semester = realm.objectForPrimaryKey(
-          "Semester",
-          new Realm.BSON.UUID(id)
-        ) as any;
-
-        if (semester) {
-          if (semester.courses && semester.courses.length > 0) {
-            realm.delete(semester.courses);
+          if (!semester || !linkedSemester) {
+            throw new Error("Semester not found");
           }
 
-          realm.delete(semester);
-        }
-      });
+          // Add linkedSemesterId to semester.linkedSemesters
+          if (
+            !semester.linkedSemesters.some((id) =>
+              id.equals(new Realm.BSON.UUID(linkedSemesterId))
+            )
+          ) {
+            semester.linkedSemesters.push(
+              new Realm.BSON.UUID(linkedSemesterId)
+            );
+          }
 
-      // setSemesters([...realm.objects<SemesterType>("Semester")]);
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (deleteSemester)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+          // Add semesterId to linkedSemester.linkedSemesters
+          if (
+            !linkedSemester.linkedSemesters.some((id) =>
+              id.equals(new Realm.BSON.UUID(semesterId))
+            )
+          ) {
+            linkedSemester.linkedSemesters.push(
+              new Realm.BSON.UUID(semesterId)
+            );
+          }
+        });
 
-  const deleteCourse = async (id: string): Promise<ResponseType> => {
-    try {
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (linkSemester)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
+
+  const unlinkSemester = useCallback(
+    async (
+      semesterId: string,
+      linkedSemesterId: string
+    ): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const semester = realm.objectForPrimaryKey<SemesterType>(
+            "Semester",
+            new Realm.BSON.UUID(semesterId)
+          );
+          const linkedSemester = realm.objectForPrimaryKey<SemesterType>(
+            "Semester",
+            new Realm.BSON.UUID(linkedSemesterId)
+          );
+
+          if (!semester || !linkedSemester) {
+            throw new Error("Semester not found");
+          }
+
+          // Remove linkedSemesterId from semester.linkedSemesters
+          semester.linkedSemesters = semester.linkedSemesters.filter(
+            (id) => !id.equals(new Realm.BSON.UUID(linkedSemesterId))
+          ) as any;
+
+          // Remove semesterId from linkedSemester.linkedSemesters
+          linkedSemester.linkedSemesters =
+            linkedSemester.linkedSemesters.filter(
+              (id) => !id.equals(new Realm.BSON.UUID(semesterId))
+            ) as any;
+        });
+
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (unlinkSemester)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
+
+  // UPDATE
+  const updateSemester = useCallback(
+    async (
+      id: string,
+      changes: Partial<SemesterType>
+    ): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const semester = realm.objectForPrimaryKey(
+            "Semester",
+            new Realm.BSON.UUID(id)
+          );
+          if (semester) {
+            Object.assign(semester, changes);
+          }
+        });
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (updateSemester)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
+
+  const updateCourse = useCallback(
+    async (id: string, changes: Partial<CourseType>) => {
       const realm = await openRealm();
       realm.write(() => {
-        const uuid = new Realm.BSON.UUID(id);
-        const course = realm.objectForPrimaryKey("Course", uuid);
+        const course = realm.objectForPrimaryKey("Course", id);
         if (course) {
-          realm.delete(course);
+          Object.assign(course, changes);
         }
       });
-
-      // Refresh semesters so UI reflects changes
       // setSemesters([...realm.objects<SemesterType>("Semester")]);
+    },
+    []
+  );
 
-      return { success: true };
-    } catch (error: any) {
-      console.log("error occured (deleteCourse)", error);
-      return { success: false, msg: error.message };
-    }
-  };
+  // DELETE
+  const deleteSemester = useCallback(
+    async (id: string): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const semester = realm.objectForPrimaryKey(
+            "Semester",
+            new Realm.BSON.UUID(id)
+          ) as any;
 
-  const getAiInsight = async (
-    payload: BackendPayloadType
-  ): Promise<ResponseType> => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 40000); // 30 second timeout
-      const res = await fetch(
-        "https://pgftxzgnqsmqoqzmkwrc.supabase.co/functions/v1/gpcal-ai",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-        }
-      );
-      clearTimeout(timeoutId);
-      console.log("api response ", res);
+          if (semester) {
+            if (semester.courses && semester.courses.length > 0) {
+              realm.delete(semester.courses);
+            }
 
-      if (!res.ok) return { success: false, msg: "an Error occured." };
+            realm.delete(semester);
+          }
+        });
 
-      const data = await res.json();
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (deleteSemester)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
 
-      if (!data) return { success: false, msg: "an Error occured." };
-      console.log("data (datacontext): ", data);
-      if (data.msg) return { success: false, msg: data.msg };
+  const deleteCourse = useCallback(
+    async (id: string): Promise<ResponseType> => {
+      try {
+        const realm = await openRealm();
+        realm.write(() => {
+          const uuid = new Realm.BSON.UUID(id);
+          const course = realm.objectForPrimaryKey("Course", uuid);
+          if (course) {
+            realm.delete(course);
+          }
+        });
 
-      return { success: true, data };
-    } catch (error: any) {
-      console.log("error occured (getAiInsight) ", error);
-      return { success: false, msg: error.message };
-    }
-  };
+        // Refresh semesters so UI reflects changes
+        // setSemesters([...realm.objects<SemesterType>("Semester")]);
+
+        return { success: true };
+      } catch (error: any) {
+        console.log("error occured (deleteCourse)", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
+
+  const getAiInsight = useCallback(
+    async (payload: BackendPayloadType): Promise<ResponseType> => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 40000); // 30 second timeout
+        const res = await fetch(
+          "https://pgftxzgnqsmqoqzmkwrc.supabase.co/functions/v1/gpcal-ai",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeoutId);
+        console.log("api response ", res);
+
+        if (!res.ok) return { success: false, msg: "an Error occured." };
+
+        const data = await res.json();
+
+        if (!data) return { success: false, msg: "an Error occured." };
+        console.log("data (datacontext): ", data);
+        if (data.msg) return { success: false, msg: data.msg };
+
+        return { success: true, data };
+      } catch (error: any) {
+        console.log("error occured (getAiInsight) ", error);
+        return { success: false, msg: error.message };
+      }
+    },
+    []
+  );
 
   const contextValue: DataContextType = useMemo(
     () => ({
@@ -1182,7 +1217,20 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       language,
       gradingScheme,
       gradeRounding,
-      infos,
+      // infos,
+
+      addSemester,
+      addCourse,
+      getSemesters,
+      getSemesterById,
+      getCourses,
+      linkSemester,
+      unlinkSemester,
+      updateSemester,
+      updateCourse,
+      deleteSemester,
+      deleteCourse,
+      getAiInsight,
     ]
   );
 
