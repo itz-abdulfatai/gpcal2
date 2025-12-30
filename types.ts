@@ -235,17 +235,17 @@ export type DataContextType = {
   user: UserType;
   setUser: React.Dispatch<React.SetStateAction<UserType>>;
   semesters: SemesterType[];
-  courses: CourseType[];
+  // courses: CourseType[];
   generalSettings: SettingsType[];
   academicSettings: SettingsType[];
   // updateGeneralSetting: (
   //   id: string,
   //   changes: Partial<SettingsType>
   // ) => Promise<void>;
-  updateAcademicSetting: (
-    id: string,
-    changes: Partial<SettingsType>
-  ) => Promise<void>;
+  // updateAcademicSetting: (
+  //   id: string,
+  //   changes: Partial<SettingsType>
+  // ) => Promise<void>;
   utilities: UtilitiesType[];
   infos: AppInfoType[];
   language: string;

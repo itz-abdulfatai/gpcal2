@@ -234,7 +234,7 @@ const Profile = () => {
     infos: siteInfo,
     academicSettings: academicsSettings,
     // updateGeneralSetting,
-    updateAcademicSetting,
+    // updateAcademicSetting,
     utilities,
     user,
     setUser,

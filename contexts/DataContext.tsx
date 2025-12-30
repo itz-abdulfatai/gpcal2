@@ -83,7 +83,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   const [infos, setInfos] = useState<AppInfoType[]>(siteInfo);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
-  const [courses] = useState<CourseType[]>([]);
+  // const [courses] = useState<CourseType[]>([]);
   const [user, setUser] = useState<UserType>({
     name: "kamaru Doe",
     image: null,
@@ -109,6 +109,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
           AsyncStorage.getItem(BIOMETRIC_KEY),
         ]);
 
+        console.log("from async", await AsyncStorage.getItem("gradingScheme"));
+        console.log("from promise", gradingSchemeValue);
+
         setSendNotifications(sendNotificationsValue === "true");
         setLanguage(languageValue || "English");
         setGradingScheme(
@@ -122,8 +125,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         //   toggled: sendNotificationsValue === "true",
         // });
         // updateGeneralSetting("3", { selectedOption: languageValue });
-        updateAcademicSetting("1", { selectedOption: gradingSchemeValue });
-        updateAcademicSetting("3", { selectedOption: gradeRoundingValue });
+        // updateAcademicSetting("1", { selectedOption: gradingSchemeValue });
+        // updateAcademicSetting("3", { selectedOption: gradeRoundingValue });
         // updateGeneralSetting("4", { toggled: bioMetricValue === "true" });
       } catch (error) {
         console.log("Failed to load/sync settings", error);
@@ -237,92 +240,182 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   //   );
   // }, [theme]);
 
-  const defaultUtilities: UtilitiesType[] = [
-    {
-      id: "1",
-      title: "Export Data",
-      subtitle: "Download a backup of your academic data",
-      color: "#ffffff",
-      async onTap() {
-        const { success, data, msg } = await exportUserData();
+  // const defaultUtilities: UtilitiesType[] = [
+  //   {
+  //     id: "1",
+  //     title: "Export Data",
+  //     subtitle: "Download a backup of your academic data",
+  //     color: "#ffffff",
+  //     async onTap() {
+  //       const { success, data, msg } = await exportUserData();
 
-        if (!success) return alert(msg!);
+  //       if (!success) return alert(msg!);
 
-        alert("Data exported successfully");
+  //       alert("Data exported successfully");
+  //     },
+  //     iconName: "ExportIcon",
+  //     buttonText: "Export",
+  //     textColor: "#000000",
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Import Data",
+  //     subtitle:
+  //       "Import a previously exported data file (this will erase your existing data)",
+  //     color: "#ffffff",
+  //     async onTap() {
+  //       const { success, data, msg } = await importUserData();
+  //       if (!success) return alert(msg!);
+
+  //       alert("Data imported Successfully");
+
+  //       try {
+  //         // Expo reload (works in dev + prod)
+  //         // await Updates.reloadAsync();
+
+  //         DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+  //       } catch {
+  //         // Fallback for bare RN or if Updates unavailable
+  //         DevSettings.reload();
+  //       }
+  //     },
+  //     iconName: "ImportIcon",
+  //     buttonText: "Import",
+  //     textColor: "#000000",
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Reset All Data",
+  //     subtitle: "Permanently delete all your application data",
+  //     color: colors.rose,
+  //     async onTap() {
+  //       Alert.alert(
+  //         "Reset All Data",
+  //         "Are you sure you want to reset all your application data?",
+  //         [
+  //           {
+  //             text: "No",
+  //             style: "cancel",
+  //           },
+  //           {
+  //             text: "Yes",
+  //             style: "destructive",
+  //             onPress: async () => {
+  //               const { success, data, msg } = await eraseAllUserData();
+
+  //               if (!success) return alert(msg!);
+
+  //               alert("All data deleted successfully");
+
+  //               try {
+  //                 // Expo reload (works in dev + prod)
+  //                 // await Updates.reloadAsync();
+
+  //                 DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+  //               } catch {
+  //                 // Fallback for bare RN or if Updates unavailable
+  //                 DevSettings.reload();
+  //               }
+  //             },
+  //           },
+  //         ]
+  //       );
+  //     },
+  //     iconName: "TrashIcon",
+  //     buttonText: "Reset",
+  //     textColor: colors.white,
+  //   },
+  // ];
+
+  const utilities = useMemo<UtilitiesType[]>(
+    () => [
+      {
+        id: "1",
+        title: "Export Data",
+        subtitle: "Download a backup of your academic data",
+        color: "#ffffff",
+        async onTap() {
+          const { success, data, msg } = await exportUserData();
+
+          if (!success) return alert(msg!);
+
+          alert("Data exported successfully");
+        },
+        iconName: "ExportIcon",
+        buttonText: "Export",
+        textColor: "#000000",
       },
-      iconName: "ExportIcon",
-      buttonText: "Export",
-      textColor: "#000000",
-    },
-    {
-      id: "2",
-      title: "Import Data",
-      subtitle:
-        "Import a previously exported data file (this will erase your existing data)",
-      color: "#ffffff",
-      async onTap() {
-        const { success, data, msg } = await importUserData();
-        if (!success) return alert(msg!);
+      {
+        id: "2",
+        title: "Import Data",
+        subtitle:
+          "Import a previously exported data file (this will erase your existing data)",
+        color: "#ffffff",
+        async onTap() {
+          const { success, data, msg } = await importUserData();
+          if (!success) return alert(msg!);
 
-        alert("Data imported Successfully");
+          alert("Data imported Successfully");
 
-        try {
-          // Expo reload (works in dev + prod)
-          // await Updates.reloadAsync();
+          try {
+            // Expo reload (works in dev + prod)
+            // await Updates.reloadAsync();
 
-          DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
-        } catch {
-          // Fallback for bare RN or if Updates unavailable
-          DevSettings.reload();
-        }
+            DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+          } catch {
+            // Fallback for bare RN or if Updates unavailable
+            DevSettings.reload();
+          }
+        },
+        iconName: "ImportIcon",
+        buttonText: "Import",
+        textColor: "#000000",
       },
-      iconName: "ImportIcon",
-      buttonText: "Import",
-      textColor: "#000000",
-    },
-    {
-      id: "3",
-      title: "Reset All Data",
-      subtitle: "Permanently delete all your application data",
-      color: colors.rose,
-      async onTap() {
-        Alert.alert(
-          "Reset All Data",
-          "Are you sure you want to reset all your application data?",
-          [
-            {
-              text: "No",
-              style: "cancel",
-            },
-            {
-              text: "Yes",
-              style: "destructive",
-              onPress: async () => {
-                const { success, data, msg } = await eraseAllUserData();
-
-                if (!success) return alert(msg!);
-
-                alert("All data deleted successfully");
-
-                try {
-                  // Expo reload (works in dev + prod)
-                  // await Updates.reloadAsync();
-
-                  DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
-                } catch {
-                  // Fallback for bare RN or if Updates unavailable
-                  DevSettings.reload();
-                }
+      {
+        id: "3",
+        title: "Reset All Data",
+        subtitle: "Permanently delete all your application data",
+        color: colors.rose,
+        async onTap() {
+          Alert.alert(
+            "Reset All Data",
+            "Are you sure you want to reset all your application data?",
+            [
+              {
+                text: "No",
+                style: "cancel",
               },
-            },
-          ]
-        );
+              {
+                text: "Yes",
+                style: "destructive",
+                onPress: async () => {
+                  const { success, data, msg } = await eraseAllUserData();
+
+                  if (!success) return alert(msg!);
+
+                  alert("All data deleted successfully");
+
+                  try {
+                    // Expo reload (works in dev + prod)
+                    // await Updates.reloadAsync();
+
+                    DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
+                  } catch {
+                    // Fallback for bare RN or if Updates unavailable
+                    DevSettings.reload();
+                  }
+                },
+              },
+            ]
+          );
+        },
+        iconName: "TrashIcon",
+        buttonText: "Reset",
+        textColor: colors.white,
       },
-      iconName: "TrashIcon",
-      buttonText: "Reset",
-      textColor: colors.white,
-    },
-  ];
+    ],
+    [colors]
+  );
 
   // const defaultGeneralSettings: SettingsType[] = [
   //   {
@@ -405,74 +498,147 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   //   },
   // ];
 
-  const academicsSettings: SettingsType[] = [
-    {
-      id: "1",
-      title: "Grading Scheme",
-      subtitle: "Choose how grades are represented",
-      type: "dropdown",
-      iconName: "GraduationCapIcon",
-      options: [
-        "A, B, C, D, E, F",
-        "A, B, C, D, F",
-        "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F",
-        "Percentage",
-      ],
-      selectedOption: "A, B, C, D, E, F",
-      onSelectOption(option) {
-        console.log("Selected grading scheme:", option);
-        changeGradingScheme(option as GradingSystem);
+  // const academicsSettings: SettingsType[] = [
+  //   {
+  //     id: "1",
+  //     title: "Grading Scheme",
+  //     subtitle: "Choose how grades are represented",
+  //     type: "dropdown",
+  //     iconName: "GraduationCapIcon",
+  //     options: [
+  //       "A, B, C, D, E, F",
+  //       "A, B, C, D, F",
+  //       "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F",
+  //       "Percentage",
+  //     ],
+  //     selectedOption: "A, B, C, D, E, F",
+  //     onSelectOption(option) {
+  //       console.log("Selected grading scheme:", option);
+  //       changeGradingScheme(option as GradingSystem);
 
-        try {
-          (async () => {
-            await updateAcademicSetting("1", { selectedOption: option });
-          })();
-        } catch (error) {
-          console.log(
-            "Failed to update academicSettings for grading scheme",
-            error
-          );
-        }
+  //       try {
+  //         (async () => {
+  //           await updateAcademicSetting("1", { selectedOption: option });
+  //         })();
+  //       } catch (error) {
+  //         console.log(
+  //           "Failed to update academicSettings for grading scheme",
+  //           error
+  //         );
+  //       }
+  //     },
+  //   },
+  //   // {
+  //   //   id: "2",
+  //   //   title: "Pass/Fail Option",
+  //   //   subtitle: "Allow pass/fail grading for eligible courses",
+  //   //   type: "toggle",
+  //   //   iconName: "CheckCircleIcon",
+  //   //   toggled: false,
+  //   // },
+  //   // {
+  //   //   id: "3",
+  //   //   title: "Grade Rounding Rules",
+  //   //   subtitle: "Define how decimal grades are rounded",
+  //   //   type: "dropdown",
+  //   //   iconName: "ArrowClockwiseIcon",
+  //   //   options: [
+  //   //     "Keep two decimals",
+  //   //     "Round to nearest whole number",
+  //   //     "Always round up ",
+  //   //     "Always round down ",
+  //   //   ],
+  //   //   selectedOption: "Keep two decimals",
+  //   //   onSelectOption(option) {
+  //   //     console.log("Selected grade rounding:", option);
+  //   //     changeGradeRounding(option);
+
+  //   //     try {
+  //   //       (async () => {
+  //   //         await updateAcademicSetting("3", { selectedOption: option });
+  //   //       })();
+  //   //     } catch (error) {
+  //   //       console.log(
+  //   //         "Failed to update academicSettings for grade rounding",
+  //   //         error
+  //   //       );
+  //   //     }
+  //   //   },
+  //   // },
+  // ];
+
+  const academicSettings: SettingsType[] = useMemo(
+    () => [
+      {
+        id: "1",
+        title: "Grading Scheme",
+        subtitle: "Choose how grades are represented",
+        type: "dropdown",
+        iconName: "GraduationCapIcon",
+        options: [
+          "A, B, C, D, E, F",
+          "A, B, C, D, F",
+          "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F",
+          "Percentage",
+        ],
+        selectedOption: gradingScheme,
+        onSelectOption(option) {
+          console.log("Selected grading scheme:", option);
+          changeGradingScheme(option as GradingSystem);
+
+          try {
+            (async () => {
+              setGradingScheme(option as GradingSystem);
+              // await updateAcademicSetting("1", { selectedOption: option });
+            })();
+          } catch (error) {
+            console.log(
+              "Failed to update academicSettings for grading scheme",
+              error
+            );
+          }
+        },
       },
-    },
-    // {
-    //   id: "2",
-    //   title: "Pass/Fail Option",
-    //   subtitle: "Allow pass/fail grading for eligible courses",
-    //   type: "toggle",
-    //   iconName: "CheckCircleIcon",
-    //   toggled: false,
-    // },
-    // {
-    //   id: "3",
-    //   title: "Grade Rounding Rules",
-    //   subtitle: "Define how decimal grades are rounded",
-    //   type: "dropdown",
-    //   iconName: "ArrowClockwiseIcon",
-    //   options: [
-    //     "Keep two decimals",
-    //     "Round to nearest whole number",
-    //     "Always round up ",
-    //     "Always round down ",
-    //   ],
-    //   selectedOption: "Keep two decimals",
-    //   onSelectOption(option) {
-    //     console.log("Selected grade rounding:", option);
-    //     changeGradeRounding(option);
+      // {
+      //   id: "2",
+      //   title: "Pass/Fail Option",
+      //   subtitle: "Allow pass/fail grading for eligible courses",
+      //   type: "toggle",
+      //   iconName: "CheckCircleIcon",
+      //   toggled: false,
+      // },
+      // {
+      //   id: "3",
+      //   title: "Grade Rounding Rules",
+      //   subtitle: "Define how decimal grades are rounded",
+      //   type: "dropdown",
+      //   iconName: "ArrowClockwiseIcon",
+      //   options: [
+      //     "Keep two decimals",
+      //     "Round to nearest whole number",
+      //     "Always round up ",
+      //     "Always round down ",
+      //   ],
+      //   selectedOption: "Keep two decimals",
+      //   onSelectOption(option) {
+      //     console.log("Selected grade rounding:", option);
+      //     changeGradeRounding(option);
 
-    //     try {
-    //       (async () => {
-    //         await updateAcademicSetting("3", { selectedOption: option });
-    //       })();
-    //     } catch (error) {
-    //       console.log(
-    //         "Failed to update academicSettings for grade rounding",
-    //         error
-    //       );
-    //     }
-    //   },
-    // },
-  ];
+      //     try {
+      //       (async () => {
+      //         await updateAcademicSetting("3", { selectedOption: option });
+      //       })();
+      //     } catch (error) {
+      //       console.log(
+      //         "Failed to update academicSettings for grade rounding",
+      //         error
+      //       );
+      //     }
+      //   },
+      // },
+    ],
+    [gradingScheme]
+  );
 
   // const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
   //   defaultGeneralSettings
@@ -570,9 +736,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     [theme, sendNotifications, requireBioMetric]
   );
 
-  const [academicSettings, setAcademicSettings] =
-    useState<SettingsType[]>(academicsSettings);
-  const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
+  // const [academicSettings, setAcademicSettings] =
+  //   useState<SettingsType[]>(academicsSettings);
+  // const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
 
   useEffect(() => {
     AsyncStorage.getItem("user").then((stored) => {
@@ -599,7 +765,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
-    getSemesters(); // Loads semesters from Realm and sets state
+    // getSemesters(); // Loads semesters from Realm and sets state
     // logAllStorage();
 
     const init = async () => {
@@ -610,8 +776,8 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
     const loadData = async () => {
       // setGeneralSettings(defaultGeneralSettings);
-      setAcademicSettings(academicsSettings);
-      setUtilities(defaultUtilities);
+      // setAcademicSettings(academicsSettings);
+      // setUtilities(defaultUtilities);
       setInfos(siteInfo);
       // }
     };
@@ -675,15 +841,15 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   /**
    * Update an academic setting by id, persist to AsyncStorage and update state.
    */
-  const updateAcademicSetting = async (
-    id: string,
-    changes: Partial<SettingsType>
-  ) => {
-    setAcademicSettings((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-    );
-    await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
-  };
+  // const updateAcademicSetting = async (
+  //   id: string,
+  //   changes: Partial<SettingsType>
+  // ) => {
+  //   setAcademicSettings((prev) =>
+  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
+  //   );
+  //   await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
+  // };
 
   // CREATE
   const addSemester = async (semester: SemesterType): Promise<ResponseType> => {
@@ -979,7 +1145,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       user,
       setUser,
       semesters,
-      courses,
+      // courses,
       generalSettings,
       academicSettings,
       utilities,
@@ -988,7 +1154,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       gradingScheme,
       gradeRounding,
       // updateGeneralSetting,
-      updateAcademicSetting,
+      // updateAcademicSetting,
       addSemester,
       updateSemester,
 
@@ -1008,7 +1174,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     [
       user,
       semesters,
-      courses,
+      // courses,
       generalSettings,
       academicSettings,
       utilities,
@@ -1020,9 +1186,9 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     ]
   );
 
-  if (!generalSettings.length || !academicSettings.length) {
-    return null; // or a loading spinner
-  }
+  // if (!generalSettings.length || !academicSettings.length) {
+  //   return null; // or a loading spinner
+  // }
 
   return (
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
