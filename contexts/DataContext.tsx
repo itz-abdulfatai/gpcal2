@@ -25,7 +25,6 @@ import {
   HeadphonesIcon,
   InfoIcon,
 } from "phosphor-react-native";
-// import { colors } from "@/constants/theme";
 import { useTheme } from "@/contexts/ThemeContext";
 
 import Realm from "realm";
@@ -36,7 +35,6 @@ import { importUserData } from "@/utils/importFunction";
 import { openRealm } from "@/models/db";
 import { eraseAllUserData } from "@/utils/eraseFunction";
 import { Alert, DevSettings } from "react-native";
-// import * as Updates from "expo-updates";
 
 let realm: Realm | null = null;
 const siteInfo: AppInfoType[] = [
@@ -84,7 +82,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
 
   const [infos, setInfos] = useState<AppInfoType[]>(siteInfo);
   const [semesters, setSemesters] = useState<SemesterType[]>([]);
-  // const [courses] = useState<CourseType[]>([]);
   const [user, setUser] = useState<UserType>({
     name: "kamaru Doe",
     image: null,
@@ -121,7 +118,7 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
         setGradeRounding(gradeRoundingValue || "Keep two decimals");
         setRequireBioMetric(bioMetricValue === "true");
 
-        // Update backend settings in parallel (fire-and-forget)
+        // Update backend settings in parallel
         // updateGeneralSetting("2", {
         //   toggled: sendNotificationsValue === "true",
         // });
@@ -137,72 +134,15 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     fetchSettings();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchSendNotifications = async () => {
-  //     try {
-  //       const value = await AsyncStorage.getItem("sendNotifications");
-  //       setSendNotifications(value === "true");
-  //       await updateGeneralSetting("2", { toggled: value === "true" });
-  //     } catch (error) {
-  //       console.log("failed to load/sync sendNotifications", error);
-  //     }
-  //   };
-  //   fetchSendNotifications();
-  // }, []);
   const changeSendNotifications = (value: boolean) => {
     setSendNotifications(value);
     AsyncStorage.setItem("sendNotifications", JSON.stringify(value));
   };
 
-  // useEffect(() => {
-  //   const fetchLanguage = async () => {
-  //     const value = await AsyncStorage.getItem("language");
-  //     setLanguage(value || "English");
-  //     try {
-  //       (async () => {
-  //         await updateGeneralSetting("3", { selectedOption: value });
-  //       })();
-  //     } catch (e) {
-  //       console.log("failed to update generalSettings for language", e);
-  //     }
-  //   };
-  //   fetchLanguage();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchGradingScheme = async () => {
-  //     const value = await AsyncStorage.getItem("gradingScheme");
-  //     setGradingScheme((value as GradingSystem) || "A, B, C, D, E, F");
-  //     try {
-  //       (async () => {
-  //         await updateAcademicSetting("1", { selectedOption: value });
-  //       })();
-  //     } catch (e) {
-  //       console.log("failed to update academicSettings for grading scheme", e);
-  //     }
-  //   };
-  //   fetchGradingScheme();
-  // }, []);
-
   const changeGradingScheme = useCallback((value: GradingSystem) => {
     setGradingScheme(value);
     AsyncStorage.setItem("gradingScheme", value);
   }, []);
-
-  // useEffect(() => {
-  //   const fetchGradeRounding = async () => {
-  //     const value = await AsyncStorage.getItem("gradeRoundingRules");
-  //     setGradeRounding(value || "Keep two decimals");
-  //     try {
-  //       (async () => {
-  //         await updateAcademicSetting("3", { selectedOption: value });
-  //       })();
-  //     } catch (e) {
-  //       console.log("failed to update academicSettings for grade rounding", e);
-  //     }
-  //   };
-  //   fetchGradeRounding();
-  // }, []);
 
   const changeGradeRounding = useCallback((value: string) => {
     setGradeRounding(value);
@@ -214,119 +154,10 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     AsyncStorage.setItem("language", value);
   }, []);
 
-  // useEffect(() => {
-  //   const fetchRequireBioMetric = async () => {
-  //     try {
-  //       const value = await AsyncStorage.getItem(BIOMETRIC_KEY);
-  //       setRequireBioMetric(value === "true");
-  //       await updateGeneralSetting("4", { toggled: value === "true" });
-  //     } catch (error) {
-  //       console.log("failed to load/sync requireBioMetric", error);
-  //     }
-  //   };
-  //   fetchRequireBioMetric();
-  // }, []);
-
   const changeRequireBioMetric = useCallback((value: boolean) => {
     setRequireBioMetric(value);
     AsyncStorage.setItem(BIOMETRIC_KEY, JSON.stringify(value));
   }, []);
-
-  // Update general settings when theme changes
-  // useEffect(() => {
-  //   setGeneralSettings((prev) =>
-  //     prev.map((setting) =>
-  //       setting.id === "1" ? { ...setting, toggled: theme === "dark" } : setting
-  //     )
-  //   );
-  // }, [theme]);
-
-  // const defaultUtilities: UtilitiesType[] = [
-  //   {
-  //     id: "1",
-  //     title: "Export Data",
-  //     subtitle: "Download a backup of your academic data",
-  //     color: "#ffffff",
-  //     async onTap() {
-  //       const { success, data, msg } = await exportUserData();
-
-  //       if (!success) return alert(msg!);
-
-  //       alert("Data exported successfully");
-  //     },
-  //     iconName: "ExportIcon",
-  //     buttonText: "Export",
-  //     textColor: "#000000",
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Import Data",
-  //     subtitle:
-  //       "Import a previously exported data file (this will erase your existing data)",
-  //     color: "#ffffff",
-  //     async onTap() {
-  //       const { success, data, msg } = await importUserData();
-  //       if (!success) return alert(msg!);
-
-  //       alert("Data imported Successfully");
-
-  //       try {
-  //         // Expo reload (works in dev + prod)
-  //         // await Updates.reloadAsync();
-
-  //         DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
-  //       } catch {
-  //         // Fallback for bare RN or if Updates unavailable
-  //         DevSettings.reload();
-  //       }
-  //     },
-  //     iconName: "ImportIcon",
-  //     buttonText: "Import",
-  //     textColor: "#000000",
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Reset All Data",
-  //     subtitle: "Permanently delete all your application data",
-  //     color: colors.rose,
-  //     async onTap() {
-  //       Alert.alert(
-  //         "Reset All Data",
-  //         "Are you sure you want to reset all your application data?",
-  //         [
-  //           {
-  //             text: "No",
-  //             style: "cancel",
-  //           },
-  //           {
-  //             text: "Yes",
-  //             style: "destructive",
-  //             onPress: async () => {
-  //               const { success, data, msg } = await eraseAllUserData();
-
-  //               if (!success) return alert(msg!);
-
-  //               alert("All data deleted successfully");
-
-  //               try {
-  //                 // Expo reload (works in dev + prod)
-  //                 // await Updates.reloadAsync();
-
-  //                 DevSettings.reload(); // TODO: delete this when Updates is available (after next prebuild)
-  //               } catch {
-  //                 // Fallback for bare RN or if Updates unavailable
-  //                 DevSettings.reload();
-  //               }
-  //             },
-  //           },
-  //         ]
-  //       );
-  //     },
-  //     iconName: "TrashIcon",
-  //     buttonText: "Reset",
-  //     textColor: colors.white,
-  //   },
-  // ];
 
   const utilities = useMemo<UtilitiesType[]>(
     () => [
@@ -418,156 +249,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     [colors]
   );
 
-  // const defaultGeneralSettings: SettingsType[] = [
-  //   {
-  //     id: "1",
-  //     title: "Dark Theme",
-  //     subtitle: "Toggle between Light and Dark mode",
-  //     type: "toggle",
-  //     toggled: theme === "dark",
-  //     iconName: "MoonIcon",
-  //     onToggle(value) {
-  //       console.log("toggle theme tapped (dataContext)", value);
-  //       setTheme(value ? "dark" : "light");
-  //       updateGeneralSetting("1", { toggled: value }).catch((e) => {
-  //         console.log("failed to update generalSettings for dark theme", e);
-  //       });
-  //     },
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Notifications",
-  //     subtitle: "Receive notifications about important academic updates",
-  //     type: "toggle",
-  //     toggled: sendNotifications,
-  //     iconName: "BellIcon",
-  //     onToggle(value) {
-  //       console.log("toggle notifications changed to (dataContext)", value);
-  //       changeSendNotifications(value);
-  //       try {
-  //         (async () => {
-  //           await updateGeneralSetting("2", { toggled: value });
-  //         })();
-  //       } catch (e) {
-  //         console.log("failed to update generalSettings for notifications", e);
-  //       }
-  //     },
-  //   },
-  //   // {
-  //   //   id: "3",
-  //   //   title: "Language",
-  //   //   subtitle: "Select your preferred language",
-  //   //   type: "dropdown",
-  //   //   options: ["English", "Spanish", "French", "German"],
-  //   //   selectedOption: language,
-  //   //   iconName: "GlobeHemisphereWestIcon",
-  //   //   onSelectOption(option) {
-  //   //     console.log("language changed to (dataContext)", option);
-  //   //     // setLanguage(option);
-  //   //     changeLanguage(option);
-  //   //     try {
-  //   //       (async () => {
-  //   //         await updateGeneralSetting("3", { selectedOption: option });
-  //   //       })();
-  //   //     } catch (e) {
-  //   //       console.log("failed to update generalSettings for language", e);
-  //   //     }
-  //   //   },
-  //   // },
-  //   {
-  //     id: "4",
-  //     title: "Screen Lock",
-  //     subtitle: "Require biometric authentication to open the app",
-  //     type: "toggle",
-  //     toggled: requireBioMetric,
-  //     iconName: "FingerprintSimpleIcon",
-  //     onToggle(value) {
-  //       console.log("toggle requireBioMetric changed to (dataContext)", value);
-  //       changeRequireBioMetric(value);
-  //       toggleBiometric(value);
-  //       try {
-  //         (async () => {
-  //           await updateGeneralSetting("4", { toggled: value });
-  //         })();
-  //       } catch (e) {
-  //         console.log(
-  //           "failed to update generalSettings for requireBioMetric",
-  //           e
-  //         );
-  //       }
-  //     },
-  //   },
-  // ];
-
-  // const academicsSettings: SettingsType[] = [
-  //   {
-  //     id: "1",
-  //     title: "Grading Scheme",
-  //     subtitle: "Choose how grades are represented",
-  //     type: "dropdown",
-  //     iconName: "GraduationCapIcon",
-  //     options: [
-  //       "A, B, C, D, E, F",
-  //       "A, B, C, D, F",
-  //       "A+, A, A−, B+, B, B−, C+, C, C−, D+, D, D−, F",
-  //       "Percentage",
-  //     ],
-  //     selectedOption: "A, B, C, D, E, F",
-  //     onSelectOption(option) {
-  //       console.log("Selected grading scheme:", option);
-  //       changeGradingScheme(option as GradingSystem);
-
-  //       try {
-  //         (async () => {
-  //           await updateAcademicSetting("1", { selectedOption: option });
-  //         })();
-  //       } catch (error) {
-  //         console.log(
-  //           "Failed to update academicSettings for grading scheme",
-  //           error
-  //         );
-  //       }
-  //     },
-  //   },
-  //   // {
-  //   //   id: "2",
-  //   //   title: "Pass/Fail Option",
-  //   //   subtitle: "Allow pass/fail grading for eligible courses",
-  //   //   type: "toggle",
-  //   //   iconName: "CheckCircleIcon",
-  //   //   toggled: false,
-  //   // },
-  //   // {
-  //   //   id: "3",
-  //   //   title: "Grade Rounding Rules",
-  //   //   subtitle: "Define how decimal grades are rounded",
-  //   //   type: "dropdown",
-  //   //   iconName: "ArrowClockwiseIcon",
-  //   //   options: [
-  //   //     "Keep two decimals",
-  //   //     "Round to nearest whole number",
-  //   //     "Always round up ",
-  //   //     "Always round down ",
-  //   //   ],
-  //   //   selectedOption: "Keep two decimals",
-  //   //   onSelectOption(option) {
-  //   //     console.log("Selected grade rounding:", option);
-  //   //     changeGradeRounding(option);
-
-  //   //     try {
-  //   //       (async () => {
-  //   //         await updateAcademicSetting("3", { selectedOption: option });
-  //   //       })();
-  //   //     } catch (error) {
-  //   //       console.log(
-  //   //         "Failed to update academicSettings for grade rounding",
-  //   //         error
-  //   //       );
-  //   //     }
-  //   //   },
-  //   // },
-  // ];
-
   const academicSettings: SettingsType[] = useMemo(
     () => [
       {
@@ -640,10 +321,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     ],
     [gradingScheme]
   );
-
-  // const [generalSettings, setGeneralSettings] = useState<SettingsType[]>(
-  //   defaultGeneralSettings
-  // );
 
   const generalSettings: SettingsType[] = useMemo(
     () => [
@@ -737,10 +414,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     [theme, sendNotifications, requireBioMetric]
   );
 
-  // const [academicSettings, setAcademicSettings] =
-  //   useState<SettingsType[]>(academicsSettings);
-  // const [utilities, setUtilities] = useState<UtilitiesType[]>(defaultUtilities);
-
   useEffect(() => {
     AsyncStorage.getItem("user").then((stored) => {
       if (stored) {
@@ -766,9 +439,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
   }, [user]);
 
   useEffect(() => {
-    // getSemesters(); // Loads semesters from Realm and sets state
-    // logAllStorage();
-
     const init = async () => {
       // await seedInitialData();
       await loadData();
@@ -776,84 +446,52 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     init();
 
     const loadData = async () => {
-      // setGeneralSettings(defaultGeneralSettings);
-      // setAcademicSettings(academicsSettings);
-      // setUtilities(defaultUtilities);
       setInfos(siteInfo);
-      // }
     };
   }, []);
 
   useEffect(() => {
     let realmInstance: Realm;
-    let semesters: Realm.Results<SemesterType>;
+    let semestersResults: Realm.Results<any>;
     let listener: Realm.CollectionChangeCallback<SemesterType>;
 
     const setupListener = async () => {
       try {
         realmInstance = await openRealm();
+        semestersResults = realmInstance.objects<SemesterType>("Semester");
 
-        // Typecast to TS-friendly type
-        semesters = realmInstance.objects<SemesterType>(
-          "Semester"
-        ) as unknown as Realm.Results<SemesterType>;
-
-        // initial load
-        setSemesters((prev) => {
-          const next = [...semesters];
-          return prev.length === next.length ? prev : next;
-
-          // change to the below when i create semester rename logic
-          // setSemesters([...semesters]);
-        });
-
-        listener = () => {
-          setSemesters((prev) => {
-            const next = [...semesters];
-            return prev.length === next.length ? prev : next;
-          });
+        // Define the listener
+        listener = (collection, changes) => {
+          // Only update state if there are actual insertions, deletions, or modifications
+          if (
+            changes.insertions.length > 0 ||
+            changes.deletions.length > 0 ||
+            changes.newModifications.length > 0
+          ) {
+            // specific overhead: converting Realm results to Array triggers React render
+            setSemesters([...collection]);
+          }
         };
 
-        semesters.addListener(listener);
+        // Initial load
+        setSemesters([...semestersResults]);
+
+        // Attach listener
+        semestersResults.addListener(listener);
       } catch (error) {
-        console.error("Failed to setup Realm listener: (dataContext)", error);
+        console.error("Failed to setup Realm listener:", error);
       }
     };
 
     setupListener();
 
     return () => {
-      if (semesters && listener) {
-        semesters.removeListener(listener);
+      if (semestersResults && listener) {
+        semestersResults.removeListener(listener);
       }
+      // Do not close realm here if other parts of the app share the instance
     };
   }, []);
-
-  /**
-   * Update a general setting by id, persist to AsyncStorage and update state.
-   */
-  // const updateGeneralSetting = async (
-  //   id: string,
-  //   changes: Partial<SettingsType>
-  // ) => {
-  //   setGeneralSettings((prev) =>
-  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-  //   );
-  //   // await updateSettingInStorage<SettingsType>("generalSettings", id, changes);
-  // };
-
-  /**
-   * Update an academic setting by id, persist to AsyncStorage and update state.
-   */
-  // const updateAcademicSetting = async (
-  //   id: string,
-  //   changes: Partial<SettingsType>
-  // ) => {
-  //   setAcademicSettings((prev) =>
-  //     prev.map((s) => (s.id === id ? { ...s, ...changes } : s))
-  //   );
-  //   await updateSettingInStorage<SettingsType>("academicSettings", id, changes);
-  // };
 
   // CREATE
   const addSemester = useCallback(
@@ -1233,10 +871,6 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
       getAiInsight,
     ]
   );
-
-  // if (!generalSettings.length || !academicSettings.length) {
-  //   return null; // or a loading spinner
-  // }
 
   return (
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
