@@ -20,24 +20,12 @@ const SettingsGroup = ({
         settingsContainer: {
           gap: spacingY._20,
         },
-        avatar: {
-          alignSelf: "center",
-          backgroundColor: colors.secondary,
-          height: verticalScale(135),
-          width: verticalScale(135),
-          borderRadius: 200,
-          borderWidth: 1,
-          borderColor: colors.secondary2,
-          // overflow: "hidden",
-          // position: "relative",
-        },
+
         row: {
           flexDirection: "row",
           alignItems: "center",
         },
-        btw: {
-          justifyContent: "space-between",
-        },
+
         sectionContainer: {
           padding: spacingX._10,
           gap: spacingX._20,
@@ -45,18 +33,7 @@ const SettingsGroup = ({
           borderColor: colors.secondary,
           borderRadius: radius._10,
         },
-        cardTitle: {
-          fontSize: 20,
-          color: colors.neutral,
-          textAlign: "center",
-        },
-        container: {
-          flex: 1,
-          paddingHorizontal: spacingX._20,
-          paddingTop: spacingY._10,
-          paddingBottom: spacingY._20,
-          gap: spacingY._20,
-        },
+
         headings: {
           fontSize: 20,
           fontWeight: "bold",
@@ -206,6 +183,6 @@ const SettingsGroup = ({
   );
 };
 
-export default SettingsGroup;
+export default React.memo(SettingsGroup);
 
 

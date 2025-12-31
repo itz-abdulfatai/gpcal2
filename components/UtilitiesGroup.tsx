@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import React from "react";
-import {  radius, spacingX, spacingY } from "@/constants/theme";
+import React, { useMemo } from "react";
+import { radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { UtilitiesGroupProps } from "@/types";
 import Typo from "./typo";
@@ -13,100 +13,81 @@ const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
   const router = useRouter();
   const { colors } = useTheme();
 
-  const styles = StyleSheet.create({
-  actionButton: {
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    borderRadius: radius._10,
-    paddingHorizontal: spacingX._10,
-    paddingVertical: spacingY._5,
-  },
-  infoContainer: {
-    gap: spacingY._20,
-    marginTop: spacingY._20,
-  },
-  settingsContainer: {
-    gap: spacingY._20,
-  },
-  avatar: {
-    alignSelf: "center",
-    backgroundColor: colors.secondary,
-    height: verticalScale(135),
-    width: verticalScale(135),
-    borderRadius: 200,
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    // overflow: "hidden",
-    // position: "relative",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  btw: {
-    justifyContent: "space-between",
-  },
-  sectionContainer: {
-    padding: spacingX._10,
-    gap: spacingX._20,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: radius._10,
-  },
-  cardTitle: {
-    fontSize: 20,
-    color: colors.neutral,
-    textAlign: "center",
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: spacingX._20,
-    paddingTop: spacingY._10,
-    paddingBottom: spacingY._20,
-    gap: spacingY._20,
-  },
-  headings: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  dropdownContainer: {
-    marginTop: spacingY._5,
-    borderWidth: 1,
-    borderColor: colors.secondary2,
-    paddingHorizontal: spacingX._15,
-    height: verticalScale(54),
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-  },
-  dropdownPlaceholder: {
-    color: colors.secondary2,
-  },
-  dropdownSelectedText: {
-    color: colors.black,
-  },
-  dropdownIcon: {
-    height: verticalScale(30),
-    tintColor: colors.secondary2,
-  },
-  dropdownItemText: { color: colors.black },
-  dropdownItemContainer: {
-    borderRadius: radius._10,
-    marginHorizontal: spacingX._7,
-  },
-  dropdownListContainer: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius._10,
-    borderCurve: "continuous",
-    paddingVertical: spacingY._7,
-    top: 5,
-    borderColor: colors.secondary2,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-});
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        actionButton: {
+          borderWidth: 1,
+          borderColor: colors.secondary2,
+          borderRadius: radius._10,
+          paddingHorizontal: spacingX._10,
+          paddingVertical: spacingY._5,
+        },
+        infoContainer: {
+          gap: spacingY._20,
+          marginTop: spacingY._20,
+        },
+        settingsContainer: {
+          gap: spacingY._20,
+        },
+
+        row: {
+          flexDirection: "row",
+          alignItems: "center",
+        },
+
+        sectionContainer: {
+          padding: spacingX._10,
+          gap: spacingX._20,
+          borderWidth: 1,
+          borderColor: colors.secondary,
+          borderRadius: radius._10,
+        },
+
+        headings: {
+          fontSize: 20,
+          fontWeight: "bold",
+        },
+        dropdownContainer: {
+          marginTop: spacingY._5,
+          borderWidth: 1,
+          borderColor: colors.secondary2,
+          paddingHorizontal: spacingX._15,
+          height: verticalScale(54),
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+        },
+        dropdownPlaceholder: {
+          color: colors.secondary2,
+        },
+        dropdownSelectedText: {
+          color: colors.black,
+        },
+        dropdownIcon: {
+          height: verticalScale(30),
+          tintColor: colors.secondary2,
+        },
+        dropdownItemText: { color: colors.black },
+        dropdownItemContainer: {
+          borderRadius: radius._10,
+          marginHorizontal: spacingX._7,
+        },
+        dropdownListContainer: {
+          backgroundColor: colors.secondary,
+          borderRadius: radius._10,
+          borderCurve: "continuous",
+          paddingVertical: spacingY._7,
+          top: 5,
+          borderColor: colors.secondary2,
+          shadowColor: colors.black,
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 1,
+          shadowRadius: 10,
+          elevation: 5,
+        },
+      }),
+    [colors]
+  );
   return (
     <View style={styles.sectionContainer}>
       <Typo style={styles.headings}>{title}</Typo>
@@ -156,7 +137,7 @@ const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
 
               {/* Right side: Toggle or Dropdown */}
               <Button
-                onPress={() => utility.onTap()}
+                onPress={utility.onTap}
                 style={[
                   styles.actionButton,
                   { backgroundColor: utility.color },
@@ -173,6 +154,7 @@ const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
         <View style={styles.infoContainer}>
           {infos.map((info) => (
             <TouchableOpacity
+              accessibilityRole="button"
               key={info.id}
               onPress={() => router.push(info.route as RelativePathString)}
             >
@@ -188,6 +170,6 @@ const UtilitiesGroup = ({ title, utilities, infos }: UtilitiesGroupProps) => {
   );
 };
 
-export default UtilitiesGroup;
+export default React.memo(UtilitiesGroup);
 
 
