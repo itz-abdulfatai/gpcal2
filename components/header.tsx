@@ -21,7 +21,7 @@ const Header = ({ title = "", leftIcon, style, rightIcon }: HeaderProps) => {
           {title}
         </Typo>
       )}
-      {rightIcon && <View style={styles.leftIcon}>{rightIcon}</View>}
+      {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
     </View>
   );
 };
@@ -37,5 +37,8 @@ const styles = StyleSheet.create({
   },
   leftIcon: {
     alignSelf: "flex-start",
+  },
+  rightIcon: {
+    alignSelf: "flex-end",
   },
 });

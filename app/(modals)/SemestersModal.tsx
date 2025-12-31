@@ -454,131 +454,129 @@ const SemestersModal = () => {
 
   return (
     <ModalWrapper>
-      {semester.name && (
-        <>
-          <View style={{ paddingHorizontal: spacingX._20 }}>
-            <Header
-              leftIcon={<BackButton />}
-              title={semester.name}
-              rightIcon={<DeleteButton onPress={deleteSemester} />}
-            />
-          </View>
+      <>
+        <View style={{ paddingHorizontal: spacingX._20 }}>
+          <Header
+            leftIcon={<BackButton />}
+            title={semester.name}
+            rightIcon={<DeleteButton onPress={deleteSemester} />}
+          />
+        </View>
 
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.container}>
-              <View style={{ gap: spacingX._20 }}>
-                <AddCourseForm
-                  onAdd={addCourse}
-                  grades={grades}
-                  colors={colors}
-                />
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.container}>
+            <View style={{ gap: spacingX._20 }}>
+              <AddCourseForm
+                onAdd={addCourse}
+                grades={grades}
+                colors={colors}
+              />
 
-                {semester.courses.length > 0 && (
-                  <View style={styles.sectionContainer}>
-                    <Typo style={styles.headings}>Added Courses</Typo>
-                    <View style={styles.tableContainer}>
-                      {semester.courses.length === 0 ? (
-                        <Typo>No courses added yet</Typo>
-                      ) : (
-                        <Table
-                          headings={["Course Name", "Credit Unit", "Grade"]}
-                          keys={["name", "creditUnit", "gradePoint"]}
-                          data={semester.courses}
-                          handleDelete={handleDelete}
-                        />
-                      )}
-                    </View>
-                  </View>
-                )}
-
+              {semester.courses.length > 0 && (
                 <View style={styles.sectionContainer}>
-                  <View style={[styles.row, styles.btw]}>
-                    <Typo style={styles.headings}>Past Semesters</Typo>
-                    {!selectingPastSemesters && (
-                      <TouchableOpacity onPress={handleSelectPastSemester}>
-                        <Typo style={styles.pastSemesterTtl}>
-                          🔗 Link existing
-                        </Typo>
-                      </TouchableOpacity>
+                  <Typo style={styles.headings}>Added Courses</Typo>
+                  <View style={styles.tableContainer}>
+                    {semester.courses.length === 0 ? (
+                      <Typo>No courses added yet</Typo>
+                    ) : (
+                      <Table
+                        headings={["Course Name", "Credit Unit", "Grade"]}
+                        keys={["name", "creditUnit", "gradePoint"]}
+                        data={semester.courses}
+                        handleDelete={handleDelete}
+                      />
                     )}
                   </View>
+                </View>
+              )}
 
-                  {selectingPastSemesters && (
-                    <Dropdown
-                      onBlur={() => setSelectingPastSemesters(false)}
-                      ref={dropdownRef}
-                      data={semesterOptions}
-                      value={selectedSemester}
-                      placeholder="Select semester"
-                      maxHeight={300}
-                      labelField="label"
-                      valueField="value"
-                      search
-                      onChange={(item) => {
-                        if (!item?.value) return;
-                        setSelectedSemester(item.value);
-                        handleLinkSemester(item.value);
-                        console.log(semester.linkedSemesters);
-                      }}
-                      style={styles.dropdownContainer}
-                      placeholderStyle={styles.dropdownPlaceholder}
-                      selectedTextStyle={styles.dropdownSelectedText}
-                      iconStyle={styles.dropdownIcon}
-                      itemTextStyle={styles.dropdownItemText}
-                      itemContainerStyle={styles.dropdownItemContainer}
-                      containerStyle={styles.dropdownListContainer}
-                      activeColor={colors.primary}
-                    />
+              <View style={styles.sectionContainer}>
+                <View style={[styles.row, styles.btw]}>
+                  <Typo style={styles.headings}>Past Semesters</Typo>
+                  {!selectingPastSemesters && (
+                    <TouchableOpacity onPress={handleSelectPastSemester}>
+                      <Typo style={styles.pastSemesterTtl}>
+                        🔗 Link existing
+                      </Typo>
+                    </TouchableOpacity>
                   )}
-
-                  <AddLinkedSemesterForm
-                    onLink={handleChildLink}
-                    semester={semester}
-                    semesterSaved={semesterSaved}
-                    setLinkedSemesterIds={setLinkedSemesterIds}
-                    setSemester={setSemester}
-                    setSemesterSaved={setSemesterSaved}
-                  />
                 </View>
 
-                {linkedSemestersData.length > 0 && (
-                  <View style={styles.sectionContainer}>
-                    <Typo style={styles.headings}>Linked Semesters</Typo>
-                    <View style={styles.tableContainer}>
-                      <Table<SemesterType>
-                        headings={["Semester", "GPA"]}
-                        data={linkedSemestersData}
-                        keys={["name", "gpa"]}
-                        handleDelete={handleUnlinkSemester}
-                      />
-                    </View>
-                  </View>
+                {selectingPastSemesters && (
+                  <Dropdown
+                    onBlur={() => setSelectingPastSemesters(false)}
+                    ref={dropdownRef}
+                    data={semesterOptions}
+                    value={selectedSemester}
+                    placeholder="Select semester"
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    search
+                    onChange={(item) => {
+                      if (!item?.value) return;
+                      setSelectedSemester(item.value);
+                      handleLinkSemester(item.value);
+                      console.log(semester.linkedSemesters);
+                    }}
+                    style={styles.dropdownContainer}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    selectedTextStyle={styles.dropdownSelectedText}
+                    iconStyle={styles.dropdownIcon}
+                    itemTextStyle={styles.dropdownItemText}
+                    itemContainerStyle={styles.dropdownItemContainer}
+                    containerStyle={styles.dropdownListContainer}
+                    activeColor={colors.primary}
+                  />
                 )}
-              </View>
-            </View>
-          </ScrollView>
 
-          <View style={styles.footerContainer}>
-            <Button
-              onPress={analyse}
-              style={{
-                flexDirection: "row",
-                gap: spacingX._10,
-                alignItems: "center",
-              }}
-            >
-              <ChartPieSliceIcon size={18} color={colors.white} weight="bold" />
-              <Typo color={colors.white} fontWeight={"bold"}>
-                Analyse
-              </Typo>
-            </Button>
+                <AddLinkedSemesterForm
+                  onLink={handleChildLink}
+                  semester={semester}
+                  semesterSaved={semesterSaved}
+                  setLinkedSemesterIds={setLinkedSemesterIds}
+                  setSemester={setSemester}
+                  setSemesterSaved={setSemesterSaved}
+                />
+              </View>
+
+              {linkedSemestersData.length > 0 && (
+                <View style={styles.sectionContainer}>
+                  <Typo style={styles.headings}>Linked Semesters</Typo>
+                  <View style={styles.tableContainer}>
+                    <Table<SemesterType>
+                      headings={["Semester", "GPA"]}
+                      data={linkedSemestersData}
+                      keys={["name", "gpa"]}
+                      handleDelete={handleUnlinkSemester}
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
-        </>
-      )}
+        </ScrollView>
+
+        <View style={styles.footerContainer}>
+          <Button
+            onPress={analyse}
+            style={{
+              flexDirection: "row",
+              gap: spacingX._10,
+              alignItems: "center",
+            }}
+          >
+            <ChartPieSliceIcon size={18} color={colors.white} weight="bold" />
+            <Typo color={colors.white} fontWeight={"bold"}>
+              Analyse
+            </Typo>
+          </Button>
+        </View>
+      </>
 
       {/* PromptDialog */}
       <PromptDialog
