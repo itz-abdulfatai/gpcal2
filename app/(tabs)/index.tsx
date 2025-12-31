@@ -6,23 +6,27 @@ import SemestersList from "@/components/SemestersList";
 import { spacingX, spacingY } from "@/constants/theme";
 import { useData } from "@/contexts/DataContext";
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
+import { useCallback } from "react";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { semesters } = useData();
   // const [semesters, setSemesters] = useState<SemesterType[]>(storedSemesters);
 
-  const openSemestersModal = () => {
+  const openSemestersModal = useCallback(() => {
     router.push("/(modals)/semestersModal");
-  };
+  }, [router]);
   return (
     <ScreenWrapper>
       <Fab onPress={openSemestersModal} />
       <Header title="GPCal" />
-      <ScrollView style={styles.container}>
-        <SemestersList data={semesters} emptyListMessage="Tap + to add a semester" />
-      </ScrollView>
+      {/* <ScrollView style={styles.container}> */}
+      <SemestersList
+        data={semesters}
+        emptyListMessage="Tap + to add a semester"
+      />
+      {/* </ScrollView> */}
     </ScreenWrapper>
   );
 }
