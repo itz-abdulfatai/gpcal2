@@ -144,7 +144,7 @@ export interface TableProps<T> {
   headings: string[];
   data: T[];
   keys: (keyof T)[];
-  handleDelete?: (id: string) => void;
+  handleDelete?: (id: string) => Promise<void>;
 }
 
 export interface InputProps extends TextInputProps {

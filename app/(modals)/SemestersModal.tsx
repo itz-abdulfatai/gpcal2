@@ -141,14 +141,7 @@ const SemestersModal = () => {
   );
 
   const handleChildLink = async (newSem: SemesterType) => {
-    if (!semesterSaved) {
-      const { success, msg, data } = await addSemester(semester);
-      if (!success) return alert(msg!);
-
-      //   setSemester(data);
-
-      setSemesterSaved(true);
-    }
+    await saveIfUnsaved();
   };
 
   const handleSelectPastSemester = () => {
@@ -161,7 +154,7 @@ const SemestersModal = () => {
       oldSemester = await getSemesterById(id as string);
 
       if (oldSemester) {
-        setSemesterTitle(oldSemester.name);
+        // setSemesterTitle(oldSemester.name);
         setSemesterSaved(true);
         setSemester(oldSemester);
         setPromptVisible(false);
@@ -190,22 +183,14 @@ const SemestersModal = () => {
   const [promptVisible, setPromptVisible] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<string | null>(null);
 
-  const [semesterTitle, setSemesterTitle] = useState<string>(
-    semester ? semester.name : ""
-  );
+  // const [semesterTitle, setSemesterTitle] = useState<string>(
+  //   semester ? semester.name : ""
+  // );
 
   const handleLinkSemester = async (idStr: string) => {
     if (!idStr || linkedIdsSet.has(idStr)) return;
 
-    // If semester hasn’t been saved yet, save it first
-    if (!semesterSaved) {
-      const { success, msg, data } = await addSemester(semester);
-      if (!success) return alert(msg!);
-
-      setSemester(data);
-
-      setSemesterSaved(true);
-    }
+    await saveIfUnsaved();
     const res = await linkSemester(semester.id.toString(), idStr);
     if (!res.success) {
       return alert(res.msg!);
@@ -215,10 +200,11 @@ const SemestersModal = () => {
     setSelectingPastSemesters(false);
   };
 
-  const semesterMap = useMemo(
-    () => new Map(dbSemesters.map((s) => [idToStr((s as any).id), s])),
-    [dbSemesters]
-  );
+  const semesterMap = useMemo(() => {
+    const newMap = new Map(dbSemesters.map((s) => [idToStr((s as any).id), s]));
+    // Optional: if dbSemesters is large, add check (but skip if not needed)
+    return newMap;
+  }, [dbSemesters]);
 
   // 2. Memoize the list using the map and current semester's links
   const linkedSemestersData = useMemo(() => {
@@ -248,6 +234,16 @@ const SemestersModal = () => {
     }));
   };
 
+  const saveIfUnsaved = async () => {
+    // If semester hasn’t been saved yet, save it first
+    if (!semesterSaved) {
+      const { success, msg, data } = await addSemester(semester);
+      if (!success) return alert(msg!);
+      setSemesterSaved(true);
+      setSemester(data);
+    }
+  };
+
   const addCourse = useCallback(
     async (course: CourseType) => {
       let parsedCourse = {
@@ -259,15 +255,7 @@ const SemestersModal = () => {
       if (!parsedCourse.name || !parsedCourse.creditUnit)
         return alert("invalid course name or credit unit");
 
-      // If semester hasn’t been saved yet, save it first
-      if (!semesterSaved) {
-        const { success, msg, data } = await addSemester(semester);
-        if (!success) return alert(msg!);
-
-        setSemester(data);
-
-        setSemesterSaved(true);
-      }
+      await saveIfUnsaved();
 
       // Now always try to add course
       const { success: addCourseSuccess, msg: addCourseMsg } =
@@ -287,7 +275,15 @@ const SemestersModal = () => {
       const newCourseList = [...(semester.courses || []), parsedCourse];
       await updateSemesterGpa(newCourseList);
     },
-    [semester.id, semesterSaved, addSemester, addCourseToSemester]
+    [
+      semester.id,
+      semester.courses,
+      semesterSaved,
+      addCourseToSemester,
+      updateSemester,
+      // semesterTitle,
+      semester.name,
+    ]
   );
 
   const deleteSemester = () => {
@@ -458,12 +454,12 @@ const SemestersModal = () => {
 
   return (
     <ModalWrapper>
-      {semesterTitle && (
+      {semester.name && (
         <>
           <View style={{ paddingHorizontal: spacingX._20 }}>
             <Header
               leftIcon={<BackButton />}
-              title={semesterTitle ? semesterTitle : ""}
+              title={semester.name}
               rightIcon={<DeleteButton onPress={deleteSemester} />}
             />
           </View>
@@ -590,7 +586,7 @@ const SemestersModal = () => {
         question="Enter semester name"
         setResponse={(val) => {
           if (val.trim()) {
-            setSemesterTitle(val);
+            // setSemesterTitle(val);
             handleSemesterName(val);
           }
         }}

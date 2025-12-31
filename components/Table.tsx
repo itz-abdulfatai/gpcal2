@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { TableProps } from "@/types";
 import { useTheme } from "@/contexts/ThemeContext";
 
 function Table<T extends object>(props: TableProps<T>) {
   const { headings, data, keys, handleDelete } = props;
+  const [deleting, setDeleting] = useState(false);
   const { colors } = useTheme();
 
   const styles = useMemo(
@@ -87,9 +88,12 @@ function Table<T extends object>(props: TableProps<T>) {
 
           {handleDelete && (
             <TouchableOpacity
-              onPress={() => {
+              disabled={deleting}
+              onPress={async (e) => {
                 const id = (item as any).id;
-                handleDelete(id);
+                setDeleting(true);
+                await handleDelete(id);
+                setDeleting(false);
               }}
               style={styles.deleteButton}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -104,5 +108,3 @@ function Table<T extends object>(props: TableProps<T>) {
 }
 
 export default Table;
-
-

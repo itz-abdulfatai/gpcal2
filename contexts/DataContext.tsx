@@ -813,63 +813,59 @@ export const DataContextProvider: FC<{ children: React.ReactNode }> = ({
     []
   );
 
-  const contextValue: DataContextType = useMemo(
+  const userValue = useMemo(() => ({ user, setUser }), [user]);
+  const settingsValue = useMemo(
     () => ({
-      user,
-      setUser,
-      semesters,
-      // courses,
       generalSettings,
       academicSettings,
-      utilities,
-      infos,
       language,
       gradingScheme,
       gradeRounding,
-      // updateGeneralSetting,
-      // updateAcademicSetting,
+    }),
+    [generalSettings, academicSettings, language, gradingScheme, gradeRounding]
+  );
+  const dataValue = useMemo(() => ({ semesters, infos }), [semesters, infos]);
+  const utilsValue = useMemo(() => ({ utilities }), [utilities]);
+  const actionsValue = useMemo(
+    () => ({
       addSemester,
       updateSemester,
-
       addCourse,
       getSemesters,
       getSemesterById,
       getCourses,
-
       updateCourse,
       deleteSemester,
       deleteCourse,
       linkSemester,
       unlinkSemester,
-
       getAiInsight,
     }),
     [
-      user,
-      semesters,
-      // courses,
-      generalSettings,
-      academicSettings,
-      utilities,
-      infos,
-      language,
-      gradingScheme,
-      gradeRounding,
-      // infos,
-
       addSemester,
+      updateSemester,
       addCourse,
       getSemesters,
       getSemesterById,
       getCourses,
-      linkSemester,
-      unlinkSemester,
-      updateSemester,
       updateCourse,
       deleteSemester,
       deleteCourse,
+      linkSemester,
+      unlinkSemester,
       getAiInsight,
     ]
+  );
+
+  const contextValue: DataContextType = useMemo(
+    () => ({
+      ...userValue,
+      ...settingsValue,
+      ...dataValue,
+      ...utilsValue,
+      ...actionsValue,
+    }),
+    [userValue, settingsValue, dataValue, utilsValue, actionsValue]
   );
 
   return (
