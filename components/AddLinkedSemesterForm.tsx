@@ -14,16 +14,16 @@ const { UUID } = BSON;
 
 const AddLinkedSemesterForm = ({
   semester,
-  setSemester,
   setSemesterSaved,
-  semesterSaved,
   setLinkedSemesterIds,
+  onLink,
 }: {
   semester: SemesterType;
   setSemester: React.Dispatch<React.SetStateAction<SemesterType>>;
   setSemesterSaved: React.Dispatch<React.SetStateAction<boolean>>;
   semesterSaved: boolean;
   setLinkedSemesterIds: React.Dispatch<React.SetStateAction<string[]>>;
+  onLink: (newSemester: SemesterType) => Promise<void>;
 }) => {
   const [semesterTyped, setSemesterTyped] = useState<SemesterType>({
     id: new UUID(),
@@ -42,14 +42,15 @@ const AddLinkedSemesterForm = ({
     if (!semesterTyped.name || semesterTyped.gpa == null) return;
 
     // If semester hasn’t been saved yet, save it first
-    if (!semesterSaved) {
-      const { success, msg, data } = await addSemester(semester);
-      if (!success) return alert(msg!);
+    await onLink(semesterTyped);
+    // if (!semesterSaved) {
+    //   const { success, msg, data } = await addSemester(semester);
+    //   if (!success) return alert(msg!);
 
-      setSemester(data);
+    //   //   setSemester(data);
 
-      setSemesterSaved(true);
-    }
+    //   setSemesterSaved(true);
+    // }
     const res = await addSemester(semesterTyped);
     if (!res.success) return alert(res.msg ?? "Failed to add semester");
 

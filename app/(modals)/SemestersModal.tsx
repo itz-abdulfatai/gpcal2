@@ -140,6 +140,17 @@ const SemestersModal = () => {
     [unlinkSemester, semester.id]
   );
 
+  const handleChildLink = async (newSem: SemesterType) => {
+    if (!semesterSaved) {
+      const { success, msg, data } = await addSemester(semester);
+      if (!success) return alert(msg!);
+
+      //   setSemester(data);
+
+      setSemesterSaved(true);
+    }
+  };
+
   const handleSelectPastSemester = () => {
     setSelectingPastSemesters(true);
     handleDropDownOpen();
@@ -204,14 +215,17 @@ const SemestersModal = () => {
     setSelectingPastSemesters(false);
   };
 
+  const semesterMap = useMemo(
+    () => new Map(dbSemesters.map((s) => [idToStr((s as any).id), s])),
+    [dbSemesters]
+  );
+
+  // 2. Memoize the list using the map and current semester's links
   const linkedSemestersData = useMemo(() => {
-    const mapById = new Map(
-      dbSemesters.map((s) => [idToStr((s as any).id), s])
-    );
-    return linkedSemesterIds
-      .map((lid) => mapById.get(lid))
+    return (semester.linkedSemesters || [])
+      .map((lid) => semesterMap.get(idToStr(lid)))
       .filter(Boolean) as SemesterType[];
-  }, [dbSemesters, linkedSemesterIds]);
+  }, [semesterMap, semester.linkedSemesters]);
 
   useEffect(() => {
     if (semester && semester.linkedSemesters) {
@@ -477,7 +491,7 @@ const SemestersModal = () => {
                         <Table
                           headings={["Course Name", "Credit Unit", "Grade"]}
                           keys={["name", "creditUnit", "gradePoint"]}
-                          data={[...semester.courses]}
+                          data={semester.courses}
                           handleDelete={handleDelete}
                         />
                       )}
@@ -526,6 +540,7 @@ const SemestersModal = () => {
                   )}
 
                   <AddLinkedSemesterForm
+                    onLink={handleChildLink}
                     semester={semester}
                     semesterSaved={semesterSaved}
                     setLinkedSemesterIds={setLinkedSemesterIds}

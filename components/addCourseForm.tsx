@@ -21,7 +21,6 @@ const AddCourseForm = ({ onAdd, grades, colors }: any) => {
     creditUnit: null,
     gradePoint: null,
   });
-
   const handleAdd = () => {
     onAdd(course);
     // Reset local state after adding
@@ -37,18 +36,6 @@ const AddCourseForm = ({ onAdd, grades, colors }: any) => {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        row: { flexDirection: "row", alignItems: "baseline" },
-        btw: { justifyContent: "space-between" },
-        footerContainer: {
-          paddingHorizontal: spacingX._20,
-          paddingVertical: spacingY._5,
-        },
-        tableContainer: {},
-        container: {
-          flex: 1,
-          padding: spacingX._20,
-          gap: spacingX._20,
-        },
         sectionContainer: {
           padding: spacingX._10,
           gap: spacingX._20,
@@ -59,11 +46,6 @@ const AddCourseForm = ({ onAdd, grades, colors }: any) => {
         headings: {
           fontSize: 20,
           fontWeight: "bold",
-        },
-        pastSemesterTtl: {
-          marginTop: verticalScale(-20),
-          fontWeight: "light",
-          color: colors.neutral2,
         },
         dropdownContainer: {
           borderWidth: 1,
