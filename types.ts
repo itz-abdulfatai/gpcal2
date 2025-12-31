@@ -209,7 +209,7 @@ export interface SemesterType {
 }
 
 export type semestersListType = {
-  data: SemesterType[];
+  // data: SemesterType[];
   title?: string;
   loading?: boolean;
   emptyListMessage?: string;

@@ -10,20 +10,13 @@ import { StyleSheet } from "react-native";
 import { useCallback } from "react";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const { semesters } = useData();
-  // const [semesters, setSemesters] = useState<SemesterType[]>(storedSemesters);
-
-  const openSemestersModal = useCallback(() => {
-    router.push("/(modals)/semestersModal");
-  }, [router]);
   return (
     <ScreenWrapper>
-      <Fab onPress={openSemestersModal} />
+      <Fab />
       <Header title="GPCal" />
       {/* <ScrollView style={styles.container}> */}
       <SemestersList
-        data={semesters}
+        // data={semesters}
         emptyListMessage="Tap + to add a semester"
       />
       {/* </ScrollView> */}

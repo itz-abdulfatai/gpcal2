@@ -9,14 +9,15 @@ import Loading from "./Loading";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/contexts/ThemeContext";
 import { verticalScale } from "@/utils/styling";
+import { useData } from "@/contexts/DataContext";
 
 const SemestersList = ({
-  data: semesters,
   emptyListMessage,
   loading,
   title,
 }: semestersListType) => {
   const { colors } = useTheme();
+  const { semesters } = useData();
 
   const styles = useMemo(
     () =>
